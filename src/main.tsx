@@ -5,10 +5,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
 import { TrayApp } from "./components/tray/tray-app";
 import "./index.css";
+import "./i18n";
+import { applyLanguage, useLanguageStore } from "./stores/language-store";
 import { applyTheme, useThemeStore } from "./stores/theme-store";
 
-// 描画前にテーマを適用して FOUC（初回のちらつき）を防ぐ。
+// 描画前にテーマ・言語を適用して FOUC（初回のちらつき）を防ぐ。
 applyTheme(useThemeStore.getState().theme);
+applyLanguage(useLanguageStore.getState().language);
 
 // ウィンドウ label で描画するルートを分岐する（トレイポップアップは別ウィンドウ）。
 const isTray = getCurrentWindow().label === "tray";

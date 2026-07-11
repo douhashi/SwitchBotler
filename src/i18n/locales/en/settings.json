@@ -1,0 +1,9 @@
+{
+  "title": "Settings",
+  "subtitle": "Appearance theme and SwitchBot API credentials",
+  "display": {
+    "heading": "Display",
+    "theme": "Theme",
+    "themeHint": "System follows your OS appearance setting."
+  }
+}

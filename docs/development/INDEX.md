@@ -6,3 +6,4 @@
 - `security.md`: セキュリティ / プライバシー方針（セキュアストレージ保管・秘匿情報の露出防止・ログ出力禁止）
 - `roadmap.md`: マイルストーン（M0〜M5）・未決事項 / 検討ポイント
 - `secrets.md`: 開発時のシークレット管理（Infisical）・env キー（`SWITCHBOT_TOKEN` / `SWITCHBOT_SECRET`）・実行方法
+- `i18n.md`: 国際化方針（react-i18next 基盤・言語解決 / 永続化・翻訳リソース配置・namespace / キー命名規約・言語追加手順・テスト方針）

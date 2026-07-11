@@ -1,6 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { useLanguageStore } from "@/stores/language-store";
 
 // Tauri IPC（invoke）は外部境界。ここだけをモックし、ゲートウェイ〜ストア〜
 // view の結線は実物を通す。
@@ -116,5 +118,34 @@ describe("SettingsView", () => {
       expect(useConnectionStore.getState().connection.status).toBe("disconnected");
     });
     expect(useConnectionStore.getState().connection.saved).toBe(false);
+  });
+});
+
+describe("SettingsView 言語切替", () => {
+  afterEach(() => {
+    // 言語状態は i18n グローバルへ反映されるため既定へ戻す。
+    act(() => {
+      useLanguageStore.getState().setLanguage("en");
+    });
+  });
+
+  it("言語を切り替えるとリロードせずパイロット文言が即時に切り替わる", async () => {
+    render(<SettingsView />);
+
+    // ja へ切替 → 日本語の見出し・言語ラベルが現れる。
+    act(() => {
+      useLanguageStore.getState().setLanguage("ja");
+    });
+    expect(await screen.findByRole("heading", { name: "設定" })).toBeInTheDocument();
+    expect(screen.getByText("言語")).toBeInTheDocument();
+
+    // en へ切替 → 同じ要素が英語表記へ再描画される（リロードなし）。
+    act(() => {
+      useLanguageStore.getState().setLanguage("en");
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Settings" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Language")).toBeInTheDocument();
   });
 });
