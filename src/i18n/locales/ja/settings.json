@@ -1,0 +1,9 @@
+{
+  "title": "設定",
+  "subtitle": "表示テーマと SwitchBot API の認証",
+  "display": {
+    "heading": "表示",
+    "theme": "テーマ",
+    "themeHint": "システムは OS の外観設定に追従します。"
+  }
+}

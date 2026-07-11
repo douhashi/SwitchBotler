@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, Save, ShieldCheck, TriangleAlert, X } from "lucide-react";
 
 import { ConnectionBanner } from "@/components/connection/connection-banner";
+import { LanguageSelect } from "@/components/language-select";
 import { SecretField } from "@/components/connection/secret-field";
 import {
   AlertDialog,
@@ -20,6 +22,8 @@ import { ViewHeader } from "@/components/view-header";
 import { useConnectionStore } from "@/stores/connection-store";
 
 export function SettingsView() {
+  const { t } = useTranslation("settings");
+  const { t: tc } = useTranslation("common");
   const connection = useConnectionStore((s) => s.connection);
   const error = useConnectionStore((s) => s.error);
   const load = useConnectionStore((s) => s.load);
@@ -47,17 +51,23 @@ export function SettingsView() {
 
   return (
     <div>
-      <ViewHeader title="設定" subtitle="表示テーマと SwitchBot API の認証" />
+      <ViewHeader title={t("title")} subtitle={t("subtitle")} />
 
       <section className="mb-6">
         <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
-          表示
+          {t("display.heading")}
         </h2>
-        <span className="mb-2 block text-xs font-medium">テーマ</span>
+        <span className="mb-2 block text-xs font-medium">
+          {t("display.theme")}
+        </span>
         <ThemeSegment />
-        <p className="mt-2 px-0.5 text-[11.5px] text-muted-foreground">
-          システムは OS の外観設定に追従します。
+        <p className="mt-2 mb-4 px-0.5 text-[11.5px] text-muted-foreground">
+          {t("display.themeHint")}
         </p>
+        <span className="mb-2 block text-xs font-medium">
+          {tc("language.label")}
+        </span>
+        <LanguageSelect />
       </section>
 
       <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
