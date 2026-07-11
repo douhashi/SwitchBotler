@@ -8,7 +8,6 @@ import { DeviceIcon } from "@/components/device/device-icon";
 import { Switch } from "@/components/ui/switch";
 import { dataSource, type Device, hasPowerToggle, type Scene, useScenes } from "@/data";
 import { cn } from "@/lib/utils";
-import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
 
@@ -121,12 +120,15 @@ export function TrayPopover() {
   const loading = useDeviceStore((s) => s.loading);
   const loaded = useDeviceStore((s) => s.loaded);
   const error = useDeviceStore((s) => s.error);
-  const connection = useConnectionStore((s) => s.connection);
   const favoriteDeviceIds = useFavoritesStore((s) => s.deviceIds);
   const favoriteSceneIds = useFavoritesStore((s) => s.sceneIds);
   const { data: scenes } = useScenes();
 
-  const connected = connection.status === "connected";
+  // 接続表示は「実際に API に到達できているか」= デバイス取得の成否で判定する。
+  // トレイは別ウィンドウで connection ストアを focus 時に再取得しないため、
+  // connection.status に依存すると起動時（保存前）の「未接続」が固定化してしまう。
+  // device-store は focus のたびに再取得されるので、こちらが正確。
+  const connected = loaded && !error;
   // お気に入りのみ表示。デバイスは電源トグル可能なもの（カーテン等は詳細操作のため除外）。
   const favoriteDevices = devices
     .filter(hasPowerToggle)

@@ -7,7 +7,6 @@ const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
 import type { Device } from "@/data";
-import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { TrayPopover } from "./tray-popover";
@@ -27,15 +26,7 @@ describe("TrayPopover", () => {
   beforeEach(() => {
     invoke.mockReset();
     invoke.mockResolvedValue([]); // list_scenes 等の既定
-    useConnectionStore.setState({
-      connection: {
-        status: "connected",
-        lastCheckedAt: null,
-        saved: true,
-        rateLimit: 10000,
-      },
-      loaded: true,
-    });
+    // 接続表示は device 取得の成否で判定する（loaded && !error = 接続済み扱い）。
     useDeviceStore.setState({
       devices: [plug(1), plug(2), plug(3), plug(4), plug(5)],
       loading: false,
@@ -87,17 +78,14 @@ describe("TrayPopover", () => {
     expect(invoke).toHaveBeenCalledWith("quit");
   });
 
-  it("未接続かつデバイス無しなら未接続の案内を出す", async () => {
-    useConnectionStore.setState({
-      connection: {
-        status: "disconnected",
-        lastCheckedAt: null,
-        saved: false,
-        rateLimit: 10000,
-      },
+  it("デバイス取得に失敗（到達不能）なら未接続の案内を出す", async () => {
+    // 接続表示は device 取得の成否で判定する。エラー = 未接続扱い。
+    useDeviceStore.setState({
+      devices: [],
+      loading: false,
       loaded: true,
+      error: "接続できませんでした。",
     });
-    useDeviceStore.setState({ devices: [], loading: false, loaded: true, error: null });
 
     render(<TrayPopover />);
 
