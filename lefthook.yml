@@ -9,9 +9,18 @@ pre-commit:
     typecheck:
       glob: "*.{ts,tsx}"
       run: mise run typecheck
+    # フロントのテストは高速なので、変更時にコミット前実行する
+    test-front:
+      glob: "src/**/*.{ts,tsx}"
+      run: mise run test-front
 
 pre-push:
+  parallel: true
   commands:
     clippy:
       glob: "src-tauri/**/*.rs"
       run: mise run clippy
+    # Rust テストはビルドを伴い低速なので、push 前にまとめて実行する
+    test-rust:
+      glob: "src-tauri/**/*.rs"
+      run: mise run test-rust
