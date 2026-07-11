@@ -69,11 +69,13 @@ export function SensorsView() {
 
   return (
     <div>
-      <ViewHeader title="センサー" subtitle="温湿度計・CO₂ センサー" />
+      <ViewHeader title="センサー" subtitle="温湿度計・人感センサー" />
       {loading && !data && <LoadingState />}
       {error && !data && <ErrorState message={error.message} onRetry={refetch} />}
       {data && !hasSensors && (
-        <EmptyState>センサー（温湿度計）が見つかりませんでした。</EmptyState>
+        <EmptyState>
+          センサー（温湿度計・人感センサー）が見つかりませんでした。
+        </EmptyState>
       )}
 
       {hasSensors &&

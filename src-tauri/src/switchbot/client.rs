@@ -213,8 +213,8 @@ impl SwitchBotClient {
         Ok(())
     }
 
-    /// すべての Meter 系デバイスの status を取得し、センサーごとに 1 件返す。
-    /// Meter が無ければ空 Vec（フロントは空状態表示）。
+    /// すべてのセンサー系デバイス（温湿度計・人感センサー）の status を取得し、
+    /// センサーごとに 1 件返す。対象が無ければ空 Vec（フロントは空状態表示）。
     pub async fn get_sensors(
         &self,
         creds: &Credentials,
@@ -224,7 +224,7 @@ impl SwitchBotClient {
             .await?;
         let metas = mapping::map_device_list(&body);
         let mut readings = Vec::new();
-        for m in metas.iter().filter(|m| mapping::is_meter(&m.device_type)) {
+        for m in metas.iter().filter(|m| mapping::is_sensor(&m.device_type)) {
             let status = self.get_status_body(creds, &m.id).await?;
             readings.push(mapping::build_sensor_readings(&m.id, &m.name, &status));
         }

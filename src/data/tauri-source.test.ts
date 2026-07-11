@@ -74,7 +74,7 @@ describe("tauriDataSource", () => {
         id: "s1",
         source: "meter",
         metrics: [
-          { id: "temperature", label: "温度", icon: "temperature", value: 26.2, unit: "°C" },
+          { kind: "gauge", id: "temperature", label: "温度", icon: "temperature", value: 26.2, unit: "°C" },
         ],
       },
     ]);
