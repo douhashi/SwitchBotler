@@ -121,6 +121,15 @@ export function deviceInteraction(device: Device): DeviceInteraction {
   return "toggle";
 }
 
+/**
+ * 操作もセンサー読み取りもできない「その他」デバイスか（ハブ類・操作未対応の
+ * 赤外線リモコン等）。センサーは `list_devices` で一覧から除外済みのため、
+ * 一覧の非操作デバイスはこの述語（操作アフォーダンスなし）で一意に判別できる。
+ */
+export function isOtherDevice(device: Device): boolean {
+  return deviceInteraction(device) === "none";
+}
+
 /** 運転モードの日本語ラベル。 */
 const AIRCON_MODE_LABEL: Record<AirconMode, string> = {
   auto: "自動",

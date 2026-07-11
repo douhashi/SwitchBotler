@@ -118,6 +118,8 @@ impl SwitchBotClient {
 
     /// デバイス一覧を取得し、対応種別は status も取得して view-model DTO を組み立てる。
     /// レート節約のため未対応種別は status を取得しない（決定4）。
+    /// センサー系（温湿度計・人感センサー）は一覧から除外し、センサー画面
+    /// （`get_sensors`）に一本化する（一覧での「未対応」二重表示を解消）。
     pub async fn list_devices(
         &self,
         creds: &Credentials,
@@ -128,7 +130,7 @@ impl SwitchBotClient {
         let metas = mapping::map_device_list(&body);
 
         let mut devices = Vec::with_capacity(metas.len());
-        for meta in &metas {
+        for meta in metas.iter().filter(|m| !mapping::is_sensor(&m.device_type)) {
             // 赤外線（infrared）は status エンドポイントを持たないため取得しない（V5）。
             // 表示値は「最後に送信した値」をフロントが永続ストアから重畳する。
             let status = if meta.supported && !meta.infrared {

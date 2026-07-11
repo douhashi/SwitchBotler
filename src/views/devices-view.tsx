@@ -3,9 +3,11 @@ import { RefreshCw } from "lucide-react";
 
 import { DeviceCard } from "@/components/device/device-card";
 import { DeviceDetail } from "@/components/device/device-detail";
+import { OtherDevicesSection } from "@/components/device/other-devices-section";
 import { Button } from "@/components/ui/button";
 import { ViewHeader } from "@/components/view-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
+import { isOtherDevice } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -30,7 +32,11 @@ export function DevicesView() {
   const selected = devices.find((d) => d.id === selectedDeviceId);
   if (selected) return <DeviceDetail device={selected} />;
 
-  const favorites = devices.filter((d) => favoriteIds.has(d.id));
+  // 操作可デバイスは主一覧・お気に入りに、操作もセンサー読み取りもできない
+  // 「その他」は末尾の折りたたみセクションに振り分ける。
+  const others = devices.filter(isOtherDevice);
+  const operable = devices.filter((d) => !isOtherDevice(d));
+  const favorites = operable.filter((d) => favoriteIds.has(d.id));
 
   return (
     <div>
@@ -65,7 +71,7 @@ export function DevicesView() {
         </section>
       )}
 
-      {devices.length > 0 && (
+      {operable.length > 0 && (
         <section>
           {favorites.length > 0 && (
             <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
@@ -73,12 +79,14 @@ export function DevicesView() {
             </h2>
           )}
           <div className="grid-cards">
-            {devices.map((device) => (
+            {operable.map((device) => (
               <DeviceCard key={device.id} device={device} />
             ))}
           </div>
         </section>
       )}
+
+      <OtherDevicesSection devices={others} />
     </div>
   );
 }

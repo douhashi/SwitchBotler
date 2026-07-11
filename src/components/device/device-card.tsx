@@ -79,11 +79,6 @@ export function DeviceCard({ device }: { device: Device }) {
           aria-label={device.name}
         />
       )}
-      {interaction === "none" && (
-        <span className="shrink-0 rounded-md px-2 py-0.5 text-[11px] text-muted-foreground shadow-inset-sm">
-          未対応
-        </span>
-      )}
     </div>
   );
 }

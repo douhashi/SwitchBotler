@@ -31,15 +31,6 @@ const curtain: Device = {
   controls: { power: true, position: 80 },
 };
 
-const meter: Device = {
-  id: "living-meter",
-  name: "リビングの温湿度計",
-  model: "Meter",
-  category: "other",
-  supported: false,
-  controls: { power: false },
-};
-
 const aircon: Device = {
   id: "living-aircon",
   name: "リビングのエアコン",
@@ -133,16 +124,6 @@ describe("DeviceCard", () => {
     // chevron で詳細へ遷移する。
     await userEvent.click(screen.getByRole("button", { name: "リビングの間接照明 の詳細" }));
     expect(useNavigationStore.getState().selectedDeviceId).toBe("living-light");
-  });
-
-  it("未対応デバイスは操作要素（スイッチ・詳細）を出さず「未対応」表示にする", () => {
-    render(<DeviceCard device={meter} />);
-    expect(screen.getByText("未対応")).toBeInTheDocument();
-    expect(screen.queryByRole("switch")).toBeNull();
-    // 詳細への chevron は無い（お気に入りのピン留めは全カード共通で残る）。
-    expect(
-      screen.queryByRole("button", { name: /の詳細$/ }),
-    ).toBeNull();
   });
 
   it("ピン留めボタンでお気に入りを追加・解除する", async () => {
