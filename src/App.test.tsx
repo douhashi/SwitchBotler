@@ -1,11 +1,34 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Tauri IPC（invoke）は外部境界。ここだけをモックし、ゲートウェイ〜ストア〜
 // シェルの結線は実物を通す。
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
+
+// Rust が emit するイベント（navigate 等）の結線を検証するため、setup.ts の no-op
+// window モックをこのファイル用に差し替え、登録された listener を捕捉できるようにする。
+const { eventListeners } = vi.hoisted(() => ({
+  eventListeners: new Map<string, (event: { payload: unknown }) => void>(),
+}));
+vi.mock("@tauri-apps/api/window", () => {
+  const noopUnlisten = () => {};
+  const currentWindow = {
+    label: "main",
+    listen: async (event: string, handler: (e: { payload: unknown }) => void) => {
+      eventListeners.set(event, handler);
+      return noopUnlisten;
+    },
+    onFocusChanged: async () => noopUnlisten,
+    onCloseRequested: async () => noopUnlisten,
+    show: async () => {},
+    hide: async () => {},
+    setFocus: async () => {},
+    unminimize: async () => {},
+  };
+  return { getCurrentWindow: () => currentWindow };
+});
 
 import App from "./App";
 import { useConnectionStore } from "@/stores/connection-store";
@@ -33,6 +56,7 @@ beforeEach(() => {
     activeView: "devices",
     selectedDeviceId: null,
   });
+  eventListeners.clear();
   invoke.mockReset();
   invoke.mockImplementation(async (cmd: string) => {
     switch (cmd) {
@@ -95,6 +119,42 @@ describe("App シェル（接続済み）", () => {
     ).not.toHaveAttribute("aria-current");
     // センサー画面の空データ取得が落ち着くのを待つ。
     await screen.findByRole("heading", { name: "センサー" });
+  });
+
+  it("navigate イベント（{view, deviceId}）で該当デバイス詳細へ遷移する（V1）", async () => {
+    render(<App />);
+    await screen.findByText("デバイスが見つかりませんでした。");
+
+    // Rust emit の navigate リスナが登録されるのを待つ。
+    await waitFor(() => expect(eventListeners.has("navigate")).toBe(true));
+
+    // トレイの detail「>」相当: view + deviceId を伴う payload を受け取る。
+    act(() => {
+      eventListeners.get("navigate")?.({
+        payload: { view: "devices", deviceId: "living-aircon" },
+      });
+    });
+
+    const nav = useNavigationStore.getState();
+    expect(nav.activeView).toBe("devices");
+    expect(nav.selectedDeviceId).toBe("living-aircon");
+  });
+
+  it("navigate イベント（deviceId 無し）は画面遷移のみで selectedDeviceId を残さない（V1）", async () => {
+    // 直前に詳細を選択していても、view のみの navigate で選択は解除される。
+    useNavigationStore.setState({ activeView: "devices", selectedDeviceId: "x" });
+    render(<App />);
+    await screen.findByText("デバイスが見つかりませんでした。");
+
+    await waitFor(() => expect(eventListeners.has("navigate")).toBe(true));
+
+    act(() => {
+      eventListeners.get("navigate")?.({ payload: { view: "settings" } });
+    });
+
+    const nav = useNavigationStore.getState();
+    expect(nav.activeView).toBe("settings");
+    expect(nav.selectedDeviceId).toBeNull();
   });
 });
 

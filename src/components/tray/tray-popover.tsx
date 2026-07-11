@@ -2,12 +2,20 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
-import { Layers, Pin, Play, RefreshCw } from "lucide-react";
+import { ChevronRight, Hand, Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { LogoMark, Wordmark } from "@/components/brand";
 import { DeviceIcon } from "@/components/device/device-icon";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { dataSource, type Device, hasPowerToggle, type Scene, useScenes } from "@/data";
+import {
+  dataSource,
+  type Device,
+  deviceInteraction,
+  deviceStatusLabel,
+  type Scene,
+  useScenes,
+} from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -25,13 +33,32 @@ function FootLink({ onClick, children }: { onClick: () => void; children: ReactN
   );
 }
 
-/** トレイに 1 台分のクイックトグル行を描く。 */
+/**
+ * トレイに 1 台分のクイック操作行を描く。
+ *
+ * ウィンドウの DeviceCard と同じく `deviceInteraction()` の 3 分岐で操作系を出す:
+ * - toggle: Switch を直接表示（電源のみのデバイス）
+ * - press: 「押す」ボタン（pressMode の Bot）
+ * - detail: 右端の「>」でメインウィンドウを前面化しつつ該当デバイスの詳細を開く
+ *
+ * 詳細遷移だけはトレイが別ウィンドウのため、`navigation-store` を直接触らず
+ * `show_main_window({ view, deviceId })` + `hide_tray_popup` を invoke する。
+ * オフライン規則・状態ラベルの導出（`deviceStatusLabel`）は DeviceCard と共有する。
+ */
 function QuickDevice({ device }: { device: Device }) {
   const { t } = useTranslation("devices");
   const toggle = useDeviceStore((s) => s.toggle);
+  const press = useDeviceStore((s) => s.press);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
+  const interaction = deviceInteraction(device);
   const on = device.controls.power;
   const iconActive = on && !offline;
+
+  const openDetail = () => {
+    void invoke("show_main_window", { view: "devices", deviceId: device.id });
+    void invoke("hide_tray_popup");
+  };
+
   return (
     <div
       aria-disabled={offline || undefined}
@@ -50,20 +77,60 @@ function QuickDevice({ device }: { device: Device }) {
       >
         <DeviceIcon category={device.category} size={16} strokeWidth={1.75} />
       </span>
-      <span className="flex-1 text-[13px] font-medium">
-        {device.name}
-        {/* 色だけに頼らずオフラインの理由を小ラベルで併記する。 */}
-        {offline && <span className="ml-1.5 text-[11px] text-sd-warn">{t("offline")}</span>}
-      </span>
-      <Switch
-        size="sm"
-        checked={on}
-        disabled={offline}
-        aria-disabled={offline || undefined}
-        onCheckedChange={() => toggle(device.id)}
-        aria-label={device.name}
-        className={cn(offline && "pointer-events-none")}
-      />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px] font-medium">{device.name}</div>
+        {/* 状態サブラベルは status のみ（model は前置しない）。色だけに頼らず
+            オフラインの理由も併記する。導出は DeviceCard と同じ deviceStatusLabel。 */}
+        <div
+          className={cn(
+            "mt-0.5 truncate text-[11px]",
+            offline ? "text-sd-warn" : "text-muted-foreground",
+          )}
+        >
+          {deviceStatusLabel(device, t)}
+          {offline && ` · ${t("offline")}`}
+        </div>
+      </div>
+      {interaction === "detail" && (
+        <button
+          type="button"
+          aria-label={t("detailAria", { name: device.name })}
+          aria-disabled={offline || undefined}
+          onClick={openDetail}
+          className={cn(
+            "grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
+            offline && "pointer-events-none",
+          )}
+        >
+          <ChevronRight size={18} strokeWidth={2} />
+        </button>
+      )}
+      {interaction === "toggle" && (
+        <Switch
+          size="sm"
+          checked={on}
+          disabled={offline}
+          aria-disabled={offline || undefined}
+          onCheckedChange={() => toggle(device.id)}
+          aria-label={device.name}
+          className={cn(offline && "pointer-events-none")}
+        />
+      )}
+      {interaction === "press" && (
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-label={t("pressAria", { name: device.name })}
+          disabled={offline}
+          aria-disabled={offline || undefined}
+          onClick={() => press(device.id)}
+          className={cn("text-foreground", offline && "pointer-events-none")}
+        >
+          <Hand size={15} strokeWidth={2} />
+          {t("press")}
+        </Button>
+      )}
     </div>
   );
 }
@@ -153,10 +220,9 @@ export function TrayPopover() {
   // connection.status に依存すると起動時（保存前）の「未接続」が固定化してしまう。
   // device-store は focus のたびに再取得されるので、こちらが正確。
   const connected = loaded && !error;
-  // お気に入りのみ表示。デバイスは電源トグル可能なもの（カーテン等は詳細操作のため除外）。
-  const favoriteDevices = devices
-    .filter(hasPowerToggle)
-    .filter((d) => favoriteDeviceIds.has(d.id));
+  // お気に入りのみ表示。全種別を対象にし、操作系は QuickDevice が 3 分岐で出し分ける
+  // （カーテン・エアコン等は詳細「>」、pressMode の Bot は「押す」、電源のみは Switch）。
+  const favoriteDevices = devices.filter((d) => favoriteDeviceIds.has(d.id));
   const favoriteScenes = (scenes ?? []).filter((s) => favoriteSceneIds.has(s.id));
 
   const openMain = () => {

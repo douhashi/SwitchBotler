@@ -39,8 +39,8 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         // 左クリックはポップアップ表示に使うため、メニューは右クリックのみ。
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "open" => show_main(app, None),
-            "settings" => show_main(app, Some("settings")),
+            "open" => show_main(app, None, None),
+            "settings" => show_main(app, Some("settings"), None),
             "quit" => app.exit(0),
             _ => {}
         })
@@ -80,7 +80,7 @@ pub fn run() {
     tauri::Builder::default()
         // single-instance は最初に登録する（公式推奨）。2 重起動時は既存 main を前面化。
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            show_main(app, None);
+            show_main(app, None, None);
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
