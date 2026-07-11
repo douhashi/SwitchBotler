@@ -1,0 +1,38 @@
+[tools]
+node = "24"
+rust = "stable"
+lefthook = "latest"
+
+[tasks.setup]
+description = "依存インストールと git hooks の導入"
+run = [
+  "npm install",
+  "lefthook install",
+]
+
+[tasks.dev]
+description = "Tauri アプリを開発モードで起動"
+run = "npm run tauri dev"
+
+[tasks.typecheck]
+description = "フロントエンドの型チェック"
+run = "npx tsc --noEmit"
+
+[tasks.fmt]
+description = "Rust コードを整形"
+dir = "src-tauri"
+run = "cargo fmt"
+
+[tasks.fmt-check]
+description = "Rust の整形崩れを検査"
+dir = "src-tauri"
+run = "cargo fmt --check"
+
+[tasks.clippy]
+description = "Rust の静的解析"
+dir = "src-tauri"
+run = "cargo clippy --all-targets -- -D warnings"
+
+[tasks.lint]
+description = "全 lint（typecheck + fmt-check + clippy）"
+depends = ["typecheck", "fmt-check", "clippy"]

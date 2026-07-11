@@ -1,0 +1,17 @@
+# git hooks 定義。`mise run setup`（= lefthook install）で有効化される。
+# コマンドは mise run 経由で実行し、mise 管理のツールチェーン（cargo / node）を確実に使う。
+pre-commit:
+  parallel: true
+  commands:
+    rustfmt:
+      glob: "src-tauri/**/*.rs"
+      run: mise run fmt-check
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: mise run typecheck
+
+pre-push:
+  commands:
+    clippy:
+      glob: "src-tauri/**/*.rs"
+      run: mise run clippy
