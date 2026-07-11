@@ -1,6 +1,8 @@
 # 画面モックアップ
 
-SwitchBotler の UI モックアップ（視覚リファレンス）。デザイン方向は **Soft Depth**（進化系ソフトUI）。トークン/ルールの正典は [`design-system/MASTER.md`](../../design-system/MASTER.md)。
+SwitchBotler の UI モックアップ（視覚リファレンス）。デザイン方向は **Soft Depth**（進化系ソフトUI）。トークン/ルールの正典は [`design-system/MASTER.md`](../../design-system/MASTER.md)、ロゴ/ブランドは [`design-system/brand.md`](../../design-system/brand.md)。
+
+> ブランドマーク（蝶ネクタイ×トグル）とワードマーク（`Switch`＝前景色／`Botler`＝インディゴ）は確定版を反映済み。
 
 ## ファイル
 
