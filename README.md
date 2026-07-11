@@ -3,82 +3,84 @@
 </p>
 
 <p align="center">
-  SwitchBot API を使って、デスクトップから SwitchBot デバイスを操作するクロスプラットフォームアプリ
+  A cross-platform app to control your SwitchBot devices from your desktop using the SwitchBot API
 </p>
 
+<p align="center"><strong>English</strong> ・ <a href="README.ja.md">日本語</a></p>
+
 <p align="center">
-  <a href="https://github.com/douhashi/SwitchBotler/releases">⬇&nbsp;ダウンロード</a>&nbsp;·&nbsp;
-  <a href="#スクリーンショット">スクリーンショット</a>&nbsp;·&nbsp;
+  <a href="https://github.com/douhashi/SwitchBotler/releases">⬇&nbsp;Download</a>&nbsp;·&nbsp;
+  <a href="#screenshots">Screenshots</a>&nbsp;·&nbsp;
   <a href="LICENSE">MIT License</a>
 </p>
 
-**SwitchBotler**（スイッチボトラー）は、SwitchBot Cloud API v1.1 を利用して SwitchBot デバイスを Windows / macOS / Linux から操作するデスクトップアプリケーション。システムトレイ常駐 + グローバルショートカットで、PC の作業机から手を離さずにデバイスを操作できる軽量ユーティリティを目指す。
+**SwitchBotler** is a desktop application that controls SwitchBot devices on Windows / macOS / Linux via the SwitchBot Cloud API v1.1. With a system-tray-resident presence and global shortcuts, it aims to be a lightweight utility that lets you operate your devices without taking your hands off your desk.
 
-## 特徴
+## Features
 
-- 🖥️ **クロスプラットフォーム** — Windows / macOS / Linux で同じ UI
-- 🪶 **軽量** — Tauri v2 採用でバンドル 3〜10MB・低メモリ
-- 🔒 **安全** — Token / Secret は OS のセキュアストレージに保管し、署名生成・API 呼び出しは Rust 側で完結
-- 🎛️ **手元の即時操作** — トレイ常駐からデバイス操作・シーン実行
+- 🖥️ **Cross-platform** — The same UI on Windows / macOS / Linux
+- 🪶 **Lightweight** — Built with Tauri v2 for a 3–10 MB bundle and low memory usage
+- 🔒 **Secure** — Tokens / secrets are kept in the OS secure storage, and signature generation and API calls are handled entirely on the Rust side
+- 🎛️ **Instant control at hand** — Operate devices and run scenes from the tray
 
-## ダウンロード
+## Download
 
-[**最新版をダウンロード（Releases）**](https://github.com/douhashi/SwitchBotler/releases) — Windows / macOS / Linux 向けのインストーラを配布しています（現在は未署名）。
+[**Download the latest release (Releases)**](https://github.com/douhashi/SwitchBotler/releases) — Installers for Windows / macOS / Linux are distributed (currently unsigned).
 
-## スクリーンショット
+## Screenshots
 
 <p align="center">
-  <img src="docs/assets/screenshot-devices.png" alt="デバイス一覧（ライトテーマ）" width="820"><br>
-  <sub>デバイス一覧 — ライトテーマ</sub>
+  <img src="docs/assets/screenshot-devices.png" alt="Device list (light theme)" width="820"><br>
+  <sub>Device list — light theme</sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshot-sensors.png" alt="センサーステータス（ダークテーマ）" width="820"><br>
-  <sub>センサーステータス — ダークテーマ</sub>
+  <img src="docs/assets/screenshot-sensors.png" alt="Sensor status (dark theme)" width="820"><br>
+  <sub>Sensor status — dark theme</sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshot-tray.png" alt="トレイメニュー（お気に入り）" width="300"><br>
-  <sub>トレイメニュー（お気に入り）</sub>
+  <img src="docs/assets/screenshot-tray.png" alt="Tray menu (favorites)" width="300"><br>
+  <sub>Tray menu (favorites)</sub>
 </p>
 
-> 全 6 画面のモックアップは [`docs/mockup/index.en.html`](docs/mockup/index.en.html)（英語）/ [`docs/mockup/index.html`](docs/mockup/index.html)（日本語）をブラウザで開くと確認できます。
+> You can view mockups of all 6 screens by opening [`docs/mockup/index.en.html`](docs/mockup/index.en.html) (English) / [`docs/mockup/index.html`](docs/mockup/index.html) (Japanese) in your browser.
 
-## 技術構成
+## Tech Stack
 
-Tauri v2 + Rust（バックエンド） / React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand（フロントエンド）。
-詳細は [`docs/development/architecture.md`](docs/development/architecture.md) を参照。
+Tauri v2 + Rust (backend) / React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand (frontend).
+See [`docs/development/architecture.md`](docs/development/architecture.md) for details.
 
-## 開発環境のセットアップ
+## Development Setup
 
-ツールチェーンは [mise](https://mise.jdx.dev/) で管理する（Node.js 24 系 / Rust stable / lefthook）。
+The toolchain is managed with [mise](https://mise.jdx.dev/) (Node.js 24.x / Rust stable / lefthook).
 
 ```sh
-mise install     # Node.js・Rust・lefthook を導入
-mise run setup   # npm install + git hooks（lefthook）の有効化
-mise run dev     # Tauri アプリを開発モードで起動
+mise install     # Install Node.js, Rust, and lefthook
+mise run setup   # npm install + enable git hooks (lefthook)
+mise run dev     # Launch the Tauri app in development mode
 ```
 
-そのほかの主なタスク:
+Other main tasks:
 
-| タスク | 内容 |
+| Task | Description |
 |---|---|
-| `mise run lint` | 型チェック + Rust fmt-check + clippy を一括実行 |
-| `mise run typecheck` | フロントエンドの型チェック（`tsc --noEmit`） |
-| `mise run fmt` | Rust コードの整形 |
-| `mise run clippy` | Rust の静的解析 |
+| `mise run lint` | Run type check + Rust fmt-check + clippy together |
+| `mise run typecheck` | Frontend type check (`tsc --noEmit`) |
+| `mise run fmt` | Format Rust code |
+| `mise run clippy` | Rust static analysis |
 
-git hooks は commit 時に Rust 整形チェックと型チェック、push 時に clippy を実行する。
+Git hooks run the Rust format check and type check on commit, and clippy on push.
 
-## ドキュメント
+## Documentation
 
-- **ビジネス**: [プロジェクト概要](docs/business/overview.md) / [OSS・ライセンス・商標](docs/business/model.md)
-- **開発**: [アーキテクチャ](docs/development/architecture.md) / [SwitchBot API](docs/development/switchbot-api.md) / [セキュリティ方針](docs/development/security.md) / [ロードマップ](docs/development/roadmap.md) / [開発フィロソフィー](docs/development/philosophy.md)
+- **Business**: [Project Overview](docs/business/overview.md) / [OSS, License & Trademark](docs/business/model.md)
+- **Development**: [Architecture](docs/development/architecture.md) / [SwitchBot API](docs/development/switchbot-api.md) / [Security Policy](docs/development/security.md) / [Roadmap](docs/development/roadmap.md) / [Development Philosophy](docs/development/philosophy.md)
 
-## ライセンス
+## License
 
 [MIT](LICENSE)
 
-## ディスクレーマー
+## Disclaimer
 
 SwitchBotler is an unofficial, community-built application and is not affiliated with, endorsed by, or sponsored by SwitchBot (Wonderlabs, Inc.). "SwitchBot" is a trademark of its respective owner.
