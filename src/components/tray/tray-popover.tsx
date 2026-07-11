@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Layers, RefreshCw, Zap } from "lucide-react";
+import { Layers, RefreshCw } from "lucide-react";
 
+import { LogoMark, Wordmark } from "@/components/brand";
 import { DeviceIcon } from "@/components/device/device-icon";
 import { Switch } from "@/components/ui/switch";
 import { dataSource, type Device, hasPowerToggle, type Scene, useScenes } from "@/data";
@@ -143,9 +144,9 @@ export function TrayPopover() {
       <div className="flex items-center justify-between px-1.5 pb-3">
         <span className="flex items-center gap-2 text-[13px] font-bold">
           <span className="grid size-[22px] place-items-center rounded-[7px] bg-card text-sd-accent shadow-raise-sm">
-            <Zap size={13} strokeWidth={1.9} />
+            <LogoMark size={13} />
           </span>
-          SwitchBotler
+          <Wordmark />
         </span>
         <span className="inline-flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
           <span

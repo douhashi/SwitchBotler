@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Zap } from "lucide-react";
 
+import { LogoMark, Wordmark } from "@/components/brand";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
@@ -28,9 +28,9 @@ export function Sidebar() {
     <aside className="flex flex-col gap-1.5 p-3 pb-3.5">
       <div className="flex items-center gap-2.5 px-2 pt-2 pb-3 text-sm font-bold tracking-tight">
         <span className="grid size-7 place-items-center rounded-[9px] bg-card text-sd-accent shadow-raise-sm">
-          <Zap size={16} strokeWidth={1.75} />
+          <LogoMark size={16} />
         </span>
-        SwitchBotler
+        <Wordmark />
       </div>
 
       <nav className="flex flex-col gap-1" aria-label="メインナビゲーション">
