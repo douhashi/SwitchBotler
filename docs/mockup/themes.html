@@ -1,0 +1,294 @@
+<title>Soft Depth — Light & Dark</title>
+<style>
+  :root {
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+
+    --bg: #EEF0F5;
+    --panel: #FFFFFF;
+    --ink: #24293A;
+    --muted: #626B7E;
+    --faint: #8A92A3;
+    --line: #E2E5EC;
+    --line-soft: #EBEDF2;
+    --accent: #5457D8;
+    --accent-soft: #ECECFb;
+    --maxw: 1120px;
+    --r: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161C; --panel: #1C1F27; --ink: #E9EBF2; --muted: #9AA1B2; --faint: #6C7484;
+      --line: #292D38; --line-soft: #23262F; --accent: #9098F6; --accent-soft: #212430;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #EEF0F5; --panel: #FFFFFF; --ink: #24293A; --muted: #626B7E; --faint: #8A92A3;
+    --line: #E2E5EC; --line-soft: #EBEDF2; --accent: #5457D8; --accent-soft: #ECECFb;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C; --panel: #1C1F27; --ink: #E9EBF2; --muted: #9AA1B2; --faint: #6C7484;
+    --line: #292D38; --line-soft: #23262F; --accent: #9098F6; --accent-soft: #212430;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 56px 24px 80px; }
+
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 14px; }
+  h1 { font-size: clamp(27px, 4vw, 40px); line-height: 1.12; margin: 0 0 14px; letter-spacing: -0.02em; font-weight: 700; text-wrap: balance; }
+  .lede { font-size: 16.5px; color: var(--muted); max-width: 62ch; margin: 0 0 8px; }
+
+  .divider { height: 1px; background: var(--line); border: 0; margin: 40px 0; }
+
+  /* dual preview */
+  .stage { display: grid; grid-template-columns: 1fr; gap: 26px; }
+  @media (min-width: 840px) { .stage { grid-template-columns: 1fr 1fr; gap: 30px; } }
+
+  .frame { }
+  .frame-head { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; }
+  .frame-head .swi { width: 12px; height: 12px; border-radius: 50%; }
+  .frame-head .lt { background: #EDEFF6; box-shadow: inset 0 0 0 1px #d7dbe6; }
+  .frame-head .dk { background: #262A33; box-shadow: inset 0 0 0 1px #363b47; }
+  .frame-head h2 { font-size: 15px; margin: 0; font-weight: 650; }
+  .frame-head span { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+
+  .preview { border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 2px rgba(20,22,30,.05), 0 22px 44px -26px rgba(20,22,30,.4); }
+
+  /* ---- shared preview components (read --w-* tokens) ---- */
+  .pv { background: var(--w-bg); color: var(--w-ink); padding: 20px; font-family: var(--sans); display: flex; flex-direction: column; gap: 15px; }
+  .pv-top { display: flex; align-items: center; justify-content: space-between; }
+  .pv-brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 13.5px; letter-spacing: -.01em; }
+  .pv-brand .mark { width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; background: var(--w-surface); color: var(--w-accent); box-shadow: var(--w-raise-sm); }
+  .pv-brand .mark svg { width: 15px; height: 15px; }
+  .pv-conn { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--w-muted); }
+  .pv-conn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--w-accent2); box-shadow: 0 0 8px var(--w-accent2); }
+
+  .pv-card { background: var(--w-surface); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 13px; box-shadow: var(--w-raise); }
+  .pv-ico { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: var(--w-surface); color: var(--w-accent); box-shadow: var(--w-raise-sm); }
+  .pv-ico svg { width: 20px; height: 20px; }
+  .pv-card.off .pv-ico { color: var(--w-muted); box-shadow: var(--w-inset-sm); }
+  .pv-card .body { flex: 1; min-width: 0; }
+  .pv-card .name { font-weight: 600; font-size: 14px; }
+  .pv-card .sub { font-size: 11.5px; color: var(--w-muted); margin-top: 1px; }
+
+  .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--w-bg); position: relative; box-shadow: var(--w-inset-sm); transition: background .22s ease, box-shadow .22s ease; }
+  .tgl .knob { position: absolute; top: 50%; left: 3.5px; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--w-knob); box-shadow: var(--w-knob-shadow); transition: left .22s cubic-bezier(.34,1.56,.64,1); }
+  .tgl.on { background: var(--w-accent); box-shadow: var(--w-tgl-on-shadow); }
+  .tgl.on .knob { left: 22.5px; background: var(--w-knob-on); }
+
+  .pv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .pv-stat { background: var(--w-surface); border-radius: 15px; padding: 13px 14px; box-shadow: var(--w-raise); }
+  .pv-stat .lab { font-size: 11px; color: var(--w-muted); display: flex; align-items: center; gap: 5px; }
+  .pv-stat .lab svg { width: 13px; height: 13px; }
+  .pv-stat .big { font-family: var(--mono); font-size: 24px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 6px; line-height: 1; }
+  .pv-stat .big .u { font-size: 13px; color: var(--w-muted); font-weight: 500; margin-left: 2px; }
+  .pv-stat .spark { margin-top: 9px; display: block; width: 100%; height: 22px; }
+
+  .pv-field { }
+  .pv-field .flab { font-size: 11px; color: var(--w-muted); margin: 0 0 7px; display: block; }
+  .pv-field .inp { background: var(--w-bg); border-radius: 11px; box-shadow: var(--w-inset); padding: 11px 13px; display: flex; align-items: center; gap: 10px; }
+  .pv-field .dots { flex: 1; font-family: var(--mono); font-size: 15px; letter-spacing: 2px; color: var(--w-ink); }
+  .pv-field .eye { color: var(--w-muted); display: grid; place-items: center; cursor: pointer; }
+  .pv-field .eye svg { width: 16px; height: 16px; }
+
+  .pv-scenes { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .pv-scenes .lb { font-size: 11px; color: var(--w-muted); margin-right: 1px; }
+  .pv-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 550; padding: 7px 13px; border-radius: 999px; cursor: pointer; color: var(--w-ink); background: var(--w-surface); box-shadow: var(--w-raise-sm); }
+  .pv-chip svg { width: 13px; height: 13px; color: var(--w-accent); }
+  .pv-chip.primary { background: var(--w-accent); color: var(--w-on-accent); box-shadow: var(--w-tgl-on-shadow); }
+  .pv-chip.primary svg { color: var(--w-on-accent); }
+
+  /* ---------- LIGHT world ---------- */
+  .world-cl {
+    --w-bg: #E6E9F1; --w-surface: #EDEFF6; --w-ink: #2C3444; --w-muted: #7B8497; --w-accent: #6366F1; --w-accent2: #0E9E76; --w-on-accent: #FFFFFF;
+    --w-raise: 6px 6px 14px #CBD0DE, -6px -6px 14px #FEFEFF;
+    --w-raise-sm: 4px 4px 9px #CCD1DF, -4px -4px 9px #FEFEFF;
+    --w-inset: inset 3px 3px 7px #D0D5E3, inset -3px -3px 7px #FCFDFF;
+    --w-inset-sm: inset 2px 2px 5px #D0D5E3, inset -2px -2px 5px #FCFDFF;
+    --w-knob: #F7F8FC; --w-knob-on: #FFFFFF; --w-knob-shadow: 2px 2px 5px #C6CBD9, -1px -1px 3px #FFFFFF;
+    --w-tgl-on-shadow: 3px 3px 8px #C3C6EC, -2px -2px 6px #FFFFFF;
+  }
+  .world-cl .pv-chip.primary { --w-accent: #4F46E5; }
+
+  /* ---------- DARK world (highlights are lighter charcoal, NOT white) ---------- */
+  .world-cd {
+    --w-bg: #20232B; --w-surface: #262A33; --w-ink: #E7E9F0; --w-muted: #969CAB; --w-accent: #818CF8; --w-accent2: #34D399; --w-on-accent: #14162C;
+    --w-raise: 7px 7px 16px #131519, -6px -6px 14px #2F333E;
+    --w-raise-sm: 4px 4px 10px #131519, -4px -4px 9px #2F333E;
+    --w-inset: inset 3px 3px 8px #131519, inset -3px -3px 8px #2E323D;
+    --w-inset-sm: inset 2px 2px 5px #131519, inset -2px -2px 5px #2E323D;
+    --w-knob: #D6D9E3; --w-knob-on: #EEF0F6; --w-knob-shadow: 2px 2px 5px #121418, -1px -1px 3px #343945;
+    --w-tgl-on-shadow: 3px 3px 9px #131519, -3px -3px 8px #2F333E;
+  }
+
+  /* ---------- tokens table ---------- */
+  .tokens { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tokens th, .tokens td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line-soft); }
+  .tokens th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+  .tokens td.role { color: var(--muted); }
+  .tokens .sw { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; }
+  .tokens .chip { width: 15px; height: 15px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(128,128,128,.28); flex: none; }
+  .tokens-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+
+  .notes { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 6px; }
+  @media (min-width: 720px) { .notes { grid-template-columns: 1fr 1fr; } }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 13px; padding: 16px 18px; }
+  .note h4 { margin: 0 0 7px; font-size: 13.5px; display: flex; align-items: center; gap: 7px; }
+  .note h4 .d { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+  .note p { margin: 0; font-size: 13px; color: var(--muted); }
+  .note.warn h4 .d { background: #E0A100; }
+
+  .foot { margin-top: 40px; padding: 22px; border-radius: var(--r); background: var(--panel); border: 1px solid var(--line); }
+  .foot h3 { margin: 0 0 8px; font-size: 15px; }
+  .foot p { margin: 0; color: var(--muted); font-size: 14px; }
+  .foot .hint { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 5px; }
+
+  h3.sec { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--faint); margin: 0 0 16px; font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) { .tgl, .tgl .knob { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SwitchBotler · Soft Depth</p>
+    <h1>Soft Depth を、ライトとダークで</h1>
+    <p class="lede">選ばれた Soft Depth（ソフトUI／触感）方向を、両テーマで設計しました。ダークは色を反転せず、凸凹の手触りを保つために<strong>ハイライトを一段明るいチャコール・影を一段暗いチャコール</strong>に置き換え、地に青みを含ませてインディゴと同調させています。トグルやチップは押して手触りを確認できます。</p>
+  </header>
+
+  <hr class="divider" />
+
+  <h3 class="sec">同じ画面・両テーマ</h3>
+  <div class="stage">
+    <!-- LIGHT -->
+    <div class="frame">
+      <div class="frame-head"><span class="swi lt"></span><h2>Light</h2><span>ceramic</span></div>
+      <div class="preview">
+        <div class="pv world-cl">
+          <div class="pv-top">
+            <div class="pv-brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+            <span class="pv-conn"><span class="dot"></span>接続済み</span>
+          </div>
+          <div class="pv-card">
+            <span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
+            <div class="body"><div class="name">リビングの照明</div><div class="sub">Color Bulb · 点灯中</div></div>
+            <div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div>
+          </div>
+          <div class="pv-card off">
+            <span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 12 9.5 9.5"/><circle cx="12" cy="12" r="2"/><path d="M12 12l6.5-2.5"/><path d="M12 12l-1.5 6"/></svg></span>
+            <div class="body"><div class="name">サーキュレーター</div><div class="sub">Plug Mini · オフ</div></div>
+            <div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div>
+          </div>
+          <div class="pv-row">
+            <div class="pv-stat">
+              <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
+              <div class="big">24.5<span class="u">°C</span></div>
+              <svg class="spark" viewBox="0 0 96 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,16 L16,13 L32,14 L48,8 L64,11 L80,5 L96,7 V22 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,16 16,13 32,14 48,8 64,11 80,5 96,7" fill="none" stroke="#6366F1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="7" r="2.3" fill="#6366F1"/></svg>
+            </div>
+            <div class="pv-stat">
+              <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
+              <div class="big">52<span class="u">%</span></div>
+              <svg class="spark" viewBox="0 0 96 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,9 L16,11 L32,8 L48,12 L64,10 L80,13 L96,11 V22 H0 Z" fill="rgba(123,132,151,.12)"/><polyline points="0,9 16,11 32,8 48,12 64,10 80,13 96,11" fill="none" stroke="#7B8497" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="pv-field">
+            <span class="flab">トークン</span>
+            <div class="inp"><span class="dots">••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div>
+          </div>
+          <div class="pv-scenes">
+            <span class="lb">シーン</span>
+            <span class="pv-chip primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>おやすみ</span>
+            <span class="pv-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>帰宅</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="frame">
+      <div class="frame-head"><span class="swi dk"></span><h2>Dark</h2><span>graphite</span></div>
+      <div class="preview">
+        <div class="pv world-cd">
+          <div class="pv-top">
+            <div class="pv-brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+            <span class="pv-conn"><span class="dot"></span>接続済み</span>
+          </div>
+          <div class="pv-card">
+            <span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
+            <div class="body"><div class="name">リビングの照明</div><div class="sub">Color Bulb · 点灯中</div></div>
+            <div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div>
+          </div>
+          <div class="pv-card off">
+            <span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 12 9.5 9.5"/><circle cx="12" cy="12" r="2"/><path d="M12 12l6.5-2.5"/><path d="M12 12l-1.5 6"/></svg></span>
+            <div class="body"><div class="name">サーキュレーター</div><div class="sub">Plug Mini · オフ</div></div>
+            <div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div>
+          </div>
+          <div class="pv-row">
+            <div class="pv-stat">
+              <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
+              <div class="big">24.5<span class="u">°C</span></div>
+              <svg class="spark" viewBox="0 0 96 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,16 L16,13 L32,14 L48,8 L64,11 L80,5 L96,7 V22 H0 Z" fill="rgba(129,140,248,.16)"/><polyline points="0,16 16,13 32,14 48,8 64,11 80,5 96,7" fill="none" stroke="#818CF8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="7" r="2.3" fill="#818CF8"/></svg>
+            </div>
+            <div class="pv-stat">
+              <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
+              <div class="big">52<span class="u">%</span></div>
+              <svg class="spark" viewBox="0 0 96 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,9 L16,11 L32,8 L48,12 L64,10 L80,13 L96,11 V22 H0 Z" fill="rgba(150,156,171,.14)"/><polyline points="0,9 16,11 32,8 48,12 64,10 80,13 96,11" fill="none" stroke="#969CAB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="pv-field">
+            <span class="flab">トークン</span>
+            <div class="inp"><span class="dots">••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div>
+          </div>
+          <div class="pv-scenes">
+            <span class="lb">シーン</span>
+            <span class="pv-chip primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>おやすみ</span>
+            <span class="pv-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>帰宅</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <h3 class="sec">セマンティックトークン</h3>
+  <div class="tokens-wrap">
+    <table class="tokens">
+      <thead><tr><th>役割 / token</th><th>Light</th><th>Dark</th></tr></thead>
+      <tbody>
+        <tr><td class="role">背景 <code>--bg</code></td><td><span class="sw"><span class="chip" style="background:#E6E9F1"></span>#E6E9F1</span></td><td><span class="sw"><span class="chip" style="background:#20232B"></span>#20232B</span></td></tr>
+        <tr><td class="role">面 <code>--surface</code></td><td><span class="sw"><span class="chip" style="background:#EDEFF6"></span>#EDEFF6</span></td><td><span class="sw"><span class="chip" style="background:#262A33"></span>#262A33</span></td></tr>
+        <tr><td class="role">文字 <code>--ink</code></td><td><span class="sw"><span class="chip" style="background:#2C3444"></span>#2C3444</span></td><td><span class="sw"><span class="chip" style="background:#E7E9F0"></span>#E7E9F0</span></td></tr>
+        <tr><td class="role">補助文字 <code>--muted</code></td><td><span class="sw"><span class="chip" style="background:#7B8497"></span>#7B8497</span></td><td><span class="sw"><span class="chip" style="background:#969CAB"></span>#969CAB</span></td></tr>
+        <tr><td class="role">アクセント <code>--accent</code></td><td><span class="sw"><span class="chip" style="background:#6366F1"></span>#6366F1</span></td><td><span class="sw"><span class="chip" style="background:#818CF8"></span>#818CF8</span></td></tr>
+        <tr><td class="role">アクセント塗り+白字 <code>--accent-strong</code></td><td><span class="sw"><span class="chip" style="background:#4F46E5"></span>#4F46E5</span></td><td><span class="sw"><span class="chip" style="background:#818CF8"></span>#818CF8 <span style="color:var(--faint)">(暗字)</span></span></td></tr>
+        <tr><td class="role">状態:良 <code>--accent2</code></td><td><span class="sw"><span class="chip" style="background:#0E9E76"></span>#0E9E76</span></td><td><span class="sw"><span class="chip" style="background:#34D399"></span>#34D399</span></td></tr>
+        <tr><td class="role">凸 影(暗) / 影(明)</td><td><span class="sw"><span class="chip" style="background:#CBD0DE"></span>#CBD0DE / <span class="chip" style="background:#FEFEFF"></span>#FEFEFF</span></td><td><span class="sw"><span class="chip" style="background:#131519"></span>#131519 / <span class="chip" style="background:#2F333E"></span>#2F333E</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes" style="margin-top:22px">
+    <div class="note">
+      <h4><span class="d"></span>ダークの作り方</h4>
+      <p>地・面・文字だけを差し替え、凸凹の陰影は「暗影＝より暗いチャコール／明影＝より明るいチャコール」に。白いハイライトは使わない。青みを残した graphite でインディゴが浮く。</p>
+    </div>
+    <div class="note warn">
+      <h4><span class="d"></span>ソフトUIの注意点</h4>
+      <p>陰影頼みは輪郭が弱くなりがち。文字・アイコンは両テーマで <strong>4.5:1 以上</strong>を確保し、状態はアクセント色＋動きでも伝える。キーボードフォーカスは影ではなく明示的なリングで出す。</p>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <h3>次のステップ</h3>
+    <p>この配色・影トークンで良ければ <span class="hint">design-system/MASTER.md</span> に確定し、6画面（認証設定・デバイス一覧・デバイス操作・センサーステータス・シーン実行・トレイメニュー）のモックアップに進みます。アクセント（インディゴ）や角丸の強さなど、微調整の希望があれば先に反映します。</p>
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('.tgl').forEach(function (t) {
+    function flip() { var on = t.classList.toggle('on'); t.setAttribute('aria-checked', on ? 'true' : 'false'); }
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  });
+</script>

@@ -10,8 +10,12 @@
 | バックエンド | **Rust** | 署名生成と API 呼び出しをネイティブ側で完結（CORS 回避・秘匿情報保護） |
 | フロントエンド | **React 19 + TypeScript** | エコシステムが厚く、既存スキルと親和 |
 | ビルド | **Vite** | Tauri 標準・高速 HMR |
-| スタイリング | **Tailwind CSS v4** | 素早く UI 構築 |
+| スタイリング | **Tailwind CSS v4** | 素早く UI 構築（`@tailwindcss/vite` プラグイン方式） |
+| UIコンポーネント | **shadcn/ui**（Radix UI） | アクセシビリティ・キーボード操作を担保。見た目は Soft Depth トークンで上書き |
+| アイコン | **Lucide**（`lucide-react`） | 一貫したアイコンパック。手書き SVG・絵文字を使わない |
 | 状態管理 | **Zustand** | 軽量・ボイラープレート少 |
+
+> デザイン方針の詳細は [`design-system/MASTER.md`](../../design-system/MASTER.md)、画面モックアップは [`docs/mockup/`](../mockup/) を参照。
 
 ## アーキテクチャ方針
 

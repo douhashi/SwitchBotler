@@ -1,0 +1,480 @@
+<title>SwitchBotler — 画面モックアップ</title>
+<style>
+  :root {
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+
+    /* Soft Depth — LIGHT (default) */
+    --bg: #E6E9F1; --surface: #EDEFF6; --ink: #2C3444; --muted: #7B8497;
+    --accent: #6366F1; --accent-strong: #4F46E5; --on-accent: #FFFFFF;
+    --ok: #0E9E76; --warn: #C77700; --danger: #DC2626;
+    --raise: 4px 4px 10px #D4D8E2, -4px -4px 10px #F6F8FC;
+    --raise-sm: 3px 3px 7px #D6DAE3, -3px -3px 7px #F6F8FC;
+    --inset: inset 2px 2px 5px #D6DAE3, inset -2px -2px 5px #F7F9FD;
+    --inset-sm: inset 1px 1px 3px #D6DAE3, inset -1px -1px 3px #F7F9FD;
+    --knob: #F7F8FC; --knob-shadow: 1px 1px 3px #CDD1DB, -1px -1px 2px #FBFCFE;
+    --tgl-on-shadow: 2px 2px 6px #C9CCEA, -2px -2px 6px #F6F8FC;
+    --hair: rgba(120,130,150,.14);
+
+    /* page chrome */
+    --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+      --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+      --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+      --raise: 5px 5px 12px #191C23, -4px -4px 11px #2C303A;
+      --raise-sm: 3px 3px 8px #191C23, -3px -3px 7px #2C303A;
+      --inset: inset 2px 2px 6px #191C23, inset -2px -2px 6px #2C303A;
+      --inset-sm: inset 1px 1px 4px #191C23, inset -1px -1px 4px #2C303A;
+      --knob: #D6D9E3; --knob-shadow: 1px 1px 4px #16181E, -1px -1px 2px #30343E;
+      --tgl-on-shadow: 2px 2px 8px #191C23, -2px -2px 7px #2C303A;
+      --hair: rgba(200,210,230,.08);
+      --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #E6E9F1; --surface: #EDEFF6; --ink: #2C3444; --muted: #7B8497;
+    --accent: #6366F1; --accent-strong: #4F46E5; --on-accent: #FFFFFF;
+    --ok: #0E9E76; --warn: #C77700; --danger: #DC2626;
+    --raise: 4px 4px 10px #D4D8E2, -4px -4px 10px #F6F8FC;
+    --raise-sm: 3px 3px 7px #D6DAE3, -3px -3px 7px #F6F8FC;
+    --inset: inset 2px 2px 5px #D6DAE3, inset -2px -2px 5px #F7F9FD;
+    --inset-sm: inset 1px 1px 3px #D6DAE3, inset -1px -1px 3px #F7F9FD;
+    --knob: #F7F8FC; --knob-shadow: 1px 1px 3px #CDD1DB, -1px -1px 2px #FBFCFE;
+    --tgl-on-shadow: 2px 2px 6px #C9CCEA, -2px -2px 6px #F6F8FC; --hair: rgba(120,130,150,.14);
+    --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
+  }
+  :root[data-theme="dark"] {
+    --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+    --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+    --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+    --raise: 7px 7px 16px #131519, -6px -6px 14px #2F333E;
+    --raise-sm: 4px 4px 10px #131519, -4px -4px 9px #2F333E;
+    --inset: inset 3px 3px 8px #131519, inset -3px -3px 8px #2E323D;
+    --inset-sm: inset 2px 2px 5px #131519, inset -2px -2px 5px #2E323D;
+    --knob: #D6D9E3; --knob-shadow: 2px 2px 5px #121418, -1px -1px 3px #343945;
+    --tgl-on-shadow: 2px 2px 8px #191C23, -2px -2px 7px #2C303A; --hair: rgba(200,210,230,.08);
+    --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); color: var(--page-ink); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 52px 22px 90px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 12px; }
+  h1 { font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
+  .lede { font-size: 16px; color: var(--page-muted); max-width: 60ch; margin: 0; }
+  .cap { display: flex; align-items: baseline; gap: 10px; margin: 46px 0 14px; }
+  .cap .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .cap h2 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+  .cap .d { font-size: 13px; color: var(--page-muted); }
+
+  /* window frame */
+  .win-scroll { overflow-x: auto; border-radius: 22px; }
+  .win { border-radius: 22px; background: var(--bg); box-shadow: 0 1px 2px rgba(20,22,30,.06), 0 30px 60px -34px rgba(20,22,30,.5); overflow: hidden; min-width: 620px; }
+  .bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--bg); }
+  .bar .dots { display: flex; gap: 7px; }
+  .bar .dots i { width: 11px; height: 11px; border-radius: 50%; box-shadow: var(--inset-sm); display: block; }
+  .bar .t { font-size: 12px; color: var(--muted); margin-left: 6px; font-weight: 500; }
+
+  .app { display: grid; grid-template-columns: 194px 1fr; min-height: 496px; }
+  .app.tall { min-height: 540px; }
+
+  /* sidebar */
+  .side { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; padding: 8px 8px 12px; letter-spacing: -.01em; }
+  .brand .mk { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
+  .brand .mk svg { width: 16px; height: 16px; }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav a { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 11px; color: var(--muted); font-size: 13.5px; font-weight: 550; cursor: pointer; text-decoration: none; }
+  .nav a svg { width: 18px; height: 18px; flex: none; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.on { color: var(--accent); box-shadow: var(--inset-sm); background: var(--bg); }
+  .side .sp { flex: 1; }
+  .side .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 10px 11px; border-radius: 11px; box-shadow: var(--inset-sm); }
+  .side .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+
+  /* main */
+  .main { padding: 20px 22px 24px; background: var(--bg); overflow: hidden; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .head h3 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  .head .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .head .backrow { display: flex; align-items: center; gap: 10px; }
+  .iconbtn { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--ink); background: var(--surface); box-shadow: var(--raise-sm); cursor: pointer; flex: none; }
+  .iconbtn svg { width: 17px; height: 17px; }
+
+  /* cards / devices */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .device { background: var(--surface); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; box-shadow: var(--raise); }
+  .device .ico { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
+  .device .ico svg { width: 20px; height: 20px; }
+  .device.off .ico { color: var(--muted); box-shadow: var(--inset-sm); }
+  .device .body { flex: 1; min-width: 0; }
+  .device .name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .device .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .device.link { cursor: pointer; }
+
+  .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--bg); position: relative; box-shadow: var(--inset-sm); transition: background .22s ease; }
+  .tgl .knob { position: absolute; top: 50%; left: 3.5px; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--knob); box-shadow: var(--knob-shadow); transition: left .22s cubic-bezier(.34,1.56,.64,1); }
+  .tgl.on { background: var(--accent); box-shadow: var(--tgl-on-shadow); }
+  .tgl.on .knob { left: 22.5px; }
+  .chev { color: var(--muted); display: grid; place-items: center; }
+  .chev svg { width: 18px; height: 18px; }
+
+  /* stats */
+  .stat { background: var(--surface); border-radius: 15px; padding: 14px 15px; box-shadow: var(--raise); }
+  .stat .lab { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .stat .lab svg { width: 14px; height: 14px; }
+  .stat .big { font-family: var(--mono); font-size: 27px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 7px; line-height: 1; }
+  .stat .big .u { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .stat .spark { margin-top: 10px; display: block; width: 100%; height: 26px; }
+  .bar-meter { margin-top: 12px; height: 9px; border-radius: 999px; box-shadow: var(--inset-sm); overflow: hidden; }
+  .bar-meter i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; border: 0; color: var(--ink); background: var(--surface); box-shadow: var(--raise-sm); font-family: inherit; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.primary { background: var(--accent-strong); color: var(--on-accent); box-shadow: var(--tgl-on-shadow); }
+  .btn.primary svg { color: var(--on-accent); }
+  .btn.danger { color: var(--danger); }
+  .btn.sm { padding: 8px 13px; font-size: 12.5px; }
+  .btn:active { box-shadow: var(--inset-sm); }
+
+  /* fields */
+  .field { margin-bottom: 15px; }
+  .field .flab { font-size: 12px; color: var(--ink); font-weight: 550; margin: 0 0 8px; display: block; }
+  .field .inp { background: var(--bg); border-radius: 12px; box-shadow: var(--inset); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .field .inp .val { flex: 1; font-family: var(--mono); font-size: 14px; letter-spacing: 1.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .field .inp .val.ph { color: var(--muted); letter-spacing: 0; font-family: var(--sans); }
+  .field .eye { color: var(--muted); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .field .eye svg { width: 17px; height: 17px; }
+  .field .help { font-size: 11.5px; color: var(--muted); margin: 8px 2px 0; }
+
+  .note-line { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); padding: 11px 13px; border-radius: 12px; box-shadow: var(--inset-sm); margin: 4px 0 20px; }
+  .note-line svg { width: 15px; height: 15px; color: var(--ok); flex: none; }
+
+  .banner { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: 15px; padding: 14px 16px; box-shadow: var(--raise); margin-bottom: 20px; }
+  .banner .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; box-shadow: var(--raise-sm); color: var(--ok); flex: none; }
+  .banner .ic svg { width: 19px; height: 19px; }
+  .banner .tt { font-weight: 650; font-size: 14px; }
+  .banner .ss { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  /* slider */
+  .ctrl { background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--raise); margin-bottom: 13px; }
+  .ctrl .ct { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .ctrl .ct b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+  .slider { position: relative; height: 14px; border-radius: 999px; box-shadow: var(--inset); }
+  .slider .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); }
+  .slider .knob { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--knob); box-shadow: var(--knob-shadow); }
+  .swrow { display: flex; gap: 10px; }
+  .sw { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; box-shadow: var(--raise-sm); }
+  .sw.on { box-shadow: var(--raise-sm), 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+  /* device hero */
+  .hero { display: flex; align-items: center; gap: 15px; background: var(--surface); border-radius: 18px; padding: 18px; box-shadow: var(--raise); margin-bottom: 15px; }
+  .hero .hic { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .hero .hic svg { width: 28px; height: 28px; }
+  .hero .nm { font-size: 17px; font-weight: 700; }
+  .hero .st { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  /* scene rows */
+  .scene { display: flex; align-items: center; gap: 13px; background: var(--surface); border-radius: 15px; padding: 13px 15px; box-shadow: var(--raise); margin-bottom: 12px; }
+  .scene .ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .scene .ico svg { width: 19px; height: 19px; }
+  .scene .body { flex: 1; min-width: 0; }
+  .scene .nm { font-weight: 600; font-size: 14px; }
+  .scene .ds { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* tray popover */
+  .tray-stage { display: flex; justify-content: center; padding: 30px; background: var(--page-bg); border-radius: 18px; box-shadow: var(--inset-sm); }
+  .tray { width: 306px; background: var(--bg); border-radius: 18px; padding: 14px; box-shadow: 0 1px 2px rgba(20,22,30,.1), 0 24px 48px -20px rgba(20,22,30,.55); }
+  .tray .th { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
+  .tray .th .b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
+  .tray .th .b .mk { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
+  .tray .th .b .mk svg { width: 13px; height: 13px; }
+  .tray .th .cn { font-size: 10.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+  .tray .th .cn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .tray .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; }
+  .tray .qrow:hover { box-shadow: var(--inset-sm); }
+  .tray .qrow .qi { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .tray .qrow.off .qi { color: var(--muted); box-shadow: var(--inset-sm); }
+  .tray .qrow .qi svg { width: 16px; height: 16px; }
+  .tray .qrow .qn { flex: 1; font-size: 13px; font-weight: 550; }
+  .tray .tgl.sm { width: 38px; height: 22px; }
+  .tray .tgl.sm .knob { width: 16px; height: 16px; left: 3px; }
+  .tray .tgl.sm.on .knob { left: 19px; }
+  .tray .sep { height: 1px; background: var(--hair); margin: 8px 6px; }
+  .tray .sc { display: flex; gap: 8px; padding: 4px 4px 8px; }
+  .tray .sc .chip { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; font-weight: 600; padding: 8px; border-radius: 10px; box-shadow: var(--raise-sm); cursor: pointer; }
+  .tray .sc .chip svg { width: 13px; height: 13px; color: var(--accent); }
+  .tray .foot { display: flex; gap: 8px; padding: 4px; }
+  .tray .foot a { flex: 1; text-align: center; font-size: 11.5px; color: var(--muted); padding: 8px; border-radius: 9px; cursor: pointer; text-decoration: none; }
+  .tray .foot a:hover { box-shadow: var(--inset-sm); color: var(--ink); }
+
+  .themehint { font-size: 12.5px; color: var(--page-muted); margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; box-shadow: var(--inset-sm); }
+  .themehint svg { width: 15px; height: 15px; color: var(--accent); }
+
+  .foot-box { margin-top: 50px; padding: 22px; border-radius: 16px; box-shadow: var(--raise); background: var(--bg); }
+  .foot-box h3 { margin: 0 0 8px; font-size: 15px; }
+  .foot-box p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+  /* in-page theme toggle */
+  .theme-btn { position: fixed; top: 16px; right: 16px; z-index: 100; display: inline-flex; align-items: center; gap: 8px;
+    font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--surface);
+    border: 0; padding: 9px 14px; border-radius: 999px; cursor: pointer; box-shadow: var(--raise-sm); }
+  .theme-btn:active { box-shadow: var(--inset-sm); }
+  .theme-btn svg { width: 16px; height: 16px; color: var(--accent); }
+  .theme-btn .moon { display: none; }
+  :root[data-theme="dark"] .theme-btn .moon { display: block; }
+  :root[data-theme="dark"] .theme-btn .sun { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-btn .moon { display: block; }
+    :root:not([data-theme="light"]) .theme-btn .sun { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { .tgl, .tgl .knob { transition: none; } }
+</style>
+
+<button class="theme-btn" id="themeBtn" type="button" aria-label="ライト / ダーク切替">
+  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>
+  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+  <span id="themeLabel">テーマ</span>
+</button>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SwitchBotler · Mockups</p>
+    <h1>Soft Depth で組んだ 6 画面</h1>
+    <p class="lede">確定した Soft Depth のデザインシステム（<code>design-system/MASTER.md</code>）で、主要 6 画面を組みました。トグル・チップは押して手触りを確認できます。</p>
+    <div class="themehint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg>右上の「テーマ」ボタンでライト/ダークを切り替えられます（全画面が追従）。</div>
+  </header>
+
+  <!-- 01 デバイス一覧 -->
+  <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <nav class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>シーン</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>設定</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>接続済み · 8台</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>デバイス</h3><div class="sub">リビング・寝室ほか</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>更新</button></div>
+        <div class="grid2">
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">リビングの照明</div><div class="sub">Color Bulb · 点灯中</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><div class="body"><div class="name">サーキュレーター</div><div class="sub">Plug Mini · オフ</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18M12 3c3 4 3 14 0 18"/></svg></span><div class="body"><div class="name">寝室のカーテン</div><div class="sub">Curtain 3 · 80% 開</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">加湿器</div><div class="sub">Humidifier · オフ</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="加湿器"><span class="knob"></span></div></div>
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">玄関の照明</div><div class="sub">Bulb · 点灯中</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">玄関の鍵</div><div class="sub">Lock Pro · 施錠</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 02 デバイス操作 -->
+  <div class="cap"><span class="n">02</span><h2>デバイス操作</h2><span class="d">個別デバイスの詳細</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <nav class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>シーン</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>設定</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>接続済み · 8台</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div class="backrow"><span class="iconbtn" role="button" tabindex="0" aria-label="戻る"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></span><div><h3>リビングの照明</h3><div class="sub">Color Bulb · リビング</div></div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="電源"><span class="knob"></span></div></div>
+        <div class="hero">
+          <span class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
+          <div><div class="nm">点灯中</div><div class="st">明るさ 72% · 電球色 3000K</div></div>
+        </div>
+        <div class="ctrl">
+          <div class="ct"><span>明るさ</span><b>72%</b></div>
+          <div class="slider"><div class="fill" style="width:72%"></div><div class="knob" style="left:72%"></div></div>
+        </div>
+        <div class="ctrl">
+          <div class="ct" style="margin-bottom:14px"><span>カラー</span></div>
+          <div class="swrow">
+            <span class="sw on" style="background:#F6D488" aria-label="電球色"></span>
+            <span class="sw" style="background:#FDF6E3" aria-label="昼白色"></span>
+            <span class="sw" style="background:#8FB7FF" aria-label="昼光色"></span>
+            <span class="sw" style="background:#F58A8A" aria-label="レッド"></span>
+            <span class="sw" style="background:#8CE0B0" aria-label="グリーン"></span>
+            <span class="sw" style="background:#B79CF0" aria-label="パープル"></span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 03 センサーステータス -->
+  <div class="cap"><span class="n">03</span><h2>センサーステータス</h2><span class="d">温湿度・空気・電池</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>シーン</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>設定</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>最終更新 21:04</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>センサー</h3><div class="sub">リビングの温湿度計</div></div></div>
+        <div class="grid2">
+          <div class="stat">
+            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
+            <div class="big">24.5<span class="u">°C</span></div>
+            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,19 L20,16 L40,17 L60,10 L80,13 L100,6 L120,8 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,19 20,16 40,17 60,10 80,13 100,6 120,8" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="8" r="2.6" fill="var(--accent)"/></svg>
+          </div>
+          <div class="stat">
+            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
+            <div class="big">52<span class="u">%</span></div>
+            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,11 L20,13 L40,10 L60,14 L80,12 L100,15 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,11 20,13 40,10 60,14 80,12 100,15 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="stat">
+            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-2.5"/></svg>CO₂</div>
+            <div class="big">620<span class="u">ppm</span></div>
+            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,14 L20,15 L40,12 L60,13 L80,9 L100,11 L120,10 V26 H0 Z" fill="rgba(14,158,118,.13)"/><polyline points="0,14 20,15 40,12 60,13 80,9 100,11 120,10" fill="none" stroke="var(--ok)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="stat">
+            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>バッテリー</div>
+            <div class="big">88<span class="u">%</span></div>
+            <div class="bar-meter"><i style="width:88%"></i></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 04 シーン実行 -->
+  <div class="cap"><span class="n">04</span><h2>シーン実行</h2><span class="d">ワンクリックで実行</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>シーン</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>設定</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>接続済み · 4シーン</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>シーン</h3><div class="sub">SwitchBot アプリで作成</div></div></div>
+        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div class="body"><div class="nm">おやすみ</div><div class="ds">照明オフ・カーテン閉・加湿器オン</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
+        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><div class="body"><div class="nm">帰宅</div><div class="ds">玄関・リビング点灯・エアコンオン</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
+        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span><div class="body"><div class="nm">おはよう</div><div class="ds">カーテン開・照明徐々に点灯</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
+        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">映画モード</div><div class="ds">照明を暗く・カーテン閉</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 05 認証設定 -->
+  <div class="cap"><span class="n">05</span><h2>認証設定</h2><span class="d">Token / Secret とセキュア保管</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="app tall">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>シーン</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>設定</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>接続済み</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>認証設定</h3><div class="sub">SwitchBot API の認証情報</div></div></div>
+        <div class="banner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><div class="tt">接続済み</div><div class="ss">最終確認 21:04 · レート残 9,860 / 10,000</div></div></div>
+        <div class="field"><span class="flab">トークン</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div></div>
+        <div class="field"><span class="flab">シークレット</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div><p class="help">SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション で発行できます。</p></div>
+        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。</div>
+        <div style="display:flex; gap:10px">
+          <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>接続をテスト</button>
+          <button class="btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>接続を解除</button>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 06 トレイメニュー -->
+  <div class="cap"><span class="n">06</span><h2>トレイメニュー</h2><span class="d">システムトレイのポップオーバー</span></div>
+  <div class="tray-stage">
+    <div class="tray">
+      <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</span><span class="cn"><span class="dot"></span>接続済み</span></div>
+      <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">リビングの照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
+      <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><span class="qn">サーキュレーター</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></div>
+      <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18"/></svg></span><span class="qn">寝室のカーテン</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="寝室のカーテン"><span class="knob"></span></div></div>
+      <div class="sep"></div>
+      <div class="sc">
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>おやすみ</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>帰宅</span>
+      </div>
+      <div class="sep"></div>
+      <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
+    </div>
+  </div>
+
+  <div class="foot-box">
+    <h3>この後の進め方</h3>
+    <p>この 6 画面で方向性が固まれば、React + Tailwind のコンポーネントとして実装に落とします（トークンは <code>MASTER.md</code> をそのまま Tailwind theme に展開）。各画面で調整したい点（余白・情報量・アイコン・並び順など）があれば、画面単位で直します。</p>
+  </div>
+</div>
+
+<script>
+  // in-page light/dark toggle — stamps data-theme on <html>
+  (function () {
+    var root = document.documentElement;
+    var label = document.getElementById('themeLabel');
+    function effective() {
+      var attr = root.getAttribute('data-theme');
+      if (attr) return attr;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function sync() { label.textContent = effective() === 'dark' ? 'ダーク' : 'ライト'; }
+    document.getElementById('themeBtn').addEventListener('click', function () {
+      root.setAttribute('data-theme', effective() === 'dark' ? 'light' : 'dark');
+      sync();
+    });
+    sync();
+  })();
+
+  document.querySelectorAll('.tgl').forEach(function (t) {
+    function flip() { var on = t.classList.toggle('on'); t.setAttribute('aria-checked', on ? 'true' : 'false'); }
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  });
+  // color swatch demo
+  document.querySelectorAll('.swrow').forEach(function (row) {
+    row.querySelectorAll('.sw').forEach(function (s) {
+      s.addEventListener('click', function () {
+        row.querySelectorAll('.sw').forEach(function (x) { x.classList.remove('on'); });
+        s.classList.add('on');
+      });
+    });
+  });
+</script>
