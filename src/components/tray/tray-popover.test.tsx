@@ -22,6 +22,33 @@ function plug(n: number): Device {
   };
 }
 
+const curtain: Device = {
+  id: "bedroom-curtain",
+  name: "寝室のカーテン",
+  model: "Curtain3",
+  category: "curtain",
+  supported: true,
+  controls: { power: true, position: 80 },
+};
+
+const aircon: Device = {
+  id: "living-aircon",
+  name: "リビングのエアコン",
+  model: "Air Conditioner",
+  category: "aircon",
+  supported: true,
+  controls: { power: true, temperature: 26, mode: "cool", fanSpeed: "auto" },
+};
+
+const pressBot: Device = {
+  id: "curtain-bot",
+  name: "カーテンの Bot",
+  model: "Bot",
+  category: "bot",
+  supported: true,
+  controls: { power: false, botMode: "press" },
+};
+
 describe("TrayPopover", () => {
   beforeEach(() => {
     invoke.mockReset();
@@ -106,6 +133,75 @@ describe("TrayPopover", () => {
       expect(invoke).toHaveBeenCalledWith("send_command", {
         id: "plug-5",
         command: "turnOn",
+        parameter: "default",
+        commandType: "command",
+      }),
+    );
+  });
+
+  it("detail 型デバイス（カーテン）は電源トグルを出さず状態ラベルと「>」を出す", async () => {
+    useDeviceStore.setState({ devices: [curtain], error: null });
+    useFavoritesStore.setState({
+      deviceIds: new Set(["bedroom-curtain"]),
+      sceneIds: new Set(),
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    // detail 型はトグルを出さない。
+    await waitFor(() => expect(screen.queryAllByRole("switch")).toHaveLength(0));
+    // 状態サブラベル（status のみ、model 前置なし）。
+    expect(screen.getByText("80% 開")).toBeInTheDocument();
+    // 右端の「>」ボタンが出る。
+    expect(
+      screen.getByRole("button", { name: "寝室のカーテン の詳細" }),
+    ).toBeInTheDocument();
+  });
+
+  it("detail 型の「>」でメイン前面化 + 該当デバイス詳細遷移を invoke する", async () => {
+    const user = userEvent.setup();
+    useDeviceStore.setState({ devices: [aircon], error: null });
+    useFavoritesStore.setState({
+      deviceIds: new Set(["living-aircon"]),
+      sceneIds: new Set(),
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    // 運転中エアコンは「冷房 26℃」を状態ラベルに出す。
+    expect(await screen.findByText("冷房 26℃")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "リビングのエアコン の詳細" }));
+
+    expect(invoke).toHaveBeenCalledWith("show_main_window", {
+      view: "devices",
+      deviceId: "living-aircon",
+    });
+    expect(invoke).toHaveBeenCalledWith("hide_tray_popup");
+  });
+
+  it("press 型デバイス（pressMode の Bot）は「押す」ボタンで press コマンドを送る", async () => {
+    const user = userEvent.setup();
+    useDeviceStore.setState({ devices: [pressBot], error: null });
+    useFavoritesStore.setState({
+      deviceIds: new Set(["curtain-bot"]),
+      sceneIds: new Set(),
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    // press 型はトグルを出さない。
+    await waitFor(() => expect(screen.queryAllByRole("switch")).toHaveLength(0));
+
+    await user.click(screen.getByRole("button", { name: "カーテンの Bot を押す" }));
+
+    await waitFor(() =>
+      expect(invoke).toHaveBeenCalledWith("send_command", {
+        id: "curtain-bot",
+        command: "press",
         parameter: "default",
         commandType: "command",
       }),

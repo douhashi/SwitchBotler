@@ -136,26 +136,41 @@ pub fn quit(app: AppHandle) {
     app.exit(0);
 }
 
+/// "navigate" イベントの payload。フロントの `navigate(view, deviceId)` に 1:1 対応する。
+/// `device_id` は詳細画面へ遷移するデバイス id（無ければ画面遷移のみ）。
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NavigatePayload {
+    view: String,
+    device_id: Option<String>,
+}
+
 /// メインウィンドウを表示・前面化し、必要なら画面遷移イベントを emit する。
-/// `view` があれば "navigate"、表示時は常に "main-shown" を emit する
+/// `view` があれば "navigate"（`device_id` で対象デバイス詳細まで指定可）、
+/// 表示時は常に "main-shown" を emit する
 /// （フロントは navigate で画面遷移、main-shown で device-store を reload。決定4）。
 /// トレイメニュー / single-instance / フロント invoke の共通実装（SSoT）。
-pub fn show_main(app: &AppHandle, view: Option<&str>) {
+pub fn show_main(app: &AppHandle, view: Option<&str>, device_id: Option<String>) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();
         if let Some(view) = view {
-            let _ = app.emit_to("main", "navigate", view);
+            let payload = NavigatePayload {
+                view: view.to_string(),
+                device_id,
+            };
+            let _ = app.emit_to("main", "navigate", payload);
         }
         let _ = app.emit_to("main", "main-shown", ());
     }
 }
 
 /// フロント（トレイポップアップ）からメインウィンドウを開くコマンド。
+/// `device_id` を渡すと該当デバイスの詳細画面まで遷移する（トレイの detail 型「>」用）。
 #[tauri::command]
-pub fn show_main_window(app: AppHandle, view: Option<String>) {
-    show_main(&app, view.as_deref());
+pub fn show_main_window(app: AppHandle, view: Option<String>, device_id: Option<String>) {
+    show_main(&app, view.as_deref(), device_id);
 }
 
 /// トレイのポップアップウィンドウを隠す。
@@ -195,4 +210,35 @@ pub fn set_tray_menu_labels(
         .map_err(|e| e.to_string())?;
     state.quit.set_text(quit).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `navigate` イベント payload はフロント契約（`{ view, deviceId }`）と一致する
+    /// camelCase で emit される（`device_id` → `deviceId`。V2 のシリアライズ契約）。
+    #[test]
+    fn navigate_payload_serializes_device_id_as_camel_case() {
+        let payload = NavigatePayload {
+            view: "devices".into(),
+            device_id: Some("living-aircon".into()),
+        };
+        let json = serde_json::to_value(&payload).unwrap();
+        assert_eq!(json["view"], "devices");
+        assert_eq!(json["deviceId"], "living-aircon");
+        assert!(json.get("device_id").is_none());
+    }
+
+    /// `device_id` 無し（画面遷移のみ）は `deviceId: null` として出力される。
+    #[test]
+    fn navigate_payload_serializes_missing_device_id_as_null() {
+        let payload = NavigatePayload {
+            view: "settings".into(),
+            device_id: None,
+        };
+        let json = serde_json::to_value(&payload).unwrap();
+        assert_eq!(json["view"], "settings");
+        assert!(json["deviceId"].is_null());
+    }
 }
