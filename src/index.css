@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ダークモードは .dark クラス方式（shadcn 標準）。html に .dark を付与すると配下へ適用される。 */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Soft Depth デザイントークン。
+ * SSoT は design-system/MASTER.md と docs/mockup/index.html。
+ * ここでのみ生の値を定義し、コンポーネントはトークン経由で参照する（生 hex 直書き禁止）。
+ */
+:root {
+  /* shadcn セマンティック変数 ← Soft Depth カラー割当（Light） */
+  --background: #e6e9f1; /* --bg */
+  --foreground: #2c3444; /* --ink */
+  --card: #edeff6; /* --surface */
+  --card-foreground: #2c3444;
+  --popover: #edeff6;
+  --popover-foreground: #2c3444;
+  --primary: #4f46e5; /* --accent-strong */
+  --primary-foreground: #ffffff; /* --on-accent */
+  --secondary: #edeff6; /* --surface */
+  --secondary-foreground: #2c3444;
+  --muted: #edeff6; /* muted surface */
+  --muted-foreground: #7b8497; /* Soft Depth の補助文字 */
+  --accent: #edeff6; /* shadcn の hover/active サーフェス */
+  --accent-foreground: #2c3444;
+  --destructive: #dc2626; /* --danger */
+  --destructive-foreground: #ffffff;
+  --border: rgba(120, 130, 150, 0.14); /* --hair */
+  --input: #edeff6;
+  --ring: #6366f1; /* accent（色相）。フォーカスリングに使用 */
+  --radius: 0.75rem;
+
+  /* Soft Depth 固有トークン（Light） */
+  --sd-accent: #6366f1;
+  --sd-accent-strong: #4f46e5;
+  --sd-on-accent: #ffffff;
+  --sd-ok: #0e9e76;
+  --sd-warn: #c77700;
+  --sd-danger: #dc2626;
+
+  --raise: 4px 4px 10px #d4d8e2, -4px -4px 10px #f6f8fc;
+  --raise-sm: 3px 3px 7px #d6dae3, -3px -3px 7px #f6f8fc;
+  --inset: inset 2px 2px 5px #d6dae3, inset -2px -2px 5px #f7f9fd;
+  --inset-sm: inset 1px 1px 3px #d6dae3, inset -1px -1px 3px #f7f9fd;
+
+  --knob: #f7f8fc;
+  --knob-shadow: 1px 1px 3px #cdd1db, -1px -1px 2px #fbfcfe;
+  --tgl-on-shadow: 2px 2px 6px #c9ccea, -2px -2px 6px #f6f8fc;
+  --hair: rgba(120, 130, 150, 0.14);
+}
+
+.dark {
+  /* shadcn セマンティック変数 ← Soft Depth カラー割当（Dark）。色は反転せず地・面・文字のみ差し替え。 */
+  --background: #20232b; /* --bg */
+  --foreground: #e7e9f0; /* --ink */
+  --card: #262a33; /* --surface */
+  --card-foreground: #e7e9f0;
+  --popover: #262a33;
+  --popover-foreground: #e7e9f0;
+  --primary: #818cf8; /* --accent-strong */
+  --primary-foreground: #14162c; /* --on-accent */
+  --secondary: #262a33;
+  --secondary-foreground: #e7e9f0;
+  --muted: #262a33;
+  --muted-foreground: #969cab;
+  --accent: #262a33;
+  --accent-foreground: #e7e9f0;
+  --destructive: #f87171; /* --danger */
+  --destructive-foreground: #14162c;
+  --border: rgba(200, 210, 230, 0.08); /* --hair */
+  --input: #262a33;
+  --ring: #818cf8; /* accent（色相） */
+
+  /* Soft Depth 固有トークン（Dark） */
+  --sd-accent: #818cf8;
+  --sd-accent-strong: #818cf8;
+  --sd-on-accent: #14162c;
+  --sd-ok: #34d399;
+  --sd-warn: #f0b429;
+  --sd-danger: #f87171;
+
+  --raise: 5px 5px 12px #191c23, -4px -4px 11px #2c303a;
+  --raise-sm: 3px 3px 8px #191c23, -3px -3px 7px #2c303a;
+  --inset: inset 2px 2px 6px #191c23, inset -2px -2px 6px #2c303a;
+  --inset-sm: inset 1px 1px 4px #191c23, inset -1px -1px 4px #2c303a;
+
+  --knob: #d6d9e3;
+  --knob-shadow: 1px 1px 4px #16181e, -1px -1px 2px #30343e;
+  --tgl-on-shadow: 2px 2px 8px #191c23, -2px -2px 7px #2c303a;
+  --hair: rgba(200, 210, 230, 0.08);
+}
+
+/* Tailwind ユーティリティへトークンを公開する（bg-background / text-foreground / ring-ring 等）。 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Soft Depth 固有カラーも Tailwind ユーティリティに公開 */
+  --color-sd-accent: var(--sd-accent);
+  --color-sd-accent-strong: var(--sd-accent-strong);
+  --color-sd-on-accent: var(--sd-on-accent);
+  --color-sd-ok: var(--sd-ok);
+  --color-sd-warn: var(--sd-warn);
+  --color-sd-danger: var(--sd-danger);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo,
+    monospace;
+}
+
+/* 再利用可能な Soft Depth 影ユーティリティ。 */
+@utility shadow-raise {
+  box-shadow: var(--raise);
+}
+@utility shadow-raise-sm {
+  box-shadow: var(--raise-sm);
+}
+@utility shadow-inset {
+  box-shadow: var(--inset);
+}
+@utility shadow-inset-sm {
+  box-shadow: var(--inset-sm);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* フォーカスは陰影に頼らず明示的なリング（accent 色 + offset）。 */
+  :focus-visible {
+    outline: 2px solid var(--sd-accent);
+    outline-offset: 2px;
+  }
+  /* モーション設定を尊重する。 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

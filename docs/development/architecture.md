@@ -44,3 +44,37 @@
 - Rust バックエンドに集約することで、両方を回避できる。
 
 フロントエンドは Tauri IPC（`invoke`）経由で Rust 側のコマンドを呼び出すのみとし、認証情報・署名・生の API 通信には一切触れない。詳細な API 仕様は [`switchbot-api.md`](./switchbot-api.md)、秘匿情報の取り扱いは [`security.md`](./security.md) を参照。
+
+## フロントエンド構成
+
+### ディレクトリ構成
+
+```
+src/
+├── main.tsx                  # エントリ。index.css 読込 + 描画前テーマ適用（FOUC 回避）
+├── App.tsx                   # AppShell を描画するだけの薄いルート
+├── index.css                 # Tailwind v4 + Soft Depth トークン（デザインの起点）
+├── lib/utils.ts              # cn()（clsx + tailwind-merge）
+├── stores/                   # Zustand ストア
+│   ├── theme-store.ts        # テーマ（light/dark/system）
+│   └── navigation-store.ts   # 画面遷移（activeView）
+├── components/
+│   ├── ui/                   # shadcn/ui コンポーネント（Soft Depth 適用済み）
+│   ├── app-shell/            # サイドバー + シェルレイアウト
+│   └── theme-toggle.tsx      # ライト/ダーク切替
+└── views/                    # 画面本体 + registry（画面メタの SSoT）
+```
+
+### デザイン / テーマ戦略
+
+- **Tailwind CSS v4**（`@tailwindcss/vite` プラグイン方式）+ **shadcn/ui**（Radix UI）+ **lucide-react**。
+- デザイントークン（**Soft Depth**）は `src/index.css` に一元定義する。SSoT は [`design-system/MASTER.md`](../../design-system/MASTER.md) と [`docs/mockup/`](../mockup/)。
+  - shadcn のセマンティック変数（`--background` / `--card` / `--primary` / `--ring` 等）へ Soft Depth のカラーを割り当て、`@theme inline` で Tailwind ユーティリティに公開する。
+  - 影は `--raise` / `--inset` 系トークンと `shadow-raise` / `shadow-inset` ユーティリティで表現する。コンポーネントに生 hex を書かない。
+  - フォーカスは陰影に頼らず明示的なリング（`--ring` = accent 色 + offset）。
+- **ダークモードは `.dark` クラス方式**（shadcn 標準）。`@custom-variant dark (&:is(.dark *))` を定義し、`theme-store` が `<html>` の `.dark` を付け外しする。`system` 選択時は `matchMedia` で OS 配色に追従する。テーマ選択は localStorage に永続化する。
+
+### 状態管理方針
+
+- 軽量な **Zustand** を採用する。
+- **画面遷移は react-router を導入せず view-state で管理する**。`navigation-store` の `activeView`（`devices` / `sensors` / `scenes` / `settings`）で現在画面を保持し、サイドバーのナビが `navigate()` で切り替える。画面メタ（ラベル / アイコン / 説明 / 本体）は `src/views/registry.tsx` に集約し、サイドバーとヘッダが同一定義を参照する。
