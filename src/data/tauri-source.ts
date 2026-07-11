@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { toError } from "./ipc";
 import type { SwitchBotlerDataSource } from "./source";
 import type {
+  AirconState,
   Device,
   DeviceCategory,
   DeviceControls,
@@ -60,6 +61,22 @@ export const tauriDataSource: SwitchBotlerDataSource = {
     if (patch.colorId !== undefined) {
       // parameter は preset id。Rust が "R:G:B" に変換する（決定2）。
       await sendCommand(id, "setColor", patch.colorId);
+    }
+  },
+
+  async setAircon(id: string, state: AirconState) {
+    try {
+      // 意味論（mode="cool"/fanSpeed="high"）のまま渡す。setAll の数値エンコードと
+      // "{t},{m},{f},{state}" 組み立ては Rust mapping.rs が所有する（決定1）。
+      await invoke("send_aircon", {
+        id,
+        temperature: state.temperature,
+        mode: state.mode,
+        fanSpeed: state.fanSpeed,
+        power: state.power,
+      });
+    } catch (error) {
+      throw toError(error);
     }
   },
 

@@ -108,3 +108,31 @@ SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**この
 - `setBrightness` は `parameter` に "0-100"、`setColor` は **`"R:G:B"`（コロン区切り）**。
   アプリは preset id を送り、Rust `mapping.rs` が `"R:G:B"` へ変換する。
 - Curtain `setPosition`("0-100")、Smart Lock `lock`/`unlock`("default") は README 準拠（未検証）。
+
+### 赤外線（仮想）デバイス — エアコン（Air Conditioner）
+
+赤外線リモコンは `body.infraredRemoteList[]` に載り、**status エンドポイントを持たない**
+（`GET /devices/{id}/status` の対象外）。そのため一覧取得時に status は叩かず、
+表示値は「最後に送信した値」をローカル（plugin-store）に永続保持したものを唯一のソースとする。
+
+エアコンは公式 README「Command set for virtual infrared remote devices」の **`setAll`**
+（温度・モード・風量・電源を一括送信）で操作する。赤外線は状態を返さないため turnOn/turnOff は
+使わず、常に全状態を setAll で同送する。
+
+- 形式: `{ "command": "setAll", "parameter": "{temperature},{mode},{fan speed},{power state}", "commandType": "command" }`
+- 例: `"26,1,3,on"`
+
+| パラメータ | 値 |
+|---|---|
+| temperature | 摂氏の整数（アプリの UI は 16–30℃ 固定） |
+| mode | `0`/`1`=auto, `2`=cool, `3`=dry, `4`=fan, `5`=heat（auto は 1 を送る） |
+| fan speed | `1`=auto, `2`=low, `3`=medium, `4`=high |
+| power state | `on` / `off` |
+
+- アプリは意味論（mode="cool" / fanSpeed="high"）だけを扱い、数値エンコードと parameter 文字列の
+  組み立ては Rust `mapping.rs`（`aircon_parameter`）が所有する（決定1。setColor と同型）。
+- `remoteType` の実値（`"Air Conditioner"` か `"DIY Air Conditioner"` か）は**実 API 未確認**のため
+  両対応でマッピングする（Curtain/Lock/Humidifier と同じ「README 準拠・ハードウェア未検証」方針）。
+  実疎通は `src-tauri/src/switchbot/mod.rs` の #[ignore] テスト `send_aircon_succeeds` で
+  `infisical run --env=dev -- cargo test -- --ignored` により確認できる（本サンドボックスでは
+  Infisical 非対話ログイン不可のため未実行。`.tmp/spira-evidence/V1-V2-aircon-real-api.md` 参照）。

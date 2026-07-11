@@ -82,6 +82,23 @@ pub async fn send_command(
         .await
 }
 
+/// 赤外線エアコンに setAll（温度・モード・風量・電源を一括送信）する。
+/// フロントは意味論（mode="cool" / fanSpeed="high"）だけを渡し、setAll の数値エンコードは
+/// Rust `mapping.rs` が所有する（決定1）。
+#[tauri::command]
+pub async fn send_aircon(
+    id: String,
+    temperature: u8,
+    mode: String,
+    fan_speed: String,
+    power: bool,
+) -> Result<(), SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client
+        .send_aircon(&creds, &id, temperature, &mode, &fan_speed, power)
+        .await
+}
+
 /// シーン一覧を view-model DTO で返す。
 #[tauri::command]
 pub async fn list_scenes() -> Result<Vec<SceneDto>, SwitchBotError> {

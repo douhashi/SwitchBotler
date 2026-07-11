@@ -9,11 +9,14 @@
  */
 import { load, type Store } from "@tauri-apps/plugin-store";
 
+import type { AirconState } from "./types";
+
 const STORE_PATH = "preferences.json";
 const KEY_FAVORITE_DEVICES = "favoriteDevices";
 const KEY_FAVORITE_SCENES = "favoriteScenes";
 const KEY_CLOSE_TO_TRAY_NOTICE_SEEN = "closeToTrayNoticeSeen";
 const KEY_SENSOR_ORDER = "sensorOrder";
+const KEY_AIRCON_STATES = "airconStates";
 
 /** お気に入り（デバイス / シーンの id 集合）の永続 schema。 */
 export type FavoritesSnapshot = {
@@ -55,6 +58,23 @@ export async function loadSensorOrder(): Promise<string[]> {
 export async function saveSensorOrder(order: string[]): Promise<void> {
   const store = await getStore();
   await store.set(KEY_SENSOR_ORDER, order);
+  await store.save();
+}
+
+/**
+ * 赤外線エアコンの「最後に送信した値」（deviceId → 状態）。赤外線は status を返さない
+ * ため、これが表示の唯一のソースになる（V4）。未設定なら空マップ。
+ */
+export async function loadAirconStates(): Promise<Record<string, AirconState>> {
+  const store = await getStore();
+  return (await store.get<Record<string, AirconState>>(KEY_AIRCON_STATES)) ?? {};
+}
+
+/** 1 台分のエアコン状態を保存する（他デバイスの値はマージして保持する）。 */
+export async function saveAirconState(id: string, state: AirconState): Promise<void> {
+  const store = await getStore();
+  const current = (await store.get<Record<string, AirconState>>(KEY_AIRCON_STATES)) ?? {};
+  await store.set(KEY_AIRCON_STATES, { ...current, [id]: state });
   await store.save();
 }
 

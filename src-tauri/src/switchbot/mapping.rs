@@ -22,7 +22,22 @@ pub struct ControlsDto {
     pub color_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<u8>,
+    /// 設定温度（摂氏の整数。エアコンのみ）。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<u8>,
+    /// 運転モード（"auto"/"cool"/"dry"/"fan"/"heat"。エアコンのみ）。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+    /// 風量（"auto"/"low"/"medium"/"high"。エアコンのみ）。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fan_speed: Option<String>,
 }
+
+/// エアコンのデフォルト初期値（赤外線は status を返さないため送信前の初期表示に使う）。
+/// 単一の正としてここに集約する。
+const AIRCON_DEFAULT_TEMP: u8 = 26;
+const AIRCON_DEFAULT_MODE: &str = "cool";
+const AIRCON_DEFAULT_FAN: &str = "auto";
 
 impl ControlsDto {
     fn power_only(power: bool) -> Self {
@@ -31,6 +46,22 @@ impl ControlsDto {
             brightness: None,
             color_id: None,
             position: None,
+            temperature: None,
+            mode: None,
+            fan_speed: None,
+        }
+    }
+
+    /// エアコンの初期 controls（power off / 26℃ / cool / auto）。
+    fn aircon_default() -> Self {
+        Self {
+            power: false,
+            brightness: None,
+            color_id: None,
+            position: None,
+            temperature: Some(AIRCON_DEFAULT_TEMP),
+            mode: Some(AIRCON_DEFAULT_MODE.to_string()),
+            fan_speed: Some(AIRCON_DEFAULT_FAN.to_string()),
         }
     }
 }
@@ -141,9 +172,12 @@ pub struct DeviceMeta {
     pub device_type: String,
     pub category: &'static str,
     pub supported: bool,
+    /// 赤外線（仮想）デバイスか。true は status エンドポイントを持たない
+    /// （status 取得の対象外にする。決定・V5）。
+    pub infrared: bool,
 }
 
-/// deviceType → カテゴリ。既知の操作対応種別のみ具体カテゴリ、他は "other"（未対応）。
+/// deviceType（実デバイス）→ カテゴリ。既知の操作対応種別のみ具体カテゴリ、他は "other"（未対応）。
 /// 実在確認済み: Plug / Color Bulb / Strip Light / Bot / Plug Mini (JP)。
 /// Curtain / Humidifier / Lock は公式 README 準拠（当アカウントに実機なし）。
 pub fn category_for(device_type: &str) -> &'static str {
@@ -158,13 +192,22 @@ pub fn category_for(device_type: &str) -> &'static str {
     }
 }
 
+/// remoteType（赤外線・仮想デバイス）→ カテゴリ。操作対応は現状エアコンのみ。
+/// remoteType の実値は実 API 未確認のため "Air Conditioner" / "DIY Air Conditioner" を両対応。
+pub fn infrared_category_for(remote_type: &str) -> &'static str {
+    match remote_type {
+        "Air Conditioner" | "DIY Air Conditioner" => "aircon",
+        _ => "other",
+    }
+}
+
 /// カラーを持つ種別か（status に "color" フィールドがある light 系）。
 fn has_color(device_type: &str) -> bool {
     matches!(device_type, "Color Bulb" | "Strip Light")
 }
 
-/// `body.deviceList[]` を DeviceMeta のリストへ。infraredRemoteList も末尾に含める
-/// （決定5: 赤外線は一覧に読み取り表示のみ、操作は M4）。
+/// `body.deviceList[]` を DeviceMeta のリストへ。infraredRemoteList も末尾に含める。
+/// 赤外線はエアコン（aircon）のみ操作対応、他は従来どおり読み取り表示（other）。
 pub fn map_device_list(body: &Value) -> Vec<DeviceMeta> {
     let mut out = Vec::new();
 
@@ -178,19 +221,23 @@ pub fn map_device_list(body: &Value) -> Vec<DeviceMeta> {
                 device_type,
                 category,
                 supported: category != "other",
+                infrared: false,
             });
         }
     }
 
     if let Some(list) = body.get("infraredRemoteList").and_then(Value::as_array) {
         for d in list {
+            // remoteType を model 表示に流用。エアコンのみ操作対応（aircon）、他は未対応。
+            let remote_type = string_field(d, "remoteType");
+            let category = infrared_category_for(&remote_type);
             out.push(DeviceMeta {
                 id: string_field(d, "deviceId"),
                 name: string_field(d, "deviceName"),
-                // remoteType を model 表示に流用。赤外線は現状すべて未対応（読み取り表示）。
-                device_type: string_field(d, "remoteType"),
-                category: "other",
-                supported: false,
+                device_type: remote_type,
+                category,
+                supported: category != "other",
+                infrared: true,
             });
         }
     }
@@ -203,6 +250,9 @@ pub fn map_device_list(body: &Value) -> Vec<DeviceMeta> {
 pub fn build_device(meta: &DeviceMeta, status: Option<&Value>) -> DeviceDto {
     let controls = match status {
         Some(body) => controls_from_status(meta.category, &meta.device_type, body),
+        // 赤外線エアコンは status を持たない。初期値（power off/26℃/cool/auto）を返す。
+        // フロントは永続化した「最後に送信した値」を重畳して表示する。
+        None if meta.category == "aircon" => ControlsDto::aircon_default(),
         None => ControlsDto::power_only(false),
     };
     let color_options = if has_color(&meta.device_type) {
@@ -235,6 +285,9 @@ fn controls_from_status(category: &str, device_type: &str, body: &Value) -> Cont
                 None
             },
             position: None,
+            temperature: None,
+            mode: None,
+            fan_speed: None,
         },
         "curtain" => {
             let position = u8_field(body, "slidePosition");
@@ -244,6 +297,9 @@ fn controls_from_status(category: &str, device_type: &str, body: &Value) -> Cont
                 brightness: None,
                 color_id: None,
                 position,
+                temperature: None,
+                mode: None,
+                fan_speed: None,
             }
         }
         "lock" => ControlsDto::power_only(matches!(
@@ -344,6 +400,48 @@ pub fn is_sensor(device_type: &str) -> bool {
     matches!(
         device_type,
         "Meter" | "MeterPlus" | "WoIOSensor" | "MeterPro" | "MeterPro(CO2)" | "Motion Sensor"
+    )
+}
+
+// ---- エアコン setAll パラメータ組み立て（Rust が enum→数値エンコードを所有） ----
+
+/// 運転モード（view-model）→ setAll の数値コード。
+/// 公式 README: 0/1=auto, 2=cool, 3=dry, 4=fan, 5=heat。auto は 1 を送る。
+/// 未知値は auto にフォールバック。
+fn mode_code(mode: &str) -> u8 {
+    match mode {
+        "cool" => 2,
+        "dry" => 3,
+        "fan" => 4,
+        "heat" => 5,
+        // "auto" とそれ以外。
+        _ => 1,
+    }
+}
+
+/// 風量（view-model）→ setAll の数値コード。
+/// 公式 README: 1=auto, 2=low, 3=medium, 4=high。未知値は auto にフォールバック。
+fn fan_code(fan: &str) -> u8 {
+    match fan {
+        "low" => 2,
+        "medium" => 3,
+        "high" => 4,
+        // "auto" とそれ以外。
+        _ => 1,
+    }
+}
+
+/// エアコンの view-model 状態 → setAll の `parameter` 文字列
+/// `"{temperature},{mode},{fan speed},{power state}"`（例 "26,2,1,off"）。
+/// 決定1: フロントは意味論（"cool"/"high"）だけを扱い、数値エンコードは Rust が所有する。
+pub fn aircon_parameter(temperature: u8, mode: &str, fan: &str, power: bool) -> String {
+    let power_state = if power { "on" } else { "off" };
+    format!(
+        "{},{},{},{}",
+        temperature,
+        mode_code(mode),
+        fan_code(fan),
+        power_state
     )
 }
 
@@ -472,27 +570,89 @@ mod tests {
     }
 
     #[test]
-    fn map_device_list_includes_infrared_as_unsupported() {
-        // V1 の実構造（伏字済みキー）を模す。
+    fn map_device_list_maps_aircon_and_leaves_other_infrared_unsupported() {
+        // V1 の実構造（伏字済みキー）を模す。赤外線 AC は aircon（操作対応・infrared）、
+        // それ以外の赤外線（例 TV）は従来どおり other（読み取り表示）。
         let body = json!({
             "deviceList": [
                 {"deviceId": "d1", "deviceName": "n1", "deviceType": "Plug"},
                 {"deviceId": "d2", "deviceName": "n2", "deviceType": "Meter"}
             ],
             "infraredRemoteList": [
-                {"deviceId": "r1", "deviceName": "rn1", "remoteType": "Air Conditioner"}
+                {"deviceId": "r1", "deviceName": "rn1", "remoteType": "Air Conditioner"},
+                {"deviceId": "r2", "deviceName": "rn2", "remoteType": "TV"}
             ]
         });
         let metas = map_device_list(&body);
-        assert_eq!(metas.len(), 3);
+        assert_eq!(metas.len(), 4);
+
+        // 実デバイスは infrared=false。
         assert_eq!(metas[0].category, "plug");
         assert!(metas[0].supported);
+        assert!(!metas[0].infrared);
         assert_eq!(metas[1].category, "other");
         assert!(!metas[1].supported);
-        // 赤外線は一覧に出すが未対応。
-        assert_eq!(metas[2].category, "other");
-        assert!(!metas[2].supported);
+        assert!(!metas[1].infrared);
+
+        // 赤外線 AC は aircon・操作対応・infrared。
+        assert_eq!(metas[2].category, "aircon");
+        assert!(metas[2].supported);
+        assert!(metas[2].infrared);
         assert_eq!(metas[2].device_type, "Air Conditioner");
+
+        // AC 以外の赤外線は未対応だが infrared フラグは立つ（status 取得対象外）。
+        assert_eq!(metas[3].category, "other");
+        assert!(!metas[3].supported);
+        assert!(metas[3].infrared);
+        assert_eq!(metas[3].device_type, "TV");
+    }
+
+    #[test]
+    fn diy_air_conditioner_also_maps_to_aircon() {
+        // remoteType 実値未確認のため両対応（実機で確定要）。
+        assert_eq!(infrared_category_for("Air Conditioner"), "aircon");
+        assert_eq!(infrared_category_for("DIY Air Conditioner"), "aircon");
+        assert_eq!(infrared_category_for("TV"), "other");
+    }
+
+    #[test]
+    fn builds_aircon_default_controls_without_status_call() {
+        // 赤外線 AC は status を持たないため build_device は None を受ける。
+        // 初期値 power off / 26℃ / cool / auto を返す。
+        let meta = DeviceMeta {
+            id: "r1".into(),
+            name: "aircon".into(),
+            device_type: "Air Conditioner".into(),
+            category: "aircon",
+            supported: true,
+            infrared: true,
+        };
+        let dto = build_device(&meta, None);
+        assert_eq!(dto.category, "aircon");
+        assert!(dto.supported);
+        assert!(!dto.controls.power);
+        assert_eq!(dto.controls.temperature, Some(26));
+        assert_eq!(dto.controls.mode.as_deref(), Some("cool"));
+        assert_eq!(dto.controls.fan_speed.as_deref(), Some("auto"));
+        // ライト系フィールドは持たない。
+        assert_eq!(dto.controls.brightness, None);
+        assert!(dto.color_options.is_none());
+    }
+
+    #[test]
+    fn aircon_parameter_encodes_enum_to_setall_string() {
+        // 公式 README: "{temp},{mode},{fan},{power}"。mode auto=1/cool=2/dry=3/fan=4/heat=5、
+        // fan auto=1/low=2/medium=3/high=4、power on|off。
+        assert_eq!(aircon_parameter(26, "cool", "auto", false), "26,2,1,off");
+        assert_eq!(aircon_parameter(26, "auto", "high", true), "26,1,4,on");
+        assert_eq!(aircon_parameter(16, "dry", "low", true), "16,3,2,on");
+        assert_eq!(aircon_parameter(30, "fan", "medium", true), "30,4,3,on");
+        assert_eq!(aircon_parameter(22, "heat", "auto", true), "22,5,1,on");
+        // 未知の mode/fan は auto(1) にフォールバック。
+        assert_eq!(
+            aircon_parameter(25, "unknown", "unknown", false),
+            "25,1,1,off"
+        );
     }
 
     #[test]
@@ -510,6 +670,7 @@ mod tests {
             device_type: "Color Bulb".into(),
             category: "light",
             supported: true,
+            infrared: false,
         };
         let dto = build_device(&meta, Some(&status));
         assert!(dto.controls.power);
@@ -529,6 +690,7 @@ mod tests {
             device_type: "Plug".into(),
             category: "plug",
             supported: true,
+            infrared: false,
         };
         let dto = build_device(&meta, Some(&status));
         assert!(!dto.controls.power);
@@ -545,6 +707,7 @@ mod tests {
             device_type: "Meter".into(),
             category: "other",
             supported: false,
+            infrared: false,
         };
         let dto = build_device(&meta, None);
         assert!(!dto.supported);
@@ -725,12 +888,30 @@ mod tests {
             brightness: Some(50),
             color_id: Some("warm".into()),
             position: None,
+            temperature: None,
+            mode: None,
+            fan_speed: None,
         };
         let json = serde_json::to_value(&dto).unwrap();
         assert_eq!(json["power"], true);
         assert_eq!(json["brightness"], 50);
         assert_eq!(json["colorId"], "warm");
-        // None は省略される（position キーが無い）。
+        // None は省略される（position/temperature/mode/fanSpeed キーが無い）。
         assert!(json.get("position").is_none());
+        assert!(json.get("temperature").is_none());
+        assert!(json.get("mode").is_none());
+        assert!(json.get("fanSpeed").is_none());
+    }
+
+    #[test]
+    fn serializes_aircon_controls_with_camel_case_fan_speed() {
+        let dto = ControlsDto::aircon_default();
+        let json = serde_json::to_value(&dto).unwrap();
+        assert_eq!(json["power"], false);
+        assert_eq!(json["temperature"], 26);
+        assert_eq!(json["mode"], "cool");
+        // fan_speed は camelCase の "fanSpeed" でシリアライズされる（決定1）。
+        assert_eq!(json["fanSpeed"], "auto");
+        assert!(json.get("brightness").is_none());
     }
 }

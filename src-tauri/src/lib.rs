@@ -97,6 +97,7 @@ pub fn run() {
             commands::get_connection_state,
             commands::list_devices,
             commands::send_command,
+            commands::send_aircon,
             commands::list_scenes,
             commands::execute_scene,
             commands::get_sensors,

@@ -17,7 +17,17 @@ export type DeviceCategory =
   | "humidifier"
   | "lock"
   | "bot"
+  | "aircon"
   | "other";
+
+/** エアコンの運転モード（意味論。数値エンコードは Rust が所有・決定1）。 */
+export type AirconMode = "auto" | "cool" | "dry" | "fan" | "heat";
+/** エアコンの風量（意味論。数値エンコードは Rust が所有・決定1）。 */
+export type AirconFanSpeed = "auto" | "low" | "medium" | "high";
+
+/** エアコン設定温度の下限・上限（機種別レンジ検出はしない・固定）。 */
+export const AIRCON_TEMP_MIN = 16;
+export const AIRCON_TEMP_MAX = 30;
 
 /** デバイスの可変状態。持つ制御は種別により異なる（任意プロパティ）。 */
 export type DeviceControls = {
@@ -29,6 +39,23 @@ export type DeviceControls = {
   colorId?: string;
   /** 開度 0-100（カーテンのみ）。 */
   position?: number;
+  /** 設定温度 ℃（エアコンのみ）。 */
+  temperature?: number;
+  /** 運転モード（エアコンのみ）。 */
+  mode?: AirconMode;
+  /** 風量（エアコンのみ）。 */
+  fanSpeed?: AirconFanSpeed;
+};
+
+/**
+ * エアコンの送信状態（setAll の全パラメータ）。赤外線は状態を返さないため、
+ * これが「最後に送信した値」として永続化・表示の唯一のソースになる。
+ */
+export type AirconState = {
+  power: boolean;
+  temperature: number;
+  mode: AirconMode;
+  fanSpeed: AirconFanSpeed;
 };
 
 /** カラー電球のカラー候補。swatch は UI プレゼンテーション色。 */
@@ -67,16 +94,48 @@ export type DeviceInteraction = "toggle" | "detail" | "none";
 export function deviceInteraction(device: Device): DeviceInteraction {
   if (!device.supported) return "none";
   const { brightness, position } = device.controls;
-  if (device.category === "lock" || brightness !== undefined || position !== undefined) {
+  if (
+    device.category === "lock" ||
+    device.category === "aircon" ||
+    brightness !== undefined ||
+    position !== undefined
+  ) {
     return "detail";
   }
   return "toggle";
 }
 
+/** 運転モードの日本語ラベル。 */
+const AIRCON_MODE_LABEL: Record<AirconMode, string> = {
+  auto: "自動",
+  cool: "冷房",
+  dry: "除湿",
+  fan: "送風",
+  heat: "暖房",
+};
+
+/** 風量の日本語ラベル。 */
+const AIRCON_FAN_LABEL: Record<AirconFanSpeed, string> = {
+  auto: "自動",
+  low: "弱",
+  medium: "中",
+  high: "強",
+};
+
+/** 運転モードの表示ラベルを引く。 */
+export function airconModeLabel(mode: AirconMode): string {
+  return AIRCON_MODE_LABEL[mode];
+}
+
+/** 風量の表示ラベルを引く。 */
+export function airconFanLabel(fan: AirconFanSpeed): string {
+  return AIRCON_FAN_LABEL[fan];
+}
+
 /** カード・ヘッダのサブに出す状態ラベルを導出する。 */
 export function deviceStatusLabel(device: Device): string {
   if (!device.supported) return "未対応";
-  const { power, position } = device.controls;
+  const { power, position, temperature, mode } = device.controls;
   switch (device.category) {
     case "lock":
       return power ? "施錠" : "解錠";
@@ -84,6 +143,12 @@ export function deviceStatusLabel(device: Device): string {
       return position === undefined ? (power ? "開" : "閉") : `${position}% 開`;
     case "light":
       return power ? "点灯中" : "オフ";
+    case "aircon":
+      if (!power) return "オフ";
+      // 運転中は「冷房 26℃」のように現在のモードと温度を出す。
+      return mode !== undefined && temperature !== undefined
+        ? `${airconModeLabel(mode)} ${temperature}℃`
+        : "オン";
     default:
       return power ? "オン" : "オフ";
   }
@@ -91,10 +156,11 @@ export function deviceStatusLabel(device: Device): string {
 
 /**
  * 電源トグル（turnOn/turnOff・鍵は lock/unlock）で操作できるカテゴリか。
- * カーテンは開度操作（setPosition）のみで電源トグルを持たない。
+ * カーテンは開度操作（setPosition）のみ、エアコンは詳細内で電源を含む全状態を
+ * setAll 送信するため、いずれもカード/ヘッダの電源トグルを持たない。
  */
 export function hasPowerToggle(device: Device): boolean {
-  return device.supported && device.category !== "curtain";
+  return device.supported && device.category !== "curtain" && device.category !== "aircon";
 }
 
 /**
