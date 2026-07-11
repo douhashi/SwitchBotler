@@ -183,21 +183,13 @@
 }
 
 @layer components {
-  /* カード一覧の共通レスポンシブグリッド。祖先の container 幅に応じて 3 / 2 / 1 列。
-     デバイス / シーン / センサーの各一覧で共通利用する（mockup .grid-cards）。 */
+  /* カード一覧の共通レスポンシブグリッド。デバイス / シーン / センサーで共通利用。
+     1 カードの最小幅を 280px に保証し、幅に応じて自動で 3 / 2 / 1 列に落とす。
+     固定ブレークポイントだとカードが潰れる幅でも列が減らないため auto-fill を使う。
+     `min(280px, 100%)` で container が 280px 未満のときの横あふれを防ぐ。 */
   .grid-cards {
     display: grid;
     gap: 0.75rem;
-    grid-template-columns: 1fr;
-  }
-  @container (min-width: 380px) {
-    .grid-cards {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @container (min-width: 560px) {
-    .grid-cards {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   }
 }

@@ -80,7 +80,7 @@ export function AppShell() {
     <div className="grid min-h-screen grid-cols-[194px_1fr] bg-background text-foreground">
       <Sidebar />
 
-      <main className="@container overflow-hidden px-6 py-5">{view.render()}</main>
+      <main className="overflow-hidden px-6 py-5">{view.render()}</main>
 
       <ToastViewport />
 
