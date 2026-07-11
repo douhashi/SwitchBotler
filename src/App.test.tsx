@@ -1,19 +1,57 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+// Tauri IPC（invoke）は外部境界。ここだけをモックし、ゲートウェイ〜ストア〜
+// シェルの結線は実物を通す。
+const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/core", () => ({ invoke }));
+
 import App from "./App";
+import { useConnectionStore } from "@/stores/connection-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 
 const NAV_LABELS = ["デバイス", "センサー", "シーン", "設定"];
 
-describe("App シェル", () => {
+/** 接続済み（saved:true）の状態を seed する。シェル描画を前提とするテスト用。 */
+function seedConnected() {
+  useConnectionStore.setState({
+    loaded: true,
+    error: null,
+    connection: {
+      status: "connected",
+      lastCheckedAt: "10:00",
+      saved: true,
+      rateLimit: 10000,
+    },
+  });
+}
+
+beforeEach(() => {
+  // view-state のシングルトンをテスト間で初期化する。
+  useNavigationStore.setState({
+    activeView: "devices",
+    selectedDeviceId: null,
+  });
+  invoke.mockReset();
+  invoke.mockImplementation(async (cmd: string) => {
+    switch (cmd) {
+      case "get_connection_state":
+        return { saved: false };
+      case "list_devices":
+      case "list_scenes":
+        return [];
+      case "get_sensors":
+        return { source: "", metrics: [] };
+      default:
+        return null;
+    }
+  });
+});
+
+describe("App シェル（接続済み）", () => {
   beforeEach(() => {
-    // view-state のシングルトンをテスト間で初期化する。
-    useNavigationStore.setState({
-      activeView: "devices",
-      selectedDeviceId: null,
-    });
+    seedConnected();
   });
 
   it("4つのナビ項目を描画する", async () => {
@@ -57,5 +95,106 @@ describe("App シェル", () => {
     ).not.toHaveAttribute("aria-current");
     // センサー画面の空データ取得が落ち着くのを待つ。
     await screen.findByRole("heading", { name: "センサー" });
+  });
+});
+
+describe("App 分岐（接続状態でシェル / オンボーディングを切替）", () => {
+  beforeEach(() => {
+    // 各テストの前提を明示するため、接続 store を未ロード初期状態へ戻す。
+    useConnectionStore.setState({
+      loaded: false,
+      error: null,
+      connection: {
+        status: "disconnected",
+        lastCheckedAt: null,
+        saved: false,
+        rateLimit: 10000,
+      },
+    });
+  });
+
+  it("未設定（saved:false）ではオンボーディングを表示し、サイドバーは出さない", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "SwitchBotler へようこそ" });
+    expect(
+      screen.queryByRole("navigation", { name: "メインナビゲーション" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("設定済み（saved:true）ではサイドバーを出し、オンボーディングは出さない", async () => {
+    seedConnected();
+
+    render(<App />);
+
+    await screen.findByRole("navigation", { name: "メインナビゲーション" });
+    expect(screen.queryByRole("heading", { name: "SwitchBotler へようこそ" })).not.toBeInTheDocument();
+  });
+
+  it("saved:true かつ到達不能（disconnected）でもシェルを維持しオンボーディングに入らない（V1）", async () => {
+    useConnectionStore.setState({
+      loaded: true,
+      error: "接続できませんでした。ネットワークを確認してください。",
+      connection: {
+        status: "disconnected",
+        lastCheckedAt: null,
+        saved: true,
+        rateLimit: 10000,
+      },
+    });
+
+    render(<App />);
+
+    await screen.findByRole("navigation", { name: "メインナビゲーション" });
+    expect(screen.queryByRole("heading", { name: "SwitchBotler へようこそ" })).not.toBeInTheDocument();
+  });
+
+  it("ロード前（loaded:false）はオンボーディングもシェルも描画しない（ちらつき防止・V2）", () => {
+    // load() が解決するまでの一瞬を模すため、invoke を未解決のままにする。
+    invoke.mockImplementation(() => new Promise(() => {}));
+
+    const { container } = render(<App />);
+
+    expect(screen.queryByRole("heading", { name: "SwitchBotler へようこそ" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "メインナビゲーション" }),
+    ).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("未設定から保存→接続成功でシェルへ自動遷移する（navigation が現れる・V2）", async () => {
+    // keyring 保存を模す。save 後は saved:true を返し test_connection が成功する。
+    let saved = false;
+    invoke.mockImplementation(async (cmd: string) => {
+      switch (cmd) {
+        case "get_connection_state":
+          return { saved };
+        case "save_credentials":
+          saved = true;
+          return null;
+        case "test_connection":
+          return { saved };
+        case "list_devices":
+        case "list_scenes":
+          return [];
+        case "get_sensors":
+          return { source: "", metrics: [] };
+        default:
+          return null;
+      }
+    });
+
+    render(<App />);
+
+    // まずはオンボーディングが表示される。
+    await screen.findByRole("heading", { name: "SwitchBotler へようこそ" });
+
+    await userEvent.type(screen.getByLabelText("トークン"), "my-token");
+    await userEvent.type(screen.getByLabelText("シークレット"), "my-secret");
+    await userEvent.click(screen.getByRole("button", { name: /保存して接続/ }));
+
+    // 接続成功で saved:true となり、通常シェル（サイドバー）へ自動遷移する。
+    await screen.findByRole("navigation", { name: "メインナビゲーション" });
+    expect(screen.queryByRole("heading", { name: "SwitchBotler へようこそ" })).not.toBeInTheDocument();
   });
 });

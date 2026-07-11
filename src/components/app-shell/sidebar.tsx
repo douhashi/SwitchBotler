@@ -12,15 +12,14 @@ export function Sidebar() {
   const activeView = useNavigationStore((s) => s.activeView);
   const navigate = useNavigationStore((s) => s.navigate);
 
+  // 接続状態は App が AppShell 描画前にロード済みのため、ここでは参照のみ行う。
   const connectionStatus = useConnectionStore((s) => s.connection.status);
-  const loadConnection = useConnectionStore((s) => s.load);
   const deviceCount = useDeviceStore((s) => s.devices.length);
   const loadDevices = useDeviceStore((s) => s.load);
 
   useEffect(() => {
-    loadConnection();
     loadDevices();
-  }, [loadConnection, loadDevices]);
+  }, [loadDevices]);
 
   const connected = connectionStatus === "connected";
 
