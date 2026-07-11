@@ -13,24 +13,29 @@ import { DeviceIcon } from "./device-icon";
 export function DeviceCard({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
   const press = useDeviceStore((s) => s.press);
+  const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
   const navigate = useNavigationStore((s) => s.navigate);
   const favorite = useFavoritesStore((s) => s.deviceIds.has(device.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleDeviceFavorite);
 
   const interaction = deviceInteraction(device);
   const on = device.controls.power;
+  // オフライン時はアイコンを常に muted + inset にし、電源色を出さない。
+  const iconActive = on && !offline;
 
   return (
     <div
+      aria-disabled={offline || undefined}
       className={cn(
         "flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-raise",
         !on && "text-muted-foreground",
+        offline && "cursor-not-allowed opacity-50",
       )}
     >
       <span
         className={cn(
           "grid size-10 shrink-0 place-items-center rounded-xl",
-          on
+          iconActive
             ? "text-sd-accent shadow-raise-sm"
             : "text-muted-foreground shadow-inset-sm",
         )}
@@ -42,8 +47,15 @@ export function DeviceCard({ device }: { device: Device }) {
         <div className="truncate text-sm font-semibold text-foreground">
           {device.name}
         </div>
-        <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+        {/* オフライン時は理由を色だけに頼らず「· オフライン」を併記し、行を warn 色にする。 */}
+        <div
+          className={cn(
+            "mt-0.5 text-[11.5px]",
+            offline ? "text-sd-warn" : "text-muted-foreground",
+          )}
+        >
           {device.model} · {deviceStatusLabel(device)}
+          {offline && " · オフライン"}
         </div>
       </div>
 
@@ -64,12 +76,22 @@ export function DeviceCard({ device }: { device: Device }) {
         <Pin size={15} strokeWidth={2} className={cn(favorite && "fill-current")} />
       </button>
 
+      {offline && (
+        <span className="shrink-0 rounded-full px-[9px] py-[3px] text-[11px] font-semibold text-muted-foreground shadow-inset-sm">
+          オフライン
+        </span>
+      )}
+
       {interaction === "detail" && (
         <button
           type="button"
           aria-label={`${device.name} の詳細`}
+          aria-disabled={offline || undefined}
           onClick={() => navigate("devices", device.id)}
-          className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+          className={cn(
+            "grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
+            offline && "pointer-events-none",
+          )}
         >
           <ChevronRight size={18} strokeWidth={2} />
         </button>
@@ -77,8 +99,11 @@ export function DeviceCard({ device }: { device: Device }) {
       {interaction === "toggle" && (
         <Switch
           checked={on}
+          disabled={offline}
+          aria-disabled={offline || undefined}
           onCheckedChange={() => toggle(device.id)}
           aria-label={device.name}
+          className={cn(offline && "pointer-events-none")}
         />
       )}
       {interaction === "press" && (
@@ -87,8 +112,10 @@ export function DeviceCard({ device }: { device: Device }) {
           size="sm"
           variant="secondary"
           aria-label={`${device.name} を押す`}
+          disabled={offline}
+          aria-disabled={offline || undefined}
           onClick={() => press(device.id)}
-          className="text-foreground"
+          className={cn("text-foreground", offline && "pointer-events-none")}
         >
           <Hand size={15} strokeWidth={2} />
           押す

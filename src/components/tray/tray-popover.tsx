@@ -27,23 +27,40 @@ function FootLink({ onClick, children }: { onClick: () => void; children: ReactN
 /** トレイに 1 台分のクイックトグル行を描く。 */
 function QuickDevice({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
+  const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
   const on = device.controls.power;
+  const iconActive = on && !offline;
   return (
-    <div className="flex items-center gap-2.5 rounded-xl px-2 py-2.5">
+    <div
+      aria-disabled={offline || undefined}
+      className={cn(
+        "flex items-center gap-2.5 rounded-xl px-2 py-2.5",
+        offline && "opacity-50",
+      )}
+    >
       <span
         className={cn(
           "grid size-[30px] shrink-0 place-items-center rounded-[9px]",
-          on ? "text-sd-accent shadow-raise-sm" : "text-muted-foreground shadow-inset-sm",
+          iconActive
+            ? "text-sd-accent shadow-raise-sm"
+            : "text-muted-foreground shadow-inset-sm",
         )}
       >
         <DeviceIcon category={device.category} size={16} strokeWidth={1.75} />
       </span>
-      <span className="flex-1 text-[13px] font-medium">{device.name}</span>
+      <span className="flex-1 text-[13px] font-medium">
+        {device.name}
+        {/* 色だけに頼らずオフラインの理由を小ラベルで併記する。 */}
+        {offline && <span className="ml-1.5 text-[11px] text-sd-warn">オフライン</span>}
+      </span>
       <Switch
         size="sm"
         checked={on}
+        disabled={offline}
+        aria-disabled={offline || undefined}
         onCheckedChange={() => toggle(device.id)}
         aria-label={device.name}
+        className={cn(offline && "pointer-events-none")}
       />
     </div>
   );

@@ -199,6 +199,56 @@ mod integration_tests {
     }
 
     #[tokio::test]
+    #[ignore = "実オフライン機が必要。161→Offline 検知の証拠取得。--ignored 指定時のみ実行"]
+    async fn offline_device_maps_to_offline_error() {
+        // 実オフライン機へのコマンドが封筒 statusCode 161 → ErrorCode::Offline に
+        // マップされることを確認する（V1）。副作用を避けるため、電源トグル可能な各機に
+        // 「現在の電源状態と同じコマンド」（冪等・状態を変えない）を送る。オフライン機が
+        // 1 台でもあれば Offline が返る。秘匿値・deviceId・名称は一切出力しない（V5）。
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client.list_devices(&creds).await.expect("一覧取得");
+        // 冪等に送れるのは turnOn/turnOff を持つ通常デバイス（赤外線・pressBot 等は除外）。
+        let toggleable: Vec<_> = devices
+            .iter()
+            .filter(|d| {
+                d.supported
+                    && matches!(d.category.as_str(), "plug" | "light" | "bot" | "humidifier")
+                    && d.controls.bot_mode.as_deref() != Some("press")
+            })
+            .collect();
+        let mut offline_found = false;
+        for device in toggleable {
+            let command = if device.controls.power {
+                "turnOn"
+            } else {
+                "turnOff"
+            };
+            match client
+                .send_command(&creds, &device.id, command, "default", "command")
+                .await
+            {
+                Ok(()) => {}
+                Err(err) if err.code == ErrorCode::Offline => {
+                    // deviceId・名称・封筒本文は出さず、検知した事実のみ証拠として残す（V5）。
+                    println!("error code = {:?}", err.code);
+                    assert_eq!(
+                        err.code,
+                        ErrorCode::Offline,
+                        "161 を Offline にマップすること"
+                    );
+                    offline_found = true;
+                }
+                // オンライン機の他エラー（レート等）は本テストの対象外だが握り潰さない。
+                Err(err) => panic!("想定外のエラー: {:?}", err.code),
+            }
+        }
+        if !offline_found {
+            println!("オフライン機が無いため 161→Offline の実疎通はスキップ");
+        }
+    }
+
+    #[tokio::test]
     #[ignore = "実 API に副作用（コマンド送信）。安全な冪等操作のみ。--ignored 指定時のみ実行"]
     async fn send_command_idempotent_succeeds() {
         // 実在の Plug に現在の電源状態と同じコマンドを送る（状態を変えない冪等操作）。

@@ -71,7 +71,13 @@ describe("DeviceCard", () => {
   beforeEach(() => {
     invoke.mockReset();
     invoke.mockResolvedValue(null);
-    useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
+    useDeviceStore.setState({
+      devices: [],
+      loading: false,
+      loaded: false,
+      error: null,
+      offlineIds: new Set(),
+    });
     useNavigationStore.setState({ activeView: "devices", selectedDeviceId: null });
     useFavoritesStore.setState({ deviceIds: new Set(), sceneIds: new Set(), loaded: true });
   });
@@ -178,6 +184,24 @@ describe("DeviceCard", () => {
       parameter: "default",
       commandType: "command",
     });
+  });
+
+  it("オフライン機はグレーアウトし「オフライン」表記 + トグル無効で描画する", async () => {
+    useDeviceStore.setState({ devices: [plug], offlineIds: new Set(["circulator"]) });
+    render(<DeviceCard device={plug} />);
+
+    // 色だけに頼らず「オフライン」表記を出す（サブ行併記 + ピル）。
+    expect(screen.getAllByText(/オフライン/).length).toBeGreaterThan(0);
+    // トグルは無効化される（操作抑止）。
+    const toggleSwitch = screen.getByRole("switch", { name: "サーキュレーター" });
+    expect(toggleSwitch).toBeDisabled();
+
+    // 無効化されたトグルをクリックしても電源は変わらずコマンドも送られない。
+    await userEvent.click(toggleSwitch).catch(() => {});
+    expect(
+      useDeviceStore.getState().devices.find((d) => d.id === "circulator")?.controls.power,
+    ).toBe(false);
+    expect(invoke).not.toHaveBeenCalled();
   });
 
   it("ピン留めボタンでお気に入りを追加・解除する", async () => {

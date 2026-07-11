@@ -261,3 +261,76 @@ describe("device-store bot", () => {
     );
   });
 });
+
+/** 電源トグルで操作する通常デバイス（オフライン検知テスト用）。 */
+const plug: Device = {
+  id: "p1",
+  name: "サーキュレーター",
+  model: "Plug Mini",
+  category: "plug",
+  supported: true,
+  controls: { power: false },
+};
+
+const OFFLINE_MESSAGE = "デバイスがオフラインのため操作できません。";
+
+describe("device-store offline（statusCode 161 検知）", () => {
+  beforeEach(() => {
+    invoke.mockReset();
+    prefs.clear();
+    useNoticeStore.setState({ notices: [] });
+    useDeviceStore.setState({
+      devices: [],
+      loading: false,
+      loaded: false,
+      error: null,
+      offlineIds: new Set(),
+    });
+  });
+
+  it("コマンドが offline で reject すると対象を offlineIds に入れロールバック + トーストする（V1）", async () => {
+    useDeviceStore.setState({ devices: [plug], loaded: true });
+    invoke.mockRejectedValue({ code: "offline", message: OFFLINE_MESSAGE });
+
+    await useDeviceStore.getState().toggle("p1");
+
+    const state = useDeviceStore.getState();
+    // オフライン印が付く。
+    expect(state.offlineIds.has("p1")).toBe(true);
+    // 楽観更新はロールバックされ power は元の off。
+    expect(state.devices.find((d) => d.id === "p1")?.controls.power).toBe(false);
+    expect(state.error).toBe(OFFLINE_MESSAGE);
+    // 全画面横断で気付けるようトースト通知も出す。
+    expect(useNoticeStore.getState().notices.map((n) => n.message)).toContain(
+      OFFLINE_MESSAGE,
+    );
+  });
+
+  it("apiStatus など offline 以外の失敗では offlineIds に入らない（V3）", async () => {
+    useDeviceStore.setState({ devices: [plug], loaded: true });
+    invoke.mockRejectedValue({
+      code: "apiStatus",
+      message: "SwitchBot API がエラーを返しました（コード 190）。",
+    });
+
+    await useDeviceStore.getState().toggle("p1");
+
+    const state = useDeviceStore.getState();
+    expect(state.offlineIds.has("p1")).toBe(false);
+    expect(state.devices.find((d) => d.id === "p1")?.controls.power).toBe(false);
+    expect(state.error).toBe("SwitchBot API がエラーを返しました（コード 190）。");
+  });
+
+  it("refresh は offlineIds をクリアする（V4・方針 A）", async () => {
+    useDeviceStore.setState({
+      devices: [plug],
+      loaded: true,
+      offlineIds: new Set(["p1"]),
+    });
+    invoke.mockResolvedValueOnce([plug]);
+
+    await useDeviceStore.getState().refresh();
+
+    expect(useDeviceStore.getState().offlineIds.size).toBe(0);
+  });
+});
