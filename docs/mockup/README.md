@@ -8,8 +8,10 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 
 | ファイル | 内容 |
 |---|---|
-| [`index.html`](./index.html) | 主要5画面（認証設定 / デバイス一覧 / デバイス操作 / センサーステータス / シーン実行）。右上の「テーマ」ボタンでライト/ダーク切替 |
+| [`index.html`](./index.html) | 主要4画面（デバイス一覧 / センサーステータス / シーン実行 / 設定）。右上の「テーマ」ボタンでライト/ダーク切替 |
 | [`index.en.html`](./index.en.html) | `index.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
+| [`detail.html`](./detail.html) | デバイス詳細（操作UI）。エアコン=スライダー基調＋運転モードで色連動、照明=明るさ＋カラー、モード色の凡例つき。右上で Light/Dark/System 切替 |
+| [`detail.en.html`](./detail.en.html) | `detail.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`tray.html`](./tray.html) | トレイポップアップの操作性拡張案（全デバイス操作＝エアコン等は「>」で詳細へ / 幅拡大 / 可変高＋各リスト独立スクロール）。右上で Light/Dark/System 切替 |
 | [`tray.en.html`](./tray.en.html) | `tray.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`onboarding.html`](./onboarding.html) | 未接続（`saved:false`）時のメニューなしオンボーディング画面＋トレイの表記案（未設定 / 到達不能 / 接続済みの3状態）。右上で Light/Dark/System 切替 |
