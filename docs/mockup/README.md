@@ -1,0 +1,54 @@
+# 画面モックアップ
+
+SwitchBotler の UI モックアップ（視覚リファレンス）。デザイン方向は **Soft Depth**（進化系ソフトUI）。トークン/ルールの正典は [`design-system/MASTER.md`](../../design-system/MASTER.md)。
+
+## ファイル
+
+| ファイル | 内容 |
+|---|---|
+| [`index.html`](./index.html) | 主要6画面（認証設定 / デバイス一覧 / デバイス操作 / センサーステータス / シーン実行 / トレイメニュー）。右上の「テーマ」ボタンでライト/ダーク切替 |
+| [`themes.html`](./themes.html) | Soft Depth のライト/ダークを同一UIで並べた比較＋セマンティックトークン表 |
+
+ブラウザでそのまま開ける（ビルド不要・自己完結）。トグルやスライダーは押して手触りを確認できる。
+
+## 実装ルール
+
+モックアップは静的な視覚リファレンス。**実装（React）では以下に従う**:
+
+### アイコン — Lucide パックのみ
+- `lucide-react` を使う。**SVG を手書きしない・絵文字をアイコンに使わない**。
+- stroke `1.75` / `round` cap・join / サイズは `16 / 18 / 20 / 28`。
+- モックHTML内のアイコンは Lucide を模した inline SVG（静的HTMLで npm 依存を持てないため）。実装では下表の Lucide 名に置き換える。
+
+### UIコンポーネント — shadcn/ui
+- **shadcn/ui**（Radix UI + Tailwind CSS v4）。構造・アクセシビリティ・キーボード操作は shadcn/Radix に任せ、**見た目は Soft Depth トークン（`--raise` / `--inset` 等）で上書き**する。
+- `components.json`: `baseColor: neutral` / `cssVariables: true` / `iconLibrary: lucide`。
+
+### UI要素 → shadcn/ui + Lucide 対応
+
+| UI要素 | shadcn/ui | Lucide |
+|---|---|---|
+| デバイス ON/OFF | `Switch` | `lightbulb` / `fan` / `blinds` / `droplet` |
+| ボタン（実行・テスト・更新） | `Button` | `play` / `arrow-right` / `refresh-cw` |
+| Token / Secret 入力 | `Input` | `eye` / `eye-off` |
+| デバイス・スタットカード | `Card` | — |
+| 明るさ・カーテン開度 | `Slider` | `sun` |
+| ナビ | `Button`(ghost)＋選択状態 | `layout-grid` / `activity` / `layers` / `settings` |
+| 接続バナー | `Alert` | `check` / `shield-check` |
+| 状態ラベル | `Badge` | — |
+| トレイのポップオーバー | `Popover` | — |
+| 破壊的操作の確認 | `AlertDialog` | — |
+
+## セットアップ（実装時の想定手順）
+
+Vite + React + Tailwind v4 + shadcn/ui（[shadcn 公式手順](https://ui.shadcn.com/docs/installation/vite)に準拠）:
+
+```sh
+npm install tailwindcss @tailwindcss/vite   # Tailwind v4（プラグイン方式）
+# src/index.css を `@import "tailwindcss";` に置換
+# tsconfig / vite.config に @/* エイリアスを追加
+npx shadcn@latest init                       # baseColor: neutral, iconLibrary: lucide
+npx shadcn@latest add switch button input card slider alert badge popover alert-dialog
+```
+
+導入後、shadcn の CSS 変数（`--background` `--foreground` `--primary` `--card` `--muted` `--border` `--ring`）へ MASTER.md のカラートークンを割り当て、コンポーネントに Soft Depth の影トークンを重ねる。
