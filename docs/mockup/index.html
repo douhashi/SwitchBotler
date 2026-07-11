@@ -119,6 +119,12 @@
   .device .name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .device .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .device.link { cursor: pointer; }
+  /* オフライン: グレーアウトして操作不能。色だけに頼らず「オフライン」表記を併記する。 */
+  .device.offline { opacity: .5; cursor: not-allowed; }
+  .device.offline .ico { color: var(--muted); box-shadow: var(--inset-sm); }
+  .device.offline .sub { color: var(--warn); }
+  .device.offline .tgl, .device.offline .chev { pointer-events: none; }
+  .device.offline .off-tag { font-size: 11px; font-weight: 600; color: var(--muted); flex: none; padding: 3px 9px; border-radius: 999px; box-shadow: var(--inset-sm); }
 
   .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--bg); position: relative; box-shadow: var(--inset-sm); transition: background .22s ease; }
   .tgl .knob { position: absolute; top: 50%; left: 3.5px; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--knob); box-shadow: var(--knob-shadow); transition: left .22s cubic-bezier(.34,1.56,.64,1); }
@@ -292,7 +298,7 @@
   </header>
 
   <!-- 01 デバイス一覧 -->
-  <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態 · 幅に応じて 3 / 2 / 1 列</span></div>
+  <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態 · 幅に応じて 3 / 2 / 1 列 · オフラインはグレーアウト（操作不可）</span></div>
   <div class="win-scroll"><div class="win">
     <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
@@ -316,6 +322,7 @@
           <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">加湿器</div><div class="sub">Humidifier · オフ</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="加湿器"><span class="knob"></span></div></div>
           <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">玄関の照明</div><div class="sub">Bulb · 点灯中</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></div>
           <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">玄関の鍵</div><div class="sub">Lock Pro · 施錠</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+          <div class="device offline" aria-disabled="true"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">書斎の照明</div><div class="sub">Bulb · オフライン</div></div><span class="off-tag">オフライン</span></div>
         </div>
       </main>
     </div>
