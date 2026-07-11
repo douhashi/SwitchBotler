@@ -65,7 +65,7 @@
   .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 12px; }
   h1 { font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
   .lede { font-size: 16px; color: var(--page-muted); max-width: 60ch; margin: 0; }
-  .cap { display: flex; align-items: baseline; gap: 10px; margin: 46px 0 14px; }
+  .cap { display: flex; align-items: baseline; gap: 10px; margin: 46px 0 14px; flex-wrap: wrap; }
   .cap .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; }
   .cap h2 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
   .cap .d { font-size: 13px; color: var(--page-muted); }
@@ -79,7 +79,7 @@
   .bar .t { font-size: 12px; color: var(--muted); margin-left: 6px; font-weight: 500; }
 
   .app { display: grid; grid-template-columns: 194px 1fr; min-height: 496px; }
-  .app.tall { min-height: 540px; }
+  .app.tall { min-height: 560px; }
 
   /* sidebar */
   .side { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
@@ -96,8 +96,8 @@
   .side .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 10px 11px; border-radius: 11px; box-shadow: var(--inset-sm); }
   .side .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
 
-  /* main */
-  .main { padding: 20px 22px 24px; background: var(--bg); overflow: hidden; }
+  /* main — container-type で幅に応じたレスポンシブ列を有効化 */
+  .main { padding: 20px 22px 24px; background: var(--bg); overflow: hidden; container-type: inline-size; }
   .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
   .head h3 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
   .head .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
@@ -105,8 +105,12 @@
   .iconbtn { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--ink); background: var(--surface); box-shadow: var(--raise-sm); cursor: pointer; flex: none; }
   .iconbtn svg { width: 17px; height: 17px; }
 
+  /* responsive card grid — 幅に応じて 3 / 2 / 1 列（コンテナクエリ） */
+  .grid-cards { display: grid; gap: 13px; grid-template-columns: 1fr; }
+  @container (min-width: 380px) { .grid-cards { grid-template-columns: repeat(2, 1fr); } }
+  @container (min-width: 560px) { .grid-cards { grid-template-columns: repeat(3, 1fr); } }
+
   /* cards / devices */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
   .device { background: var(--surface); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; box-shadow: var(--raise); }
   .device .ico { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
   .device .ico svg { width: 20px; height: 20px; }
@@ -122,6 +126,18 @@
   .tgl.on .knob { left: 22.5px; }
   .chev { color: var(--muted); display: grid; place-items: center; }
   .chev svg { width: 18px; height: 18px; }
+
+  /* sensors — センサーごとのセクション（並べ替え可）＋ レスポンシブなカード */
+  .sensor-list { display: flex; flex-direction: column; gap: 20px; }
+  .sensor-sec { border-radius: 14px; }
+  .sensor-sec.dragging { opacity: .45; }
+  .sensor-sec.dragover { outline: 2px dashed var(--accent); outline-offset: 5px; }
+  .sh { display: flex; align-items: center; gap: 10px; margin: 0 2px 11px; }
+  .sh .grip { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--surface); box-shadow: var(--raise-sm); cursor: grab; flex: none; }
+  .sh .grip:active { cursor: grabbing; box-shadow: var(--inset-sm); }
+  .sh .grip svg { width: 16px; height: 16px; }
+  .sh .shname { font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+  .sh .shmeta { font-size: 11.5px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
 
   /* stats */
   .stat { background: var(--surface); border-radius: 15px; padding: 14px 15px; box-shadow: var(--raise); }
@@ -152,6 +168,15 @@
   .field .eye svg { width: 17px; height: 17px; }
   .field .help { font-size: 11.5px; color: var(--muted); margin: 8px 2px 0; }
 
+  /* settings — テーマ切替（右上ではなく設定に配置） */
+  .settings-sec { margin-bottom: 24px; }
+  .sec-title { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 2px 11px; }
+  .seg { display: inline-flex; padding: 4px; border-radius: 12px; box-shadow: var(--inset); gap: 4px; background: var(--bg); }
+  .seg button { font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; padding: 8px 15px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .seg button svg { width: 15px; height: 15px; }
+  .seg button.on { color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
+  .seg-help { font-size: 11.5px; color: var(--muted); margin: 9px 2px 0; }
+
   .note-line { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); padding: 11px 13px; border-radius: 12px; box-shadow: var(--inset-sm); margin: 4px 0 20px; }
   .note-line svg { width: 15px; height: 15px; color: var(--ok); flex: none; }
 
@@ -179,17 +204,21 @@
   .hero .nm { font-size: 17px; font-weight: 700; }
   .hero .st { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 
-  /* scene rows */
-  .scene { display: flex; align-items: center; gap: 13px; background: var(--surface); border-radius: 15px; padding: 13px 15px; box-shadow: var(--raise); margin-bottom: 12px; }
+  /* scene cards — デバイス同様レスポンシブ（3/2/1 列） */
+  .scene { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border-radius: 15px; padding: 14px; box-shadow: var(--raise); }
+  .scene .stop { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .scene .ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
   .scene .ico svg { width: 19px; height: 19px; }
-  .scene .body { flex: 1; min-width: 0; }
+  .scene .body { min-width: 0; }
   .scene .nm { font-weight: 600; font-size: 14px; }
   .scene .ds { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .scene .btn { width: 100%; }
 
   /* tray popover */
-  .tray-stage { display: flex; justify-content: center; padding: 30px; background: var(--page-bg); border-radius: 18px; box-shadow: var(--inset-sm); }
-  .tray { width: 306px; background: var(--bg); border-radius: 18px; padding: 14px; box-shadow: 0 1px 2px rgba(20,22,30,.1), 0 24px 48px -20px rgba(20,22,30,.55); }
+  .tray-stage { display: flex; justify-content: center; align-items: flex-start; gap: 28px; flex-wrap: wrap; padding: 30px; background: var(--page-bg); border-radius: 18px; box-shadow: var(--inset-sm); }
+  .tray-demo { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+  .tray-cap { font-size: 12px; font-weight: 600; color: var(--page-muted); }
+  .tray { width: 306px; background: var(--bg); border-radius: 18px; padding: 14px 14px 7px; box-shadow: 0 1px 2px rgba(20,22,30,.1), 0 24px 48px -20px rgba(20,22,30,.55); }
   .tray .th { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
   .tray .th .b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
   .tray .th .b .mk { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
@@ -206,53 +235,64 @@
   .tray .tgl.sm .knob { width: 16px; height: 16px; left: 3px; }
   .tray .tgl.sm.on .knob { left: 19px; }
   .tray .sep { height: 1px; background: var(--hair); margin: 8px 6px; }
-  .tray .sc { display: flex; gap: 8px; padding: 4px 4px 8px; }
-  .tray .sc .chip { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; font-weight: 600; padding: 8px; border-radius: 10px; box-shadow: var(--raise-sm); cursor: pointer; }
-  .tray .sc .chip svg { width: 13px; height: 13px; color: var(--accent); }
+  /* section label + お気に入りシーン（縦に 1 列ずつ） */
+  .tray .seclab { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 2px 8px 6px; }
+  .tray .sc { display: flex; flex-direction: column; gap: 3px; padding: 0 0 4px; }
+  .tray .srow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; cursor: pointer; }
+  .tray .srow:hover { box-shadow: var(--inset-sm); }
+  .tray .srow .si { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .tray .srow .si svg { width: 15px; height: 15px; }
+  .tray .srow .sn { flex: 1; font-size: 13px; font-weight: 550; }
+  .tray .srow .go { color: var(--muted); display: grid; place-items: center; flex: none; }
+  .tray .srow .go svg { width: 15px; height: 15px; }
+  /* お気に入りデバイスが無いときの空表示 */
+  .tray .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px; padding: 20px 14px 22px; }
+  .tray .empty .ei { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); box-shadow: var(--inset-sm); }
+  .tray .empty .ei svg { width: 19px; height: 19px; }
+  .tray .empty .et { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .tray .empty .eh { font-size: 11px; color: var(--muted); max-width: 22ch; line-height: 1.5; }
   .tray .foot { display: flex; gap: 8px; padding: 4px; }
   .tray .foot a { flex: 1; text-align: center; font-size: 11.5px; color: var(--muted); padding: 8px; border-radius: 9px; cursor: pointer; text-decoration: none; }
   .tray .foot a:hover { box-shadow: var(--inset-sm); color: var(--ink); }
 
-  .themehint { font-size: 12.5px; color: var(--page-muted); margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; box-shadow: var(--inset-sm); }
-  .themehint svg { width: 15px; height: 15px; color: var(--accent); }
+  .themehint { font-size: 12.5px; color: var(--page-muted); margin-top: 16px; display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px 9px 14px; border-radius: 12px; box-shadow: var(--inset-sm); flex-wrap: wrap; }
+  .themehint svg.tip { width: 15px; height: 15px; color: var(--accent); flex: none; }
+  .preview-btn { display: inline-flex; align-items: center; gap: 7px; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--page-ink); background: var(--surface); border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer; box-shadow: var(--raise-sm); }
+  .preview-btn:active { box-shadow: var(--inset-sm); }
+  .preview-btn svg { width: 15px; height: 15px; color: var(--accent); }
+  .preview-btn .moon { display: none; }
+  :root[data-theme="dark"] .preview-btn .moon { display: block; }
+  :root[data-theme="dark"] .preview-btn .sun { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .preview-btn .moon { display: block; }
+    :root:not([data-theme="light"]) .preview-btn .sun { display: none; }
+  }
 
   .foot-box { margin-top: 50px; padding: 22px; border-radius: 16px; box-shadow: var(--raise); background: var(--bg); }
   .foot-box h3 { margin: 0 0 8px; font-size: 15px; }
   .foot-box p { margin: 0; color: var(--muted); font-size: 13.5px; }
 
-  /* in-page theme toggle */
-  .theme-btn { position: fixed; top: 16px; right: 16px; z-index: 100; display: inline-flex; align-items: center; gap: 8px;
-    font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--surface);
-    border: 0; padding: 9px 14px; border-radius: 999px; cursor: pointer; box-shadow: var(--raise-sm); }
-  .theme-btn:active { box-shadow: var(--inset-sm); }
-  .theme-btn svg { width: 16px; height: 16px; color: var(--accent); }
-  .theme-btn .moon { display: none; }
-  :root[data-theme="dark"] .theme-btn .moon { display: block; }
-  :root[data-theme="dark"] .theme-btn .sun { display: none; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .theme-btn .moon { display: block; }
-    :root:not([data-theme="light"]) .theme-btn .sun { display: none; }
-  }
-
   @media (prefers-reduced-motion: reduce) { .tgl, .tgl .knob { transition: none; } }
 </style>
-
-<button class="theme-btn" id="themeBtn" type="button" aria-label="ライト / ダーク切替">
-  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>
-  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-  <span id="themeLabel">テーマ</span>
-</button>
 
 <div class="wrap">
   <header>
     <p class="eyebrow">SwitchBotler · Mockups</p>
     <h1>Soft Depth で組んだ 6 画面</h1>
     <p class="lede">確定した Soft Depth のデザインシステム（<code>design-system/MASTER.md</code>）で、主要 6 画面を組みました。トグル・チップは押して手触りを確認できます。</p>
-    <div class="themehint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg>右上の「テーマ」ボタンでライト/ダークを切り替えられます（全画面が追従）。</div>
+    <div class="themehint">
+      <svg class="tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg>
+      アプリ本体ではテーマ切替は「設定」画面（画面 05）にあります。下のボタンはこのモックアップの表示プレビュー用です。
+      <button class="preview-btn" id="previewBtn" type="button" aria-label="プレビューのライト / ダーク切替">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <span id="previewLabel">プレビュー: ライト</span>
+      </button>
+    </div>
   </header>
 
   <!-- 01 デバイス一覧 -->
-  <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態</span></div>
+  <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態 · 幅に応じて 3 / 2 / 1 列</span></div>
   <div class="win-scroll"><div class="win">
     <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
@@ -269,7 +309,7 @@
       </aside>
       <main class="main">
         <div class="head"><div><h3>デバイス</h3><div class="sub">リビング・寝室ほか</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>更新</button></div>
-        <div class="grid2">
+        <div class="grid-cards">
           <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">リビングの照明</div><div class="sub">Color Bulb · 点灯中</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
           <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><div class="body"><div class="name">サーキュレーター</div><div class="sub">Plug Mini · オフ</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></div>
           <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18M12 3c3 4 3 14 0 18"/></svg></span><div class="body"><div class="name">寝室のカーテン</div><div class="sub">Curtain 3 · 80% 開</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
@@ -323,10 +363,10 @@
   </div></div>
 
   <!-- 03 センサーステータス -->
-  <div class="cap"><span class="n">03</span><h2>センサーステータス</h2><span class="d">温湿度・空気・電池</span></div>
+  <div class="cap"><span class="n">03</span><h2>センサーステータス</h2><span class="d">センサーごとにセクション分け・ドラッグで並べ替え · カードは幅に応じて 3 / 2 / 1 列</span></div>
   <div class="win-scroll"><div class="win">
     <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
-    <div class="app">
+    <div class="app tall">
       <aside class="side">
         <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
@@ -339,35 +379,68 @@
         <div class="status"><span class="dot"></span>最終更新 21:04</div>
       </aside>
       <main class="main">
-        <div class="head"><div><h3>センサー</h3><div class="sub">リビングの温湿度計</div></div></div>
-        <div class="grid2">
-          <div class="stat">
-            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
-            <div class="big">24.5<span class="u">°C</span></div>
-            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,19 L20,16 L40,17 L60,10 L80,13 L100,6 L120,8 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,19 20,16 40,17 60,10 80,13 100,6 120,8" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="8" r="2.6" fill="var(--accent)"/></svg>
-          </div>
-          <div class="stat">
-            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
-            <div class="big">52<span class="u">%</span></div>
-            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,11 L20,13 L40,10 L60,14 L80,12 L100,15 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,11 20,13 40,10 60,14 80,12 100,15 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="stat">
-            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-2.5"/></svg>CO₂</div>
-            <div class="big">620<span class="u">ppm</span></div>
-            <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,14 L20,15 L40,12 L60,13 L80,9 L100,11 L120,10 V26 H0 Z" fill="rgba(14,158,118,.13)"/><polyline points="0,14 20,15 40,12 60,13 80,9 100,11 120,10" fill="none" stroke="var(--ok)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div class="stat">
-            <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>バッテリー</div>
-            <div class="big">88<span class="u">%</span></div>
-            <div class="bar-meter"><i style="width:88%"></i></div>
-          </div>
+        <div class="head"><div><h3>センサー</h3><div class="sub">温湿度計・CO₂ センサー</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg>更新</button></div>
+        <div class="sensor-list" id="sensorList">
+          <section class="sensor-sec" draggable="true" aria-label="リビングの温湿度計（ドラッグで並べ替え）">
+            <div class="sh">
+              <span class="grip" role="button" tabindex="0" aria-label="ドラッグして並べ替え"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
+              <div class="shname">リビングの温湿度計</div>
+              <div class="shmeta">最終更新 21:04</div>
+            </div>
+            <div class="grid-cards">
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
+                <div class="big">24.5<span class="u">°C</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,19 L20,16 L40,17 L60,10 L80,13 L100,6 L120,8 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,19 20,16 40,17 60,10 80,13 100,6 120,8" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="8" r="2.6" fill="var(--accent)"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
+                <div class="big">52<span class="u">%</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,11 L20,13 L40,10 L60,14 L80,12 L100,15 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,11 20,13 40,10 60,14 80,12 100,15 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-2.5"/></svg>CO₂</div>
+                <div class="big">620<span class="u">ppm</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,14 L20,15 L40,12 L60,13 L80,9 L100,11 L120,10 V26 H0 Z" fill="rgba(14,158,118,.13)"/><polyline points="0,14 20,15 40,12 60,13 80,9 100,11 120,10" fill="none" stroke="var(--ok)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>バッテリー</div>
+                <div class="big">88<span class="u">%</span></div>
+                <div class="bar-meter"><i style="width:88%"></i></div>
+              </div>
+            </div>
+          </section>
+          <section class="sensor-sec" draggable="true" aria-label="寝室の温湿度計（ドラッグで並べ替え）">
+            <div class="sh">
+              <span class="grip" role="button" tabindex="0" aria-label="ドラッグして並べ替え"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
+              <div class="shname">寝室の温湿度計</div>
+              <div class="shmeta">最終更新 21:03</div>
+            </div>
+            <div class="grid-cards">
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>温度</div>
+                <div class="big">22.1<span class="u">°C</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,16 L20,17 L40,15 L60,16 L80,14 L100,15 L120,13 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,16 20,17 40,15 60,16 80,14 100,15 120,13" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="13" r="2.6" fill="var(--accent)"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>湿度</div>
+                <div class="big">58<span class="u">%</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,12 L20,11 L40,13 L60,12 L80,14 L100,12 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,12 20,11 40,13 60,12 80,14 100,12 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>バッテリー</div>
+                <div class="big">94<span class="u">%</span></div>
+                <div class="bar-meter"><i style="width:94%"></i></div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
   </div></div>
 
   <!-- 04 シーン実行 -->
-  <div class="cap"><span class="n">04</span><h2>シーン実行</h2><span class="d">ワンクリックで実行</span></div>
+  <div class="cap"><span class="n">04</span><h2>シーン実行</h2><span class="d">ワンクリックで実行 · 幅に応じて 3 / 2 / 1 列</span></div>
   <div class="win-scroll"><div class="win">
     <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
@@ -384,16 +457,30 @@
       </aside>
       <main class="main">
         <div class="head"><div><h3>シーン</h3><div class="sub">SwitchBot アプリで作成</div></div></div>
-        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div class="body"><div class="nm">おやすみ</div><div class="ds">照明オフ・カーテン閉・加湿器オン</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
-        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><div class="body"><div class="nm">帰宅</div><div class="ds">玄関・リビング点灯・エアコンオン</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
-        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span><div class="body"><div class="nm">おはよう</div><div class="ds">カーテン開・照明徐々に点灯</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
-        <div class="scene"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">映画モード</div><div class="ds">照明を暗く・カーテン閉</div></div><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></div>
+        <div class="grid-cards">
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div class="body"><div class="nm">おやすみ</div><div class="ds">照明オフ・カーテン閉・加湿器オン</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><div class="body"><div class="nm">帰宅</div><div class="ds">玄関・リビング点灯・エアコンオン</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span><div class="body"><div class="nm">おはよう</div><div class="ds">カーテン開・照明徐々に点灯</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">映画モード</div><div class="ds">照明を暗く・カーテン閉</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button>
+          </div>
+        </div>
       </main>
     </div>
   </div></div>
 
-  <!-- 05 認証設定 -->
-  <div class="cap"><span class="n">05</span><h2>認証設定</h2><span class="d">Token / Secret とセキュア保管</span></div>
+  <!-- 05 設定 -->
+  <div class="cap"><span class="n">05</span><h2>設定</h2><span class="d">テーマ・認証情報・セキュア保管</span></div>
   <div class="win-scroll"><div class="win">
     <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app tall">
@@ -409,34 +496,68 @@
         <div class="status"><span class="dot"></span>接続済み</div>
       </aside>
       <main class="main">
-        <div class="head"><div><h3>認証設定</h3><div class="sub">SwitchBot API の認証情報</div></div></div>
-        <div class="banner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><div class="tt">接続済み</div><div class="ss">最終確認 21:04 · レート残 9,860 / 10,000</div></div></div>
-        <div class="field"><span class="flab">トークン</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div></div>
-        <div class="field"><span class="flab">シークレット</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div><p class="help">SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション で発行できます。</p></div>
-        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。</div>
-        <div style="display:flex; gap:10px">
-          <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>接続をテスト</button>
-          <button class="btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>接続を解除</button>
+        <div class="head"><div><h3>設定</h3><div class="sub">表示テーマと SwitchBot API の認証</div></div></div>
+
+        <div class="settings-sec">
+          <p class="sec-title">表示</p>
+          <div class="field" style="margin-bottom:0">
+            <span class="flab">テーマ</span>
+            <div class="seg" id="themeSeg" role="group" aria-label="テーマ">
+              <button type="button" data-mode="system" class="on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>システム</button>
+              <button type="button" data-mode="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>ライト</button>
+              <button type="button" data-mode="dark" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>ダーク</button>
+            </div>
+            <p class="seg-help">システムは OS の外観設定に追従します。</p>
+          </div>
+        </div>
+
+        <div class="settings-sec" style="margin-bottom:0">
+          <p class="sec-title">SwitchBot API 認証</p>
+          <div class="banner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><div class="tt">接続済み</div><div class="ss">最終確認 21:04</div></div></div>
+          <div class="field"><span class="flab">トークン</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div></div>
+          <div class="field"><span class="flab">シークレット</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div><p class="help">SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション で発行できます。</p></div>
+          <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。</div>
+          <div style="display:flex; gap:10px">
+            <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>接続をテスト</button>
+            <button class="btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>接続を解除</button>
+          </div>
         </div>
       </main>
     </div>
   </div></div>
 
   <!-- 06 トレイメニュー -->
-  <div class="cap"><span class="n">06</span><h2>トレイメニュー</h2><span class="d">システムトレイのポップオーバー</span></div>
+  <div class="cap"><span class="n">06</span><h2>トレイメニュー</h2><span class="d">お気に入りのみ表示 · シーンは縦 1 列 · 未登録時は空表示</span></div>
   <div class="tray-stage">
-    <div class="tray">
-      <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
-      <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">リビングの照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
-      <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><span class="qn">サーキュレーター</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></div>
-      <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18"/></svg></span><span class="qn">寝室のカーテン</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="寝室のカーテン"><span class="knob"></span></div></div>
-      <div class="sep"></div>
-      <div class="sc">
-        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>おやすみ</span>
-        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>帰宅</span>
+    <div class="tray-demo">
+      <div class="tray-cap">お気に入りがあるとき</div>
+      <div class="tray">
+        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
+        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">リビングの照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
+        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">玄関の照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></div>
+        <div class="sep"></div>
+        <p class="seclab">お気に入りシーン</p>
+        <div class="sc">
+          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="sn">おやすみ</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
+          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><span class="sn">帰宅</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
+        </div>
+        <div class="sep"></div>
+        <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
       </div>
-      <div class="sep"></div>
-      <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
+    </div>
+
+    <div class="tray-demo">
+      <div class="tray-cap">お気に入りが無いとき</div>
+      <div class="tray">
+        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
+        <div class="empty">
+          <span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.4V4h6v6.4l2.2 3.6H6.8L9 10.4Z"/></svg></span>
+          <div class="et">お気に入りデバイスがありません</div>
+          <div class="eh">デバイス画面でピン留めすると、ここに表示されます。</div>
+        </div>
+        <div class="sep"></div>
+        <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
+      </div>
     </div>
   </div>
 
@@ -447,28 +568,54 @@
 </div>
 
 <script>
-  // in-page light/dark toggle — stamps data-theme on <html>
+  // mockup preview light/dark toggle — stamps data-theme on <html> (アプリ本体のテーマは「設定」画面から切替)
   (function () {
     var root = document.documentElement;
-    var label = document.getElementById('themeLabel');
+    var label = document.getElementById('previewLabel');
+    var seg = document.getElementById('themeSeg');
     function effective() {
       var attr = root.getAttribute('data-theme');
       if (attr) return attr;
       return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    function sync() { label.textContent = effective() === 'dark' ? 'ダーク' : 'ライト'; }
-    document.getElementById('themeBtn').addEventListener('click', function () {
+    function syncSeg() {
+      if (!seg) return;
+      var mode = root.getAttribute('data-theme') || 'system';
+      seg.querySelectorAll('button').forEach(function (b) {
+        var on = b.dataset.mode === mode;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    function sync() {
+      if (label) label.textContent = 'プレビュー: ' + (effective() === 'dark' ? 'ダーク' : 'ライト');
+      syncSeg();
+    }
+    document.getElementById('previewBtn').addEventListener('click', function () {
       root.setAttribute('data-theme', effective() === 'dark' ? 'light' : 'dark');
       sync();
     });
+    // settings screen theme control (the real app's location for theme)
+    if (seg) {
+      seg.querySelectorAll('button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var m = b.dataset.mode;
+          if (m === 'system') root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', m);
+          sync();
+        });
+      });
+    }
     sync();
   })();
 
+  // toggles (switches)
   document.querySelectorAll('.tgl').forEach(function (t) {
     function flip() { var on = t.classList.toggle('on'); t.setAttribute('aria-checked', on ? 'true' : 'false'); }
     t.addEventListener('click', flip);
     t.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
   });
+
   // color swatch demo
   document.querySelectorAll('.swrow').forEach(function (row) {
     row.querySelectorAll('.sw').forEach(function (s) {
@@ -478,4 +625,30 @@
       });
     });
   });
+
+  // sensor sections — drag to reorder
+  (function () {
+    var list = document.getElementById('sensorList');
+    if (!list) return;
+    var dragEl = null;
+    list.querySelectorAll('.sensor-sec').forEach(function (sec) {
+      sec.addEventListener('dragstart', function (e) { dragEl = sec; sec.classList.add('dragging'); if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; });
+      sec.addEventListener('dragend', function () {
+        sec.classList.remove('dragging');
+        list.querySelectorAll('.sensor-sec').forEach(function (s) { s.classList.remove('dragover'); });
+        dragEl = null;
+      });
+      sec.addEventListener('dragover', function (e) { e.preventDefault(); if (sec !== dragEl) sec.classList.add('dragover'); });
+      sec.addEventListener('dragleave', function () { sec.classList.remove('dragover'); });
+      sec.addEventListener('drop', function (e) {
+        e.preventDefault();
+        sec.classList.remove('dragover');
+        if (dragEl && sec !== dragEl) {
+          var rect = sec.getBoundingClientRect();
+          var after = e.clientY > rect.top + rect.height / 2;
+          list.insertBefore(dragEl, after ? sec.nextSibling : sec);
+        }
+      });
+    });
+  })();
 </script>
