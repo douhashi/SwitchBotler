@@ -1,8 +1,18 @@
-# SwitchBotler
+<p align="center">
+  <img src="docs/assets/hero.svg" alt="SwitchBotler" width="760">
+</p>
 
-> SwitchBot API を使って、デスクトップから SwitchBot デバイスを操作するクロスプラットフォームアプリ
+<p align="center">
+  SwitchBot API を使って、デスクトップから SwitchBot デバイスを操作するクロスプラットフォームアプリ
+</p>
 
-**SwitchBotler**（スイッチボトラー）は、SwitchBot Cloud API v1.1 を利用して SwitchBot デバイスを Windows / macOS / Linux から操作するデスクトップアプリケーション。名前は **SwitchBot + Butler（執事）** の造語。システムトレイ常駐 + グローバルショートカットで、PC の作業机から手を離さずにデバイスを操作できる軽量ユーティリティを目指す。
+<p align="center">
+  <a href="https://github.com/douhashi/SwitchBotler/releases">⬇&nbsp;ダウンロード</a>&nbsp;·&nbsp;
+  <a href="#スクリーンショット">スクリーンショット</a>&nbsp;·&nbsp;
+  <a href="LICENSE">MIT License</a>
+</p>
+
+**SwitchBotler**（スイッチボトラー）は、SwitchBot Cloud API v1.1 を利用して SwitchBot デバイスを Windows / macOS / Linux から操作するデスクトップアプリケーション。システムトレイ常駐 + グローバルショートカットで、PC の作業机から手を離さずにデバイスを操作できる軽量ユーティリティを目指す。
 
 ## 特徴
 
@@ -10,6 +20,29 @@
 - 🪶 **軽量** — Tauri v2 採用でバンドル 3〜10MB・低メモリ
 - 🔒 **安全** — Token / Secret は OS のセキュアストレージに保管し、署名生成・API 呼び出しは Rust 側で完結
 - 🎛️ **手元の即時操作** — トレイ常駐からデバイス操作・シーン実行
+
+## ダウンロード
+
+[**最新版をダウンロード（Releases）**](https://github.com/douhashi/SwitchBotler/releases) — Windows / macOS / Linux 向けのインストーラを配布しています（現在は未署名）。
+
+## スクリーンショット
+
+<p align="center">
+  <img src="docs/assets/screenshot-devices.png" alt="デバイス一覧（ライトテーマ）" width="820"><br>
+  <sub>デバイス一覧 — ライトテーマ</sub>
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshot-sensors.png" alt="センサーステータス（ダークテーマ）" width="820"><br>
+  <sub>センサーステータス — ダークテーマ</sub>
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshot-tray.png" alt="トレイメニュー（お気に入り）" width="300"><br>
+  <sub>トレイメニュー（お気に入り）</sub>
+</p>
+
+> 全 6 画面のモックアップは [`docs/mockup/index.en.html`](docs/mockup/index.en.html)（英語）/ [`docs/mockup/index.html`](docs/mockup/index.html)（日本語）をブラウザで開くと確認できます。
 
 ## 技術構成
 
@@ -24,12 +57,6 @@ Tauri v2 + Rust（バックエンド） / React 19 + TypeScript + Vite + Tailwin
 mise install     # Node.js・Rust・lefthook を導入
 mise run setup   # npm install + git hooks（lefthook）の有効化
 mise run dev     # Tauri アプリを開発モードで起動
-```
-
-SwitchBot API の認証情報など開発時のシークレットは [Infisical](https://infisical.com/) で管理する（`.env` は使わない）。詳細は [`docs/development/secrets.md`](docs/development/secrets.md) を参照。
-
-```sh
-infisical run --env=dev -- mise run dev   # シークレットを注入して起動
 ```
 
 そのほかの主なタスク:
