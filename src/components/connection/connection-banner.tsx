@@ -13,7 +13,7 @@ export function ConnectionBanner({
 
   if (status === "connected") {
     return (
-      <Alert className="text-sd-ok">
+      <Alert className="mb-5 text-sd-ok">
         <ShieldCheck strokeWidth={1.9} />
         <AlertTitle className="text-foreground">接続済み</AlertTitle>
         <AlertDescription>
@@ -25,7 +25,7 @@ export function ConnectionBanner({
 
   if (status === "testing") {
     return (
-      <Alert className="text-sd-accent">
+      <Alert className="mb-5 text-sd-accent">
         <Loader2 className="animate-spin" strokeWidth={1.9} />
         <AlertTitle className="text-foreground">接続を確認中…</AlertTitle>
         <AlertDescription>SwitchBot API に問い合わせています。</AlertDescription>
@@ -34,7 +34,7 @@ export function ConnectionBanner({
   }
 
   return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" className="mb-5">
       <TriangleAlert strokeWidth={1.9} />
       <AlertTitle>未接続</AlertTitle>
       <AlertDescription>
