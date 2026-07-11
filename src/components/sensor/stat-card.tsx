@@ -1,23 +1,18 @@
-import {
-  Battery,
-  Droplet,
-  Gauge,
-  type LucideIcon,
-  Thermometer,
-} from "lucide-react";
+import { Battery, Droplet, type LucideIcon, Thermometer } from "lucide-react";
 
 import { BarMeter } from "@/components/charts/bar-meter";
-import { Sparkline } from "@/components/charts/sparkline";
 import type { SensorIcon, SensorMetric } from "@/data";
 
 const METRIC_ICON: Record<SensorIcon, LucideIcon> = {
   temperature: Thermometer,
   humidity: Droplet,
-  co2: Gauge,
   battery: Battery,
 };
 
-/** センサー計測値カード（mockup .stat）。ラベル + 大数値 + スパークライン or メーター。 */
+/**
+ * センサー計測値カード（mockup .stat）。ラベル + 大数値 + メーター。
+ * API は単一時点値のみを返すため履歴（スパークライン）は持たない（決定3）。
+ */
 export function StatCard({ metric }: { metric: SensorMetric }) {
   const Icon = METRIC_ICON[metric.icon];
 
@@ -35,15 +30,7 @@ export function StatCard({ metric }: { metric: SensorMetric }) {
         </span>
       </div>
 
-      {metric.display === "sparkline" ? (
-        <Sparkline
-          data={metric.history ?? []}
-          tone={metric.tone}
-          className="mt-2.5"
-        />
-      ) : (
-        <BarMeter value={metric.value} label={metric.label} className="mt-3" />
-      )}
+      <BarMeter value={metric.value} label={metric.label} className="mt-3" />
     </div>
   );
 }

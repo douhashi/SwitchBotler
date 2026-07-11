@@ -1,28 +1,50 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Tauri IPC（invoke）は外部境界。ここだけをモックする。
+const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
 import type { Scene } from "@/data";
 import { SceneRow } from "./scene-row";
 
-const scene: Scene = {
-  id: "goodnight",
-  name: "おやすみ",
-  description: "照明オフ・カーテン閉・加湿器オン",
-  icon: "sleep",
-};
+const scene: Scene = { id: "goodnight", name: "おやすみ" };
 
 describe("SceneRow", () => {
+  beforeEach(() => {
+    invoke.mockReset();
+  });
+
   it("実行ボタンで実行中フィードバックを表示し、完了後に戻る", async () => {
+    // 実行中状態を観測するため、テストが解決を制御する deferred を使う。
+    let resolveExec!: () => void;
+    invoke.mockReturnValue(
+      new Promise<null>((resolve) => {
+        resolveExec = () => resolve(null);
+      }),
+    );
     render(<SceneRow scene={scene} />);
 
     await userEvent.click(screen.getByRole("button", { name: "実行" }));
 
-    const running = screen.getByRole("button", { name: "実行中" });
-    expect(running).toBeDisabled();
+    expect(screen.getByRole("button", { name: "実行中" })).toBeDisabled();
+
+    resolveExec();
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "実行" })).toBeEnabled();
     });
+    expect(invoke).toHaveBeenCalledWith("execute_scene", { id: "goodnight" });
+  });
+
+  it("実行失敗時は安全なエラーメッセージを表示する", async () => {
+    invoke.mockRejectedValue({ code: "network", message: "接続できませんでした。" });
+    render(<SceneRow scene={scene} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "実行" }));
+
+    await screen.findByText("接続できませんでした。");
+    expect(screen.getByRole("button", { name: "実行" })).toBeEnabled();
   });
 });

@@ -5,6 +5,7 @@
 
 use serde::Serialize;
 
+use crate::switchbot::mapping::{DeviceDto, SceneDto, SensorReadingsDto};
 use crate::switchbot::{credentials, SwitchBotClient, SwitchBotError};
 
 /// フロントに返す接続状態 DTO。秘匿値を持たない。
@@ -49,4 +50,54 @@ pub fn disconnect() -> Result<(), SwitchBotError> {
 #[tauri::command]
 pub fn get_connection_state() -> ConnectionStateDto {
     ConnectionStateDto::current()
+}
+
+/// 保存済み認証情報で新しいクライアントを用意する（各データコマンド共通の前処理）。
+fn client_with_creds() -> Result<(SwitchBotClient, credentials::Credentials), SwitchBotError> {
+    let creds = credentials::load()?;
+    let client = SwitchBotClient::new()?;
+    Ok((client, creds))
+}
+
+/// デバイス一覧（対応種別は状態込み）を view-model DTO で返す。
+#[tauri::command]
+pub async fn list_devices() -> Result<Vec<DeviceDto>, SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client.list_devices(&creds).await
+}
+
+/// デバイスへコマンドを送信する（turnOn/turnOff/setBrightness/setPosition/lock/unlock/setColor 等）。
+/// setColor の parameter は preset id で受け取り、Rust 側で "R:G:B" へ変換する（決定2）。
+#[tauri::command]
+pub async fn send_command(
+    id: String,
+    command: String,
+    parameter: String,
+    command_type: String,
+) -> Result<(), SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client
+        .send_command(&creds, &id, &command, &parameter, &command_type)
+        .await
+}
+
+/// シーン一覧を view-model DTO で返す。
+#[tauri::command]
+pub async fn list_scenes() -> Result<Vec<SceneDto>, SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client.list_scenes(&creds).await
+}
+
+/// シーンを実行する。
+#[tauri::command]
+pub async fn execute_scene(id: String) -> Result<(), SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client.execute_scene(&creds, &id).await
+}
+
+/// 先頭 Meter のセンサー読み取りを返す（単一 Meter・履歴なし。決定3）。
+#[tauri::command]
+pub async fn get_sensors() -> Result<SensorReadingsDto, SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client.get_sensors(&creds).await
 }

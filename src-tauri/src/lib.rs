@@ -11,6 +11,11 @@ pub fn run() {
             commands::test_connection,
             commands::disconnect,
             commands::get_connection_state,
+            commands::list_devices,
+            commands::send_command,
+            commands::list_scenes,
+            commands::execute_scene,
+            commands::get_sensors,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

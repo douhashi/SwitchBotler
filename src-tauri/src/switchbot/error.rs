@@ -12,8 +12,11 @@ use serde::Serialize;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ErrorCode {
-    /// 認証失敗（HTTP 401）。
+    /// 認証失敗（HTTP 401）。公式に残数フィールドが無いため、
+    /// リクエスト上限超過も 401 になり得る（両可能性を文言で示す）。
     Unauthorized,
+    /// リクエスト過多（HTTP 429）。
+    RateLimited,
     /// API 封筒の statusCode が 100 以外。
     ApiStatus,
     /// 通信・レスポンス解析の失敗。
@@ -44,7 +47,14 @@ impl SwitchBotError {
     pub fn unauthorized() -> Self {
         Self::new(
             ErrorCode::Unauthorized,
-            "認証に失敗しました。Token と Secret を確認してください。",
+            "認証情報またはリクエスト上限を確認してください。",
+        )
+    }
+
+    pub fn rate_limited() -> Self {
+        Self::new(
+            ErrorCode::RateLimited,
+            "リクエストが多すぎます。しばらく待って再試行してください。",
         )
     }
 

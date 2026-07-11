@@ -1,17 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import type { ConnectionGateway } from "./connection";
+import { toMessage } from "./ipc";
 import { type ConnectionState, RATE_LIMIT } from "./types";
 
 /** Rust コマンドが返す接続状態 DTO。秘匿値を含まない。 */
 type ConnectionStateDto = {
   saved: boolean;
-};
-
-/** Rust の SwitchBotError シリアライズ形（`{ code, message }`）。 */
-type RustError = {
-  code?: string;
-  message?: string;
 };
 
 /** 現在時刻を "HH:MM" 表示文字列にする。 */
@@ -34,19 +29,6 @@ function toState(dto: ConnectionStateDto, lastCheckedAt: string | null): Connect
     saved: dto.saved,
     rateLimit: RATE_LIMIT,
   };
-}
-
-/**
- * invoke の reject 値から利用者向けの安全な日本語メッセージを取り出す。
- * Rust 側で秘匿値を含まない文言に整形済みのため、それをそのまま使う。
- */
-function toMessage(error: unknown): string {
-  const fallback = "SwitchBot API との通信に失敗しました。";
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as RustError).message;
-    if (typeof message === "string" && message.length > 0) return message;
-  }
-  return fallback;
 }
 
 /** Tauri IPC 経由の {@link ConnectionGateway} 実装。 */

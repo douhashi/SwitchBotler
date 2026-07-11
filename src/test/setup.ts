@@ -13,8 +13,20 @@ type TauriWindow = Window & {
 const tauriWindow = window as TauriWindow;
 if (!tauriWindow.__TAURI_INTERNALS__) {
   tauriWindow.__TAURI_INTERNALS__ = {
-    // 既定は「未保存」。接続系コマンドは副作用なしで解決する。
-    invoke: async (cmd: string) => (cmd === "get_connection_state" ? { saved: false } : null),
+    // 既定は空データ。全画面レンダリングのテストが実 API 無しで安全に動く。
+    invoke: async (cmd: string) => {
+      switch (cmd) {
+        case "get_connection_state":
+          return { saved: false };
+        case "list_devices":
+        case "list_scenes":
+          return [];
+        case "get_sensors":
+          return { source: "", metrics: [] };
+        default:
+          return null;
+      }
+    },
   };
 }
 
