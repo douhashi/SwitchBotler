@@ -99,6 +99,15 @@ pub async fn send_aircon(
         .await
 }
 
+/// 赤外線ライトに電源・相対明暗コマンドを送る（Light / DIY Light）。
+/// フロントは action（"on"/"off"/"brighter"/"dimmer"）だけを渡し、SwitchBot コマンド名への
+/// 変換は Rust `mapping.rs`（`ir_light_command`）が所有する。Light は状態を返さない。
+#[tauri::command]
+pub async fn send_ir_light(id: String, action: String) -> Result<(), SwitchBotError> {
+    let (client, creds) = client_with_creds()?;
+    client.send_ir_light(&creds, &id, &action).await
+}
+
 /// シーン一覧を view-model DTO で返す。
 #[tauri::command]
 pub async fn list_scenes() -> Result<Vec<SceneDto>, SwitchBotError> {

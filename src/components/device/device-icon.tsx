@@ -22,6 +22,7 @@ const CATEGORY_ICON: Record<DeviceCategory, LucideIcon> = {
   lock: Lock,
   bot: ToggleRight,
   aircon: AirVent,
+  ir_light: Lightbulb,
   other: CircleHelp,
 };
 

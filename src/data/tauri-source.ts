@@ -7,6 +7,7 @@ import type {
   Device,
   DeviceCategory,
   DeviceControls,
+  IrLightAction,
   Scene,
   SensorReadings,
 } from "./types";
@@ -75,6 +76,15 @@ export const tauriDataSource: SwitchBotlerDataSource = {
         fanSpeed: state.fanSpeed,
         power: state.power,
       });
+    } catch (error) {
+      throw toError(error);
+    }
+  },
+
+  async sendIrLight(id: string, action: IrLightAction) {
+    try {
+      // action（意味論）のまま渡す。SwitchBot コマンド名への変換は Rust mapping.rs が所有する。
+      await invoke("send_ir_light", { id, action });
     } catch (error) {
       throw toError(error);
     }

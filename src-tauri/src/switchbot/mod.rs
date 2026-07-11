@@ -118,6 +118,48 @@ mod integration_tests {
     }
 
     #[tokio::test]
+    #[ignore = "実 IR ライトに副作用（電源/明暗送信）。原状復帰する。--ignored 指定時のみ実行"]
+    async fn send_ir_light_succeeds() {
+        // 実在の赤外線ライト（Light / DIY Light）にコマンドを送る（V2/V3）。副作用配慮として、
+        // turnOn→turnOff で原状復帰、brightnessUp→brightnessDown で明るさを相殺する。
+        // remoteType 実値の確認（V1）と、DIY Light が標準コマンドに応答するか（V3）も兼ねる。
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client.list_devices(&creds).await.expect("一覧取得");
+        let lights: Vec<_> = devices
+            .iter()
+            .filter(|d| d.category == "ir_light")
+            .collect();
+        assert!(
+            !lights.is_empty(),
+            "赤外線ライトが存在すること（V1: remoteType が ir_light にマップ）"
+        );
+        for light in lights {
+            // model（= remoteType 実値）のみ出力。deviceId・名称は伏せる（V1/V3）。
+            println!("ir_light remoteType = {}", light.model);
+            // 電源: turnOn → turnOff で原状復帰。
+            client
+                .send_ir_light(&creds, &light.id, "on")
+                .await
+                .expect("turnOn が statusCode 100 で受理されること（V2/V3）");
+            client
+                .send_ir_light(&creds, &light.id, "off")
+                .await
+                .expect("turnOff が statusCode 100 で受理されること（V2/V3）");
+            // 明るさ: brightnessUp → brightnessDown で相殺。
+            client
+                .send_ir_light(&creds, &light.id, "brighter")
+                .await
+                .expect("brightnessUp が statusCode 100 で受理されること（V2）");
+            client
+                .send_ir_light(&creds, &light.id, "dimmer")
+                .await
+                .expect("brightnessDown が statusCode 100 で受理されること（V2）");
+        }
+        println!("send_ir_light ok (on/off, brighter/dimmer, 原状復帰)");
+    }
+
+    #[tokio::test]
     #[ignore = "実 API に副作用（コマンド送信）。安全な冪等操作のみ。--ignored 指定時のみ実行"]
     async fn send_command_idempotent_succeeds() {
         // 実在の Plug に現在の電源状態と同じコマンドを送る（状態を変えない冪等操作）。
