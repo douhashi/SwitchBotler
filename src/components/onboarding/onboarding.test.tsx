@@ -103,7 +103,8 @@ describe("Onboarding", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /保存して接続/ }));
 
-    await screen.findByText("認証に失敗しました。");
+    // ストアは code（unauthorized）を保持し、表示端が errors namespace で翻訳する（ja）。
+    await screen.findByText("認証情報またはリクエスト上限を確認してください。");
     expect(useConnectionStore.getState().connection.status).toBe("disconnected");
   });
 });

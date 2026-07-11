@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import { connectionGateway, type ConnectionState, RATE_LIMIT } from "@/data";
+import { type AppErrorCode, errorCodeOf } from "@/i18n/error";
 
 const INITIAL: ConnectionState = {
   status: "disconnected",
@@ -12,8 +13,8 @@ const INITIAL: ConnectionState = {
 type ConnectionStore = {
   connection: ConnectionState;
   loaded: boolean;
-  /** 直近の操作で発生したエラーメッセージ（日本語・秘匿値なし）。 */
-  error: string | null;
+  /** 直近の操作で発生したエラーコード（表示端で `errors` namespace により翻訳する）。 */
+  error: AppErrorCode | null;
   /** 初回のみ現在の接続状態を取得する。 */
   load: () => Promise<void>;
   /** Token / Secret を保存し、続けて接続テストを行う。 */
@@ -44,11 +45,10 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
       const connection = await connectionGateway.testConnection();
       set({ connection, loaded: true, error: null });
     } catch (e) {
-      const message = e instanceof Error ? e.message : "接続に失敗しました。";
       set((s) => ({
         connection: { ...s.connection, status: "disconnected", lastCheckedAt: null },
         loaded: true,
-        error: message,
+        error: errorCodeOf(e),
       }));
     }
   },

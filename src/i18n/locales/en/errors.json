@@ -1,0 +1,10 @@
+{
+  "unauthorized": "Check your credentials or request limit.",
+  "rateLimited": "Too many requests. Please wait a moment and try again.",
+  "apiStatus": "SwitchBot API returned an error (code {{statusCode}}).",
+  "offline": "The device is offline and can't be controlled.",
+  "network": "Couldn't reach the SwitchBot API. Check your network connection.",
+  "storage": "Couldn't access the credential storage.",
+  "missingCredentials": "No credentials saved.",
+  "unknown": "Communication with the SwitchBot API failed."
+}

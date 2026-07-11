@@ -33,9 +33,13 @@ description = "Rust の静的解析"
 dir = "src-tauri"
 run = "cargo clippy --all-targets -- -D warnings"
 
+[tasks.i18n-guard]
+description = "UI 文言の日本語ハードコード検出（src 全体を走査）"
+run = "node scripts/check-i18n-hardcode.mjs"
+
 [tasks.lint]
-description = "全 lint（typecheck + fmt-check + clippy）"
-depends = ["typecheck", "fmt-check", "clippy"]
+description = "全 lint（typecheck + fmt-check + clippy + i18n-guard）"
+depends = ["typecheck", "fmt-check", "clippy", "i18n-guard"]
 
 [tasks.test-front]
 description = "フロントエンドのテスト（Vitest）"

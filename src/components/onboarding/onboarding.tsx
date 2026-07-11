@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Save, ShieldCheck, TriangleAlert } from "lucide-react";
 
 import { LogoMark, Wordmark } from "@/components/brand";
@@ -6,21 +7,8 @@ import { SecretField } from "@/components/connection/secret-field";
 import { Button } from "@/components/ui/button";
 import { useConnectionStore } from "@/stores/connection-store";
 
-/** モックアップ 01 準拠の取得手順。文言は SwitchBot アプリの導線に合わせる。 */
-const STEPS = [
-  {
-    title: "アプリで発行",
-    body: "SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション",
-  },
-  {
-    title: "2つの値をコピー",
-    body: "トークンとシークレットをそれぞれコピーします。",
-  },
-  {
-    title: "貼り付けて接続",
-    body: "下のフォームに貼り付け、「保存して接続」。",
-  },
-] as const;
+/** 取得手順のステップキー（文言は onboarding namespace が持つ）。 */
+const STEP_KEYS = ["issue", "copy", "paste"] as const;
 
 /**
  * 未設定（`connection.saved === false`）のときにサイドバー付きシェルの代わりに出す
@@ -30,6 +18,9 @@ const STEPS = [
  * 通常シェルへ自動遷移する（このコンポーネントは遷移を持たない）。
  */
 export function Onboarding() {
+  const { t } = useTranslation("onboarding");
+  const { t: tconn } = useTranslation("connection");
+  const { t: te } = useTranslation("errors");
   const connection = useConnectionStore((s) => s.connection);
   const error = useConnectionStore((s) => s.error);
   const saveCredentials = useConnectionStore((s) => s.saveCredentials);
@@ -56,26 +47,22 @@ export function Onboarding() {
             <LogoMark size={30} />
           </span>
           <h1 className="mb-2 text-[22px] font-bold tracking-tight">
-            <Wordmark /> へようこそ
+            <Trans t={t} i18nKey="welcomeTitle" components={{ brand: <Wordmark /> }} />
           </h1>
           <p className="max-w-[42ch] text-[13.5px] leading-relaxed text-muted-foreground">
-            お使いの SwitchBot デバイスを、メニューバーからワンタップで操作できます。はじめに
-            API 認証を設定しましょう。
+            {t("intro")}
           </p>
         </div>
 
         <ol className="my-6 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <li
-              key={step.title}
-              className="rounded-[15px] px-3.5 py-3.5 shadow-inset-sm"
-            >
+          {STEP_KEYS.map((key, index) => (
+            <li key={key} className="rounded-[15px] px-3.5 py-3.5 shadow-inset-sm">
               <span className="mb-2.5 grid size-6 place-items-center rounded-full font-mono text-xs font-bold text-sd-accent shadow-raise-sm">
                 {index + 1}
               </span>
-              <h2 className="mb-1 text-[12.5px] font-bold">{step.title}</h2>
+              <h2 className="mb-1 text-[12.5px] font-bold">{t(`steps.${key}.title`)}</h2>
               <p className="text-[11.5px] leading-relaxed text-muted-foreground">
-                {step.body}
+                {t(`steps.${key}.body`)}
               </p>
             </li>
           ))}
@@ -84,20 +71,20 @@ export function Onboarding() {
         {error && (
           <div className="mb-5 flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-xs text-destructive shadow-inset-sm">
             <TriangleAlert size={15} strokeWidth={1.9} className="shrink-0" />
-            {error}
+            {te(error)}
           </div>
         )}
 
         <SecretField
           id="token"
-          label="トークン"
+          label={tconn("field.token")}
           value={token}
           onChange={setToken}
           saved={false}
         />
         <SecretField
           id="secret"
-          label="シークレット"
+          label={tconn("field.secret")}
           value={secret}
           onChange={setSecret}
           saved={false}
@@ -109,13 +96,12 @@ export function Onboarding() {
             strokeWidth={1.75}
             className="mt-0.5 shrink-0 text-sd-ok"
           />
-          入力した値は OS のセキュアストレージ（Keychain / Credential Manager / Secret
-          Service）に保管され、画面やログに平文で表示されません。
+          {t("storageNote")}
         </div>
 
         <Button className="w-full" onClick={handleSave} disabled={!canSave}>
           <Save strokeWidth={2} />
-          保存して接続
+          {tconn("saveAndConnect")}
         </Button>
       </div>
     </div>

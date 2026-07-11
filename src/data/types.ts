@@ -83,10 +83,18 @@ export type IrLightState = {
   power: boolean;
 };
 
-/** カラー電球のカラー候補。swatch は UI プレゼンテーション色。 */
+/**
+ * UI 表示ラベルを翻訳するための最小の翻訳関数型。
+ * コンポーネントの `useTranslation(ns).t` をそのまま渡せる（i18n 知識はフロントに集約）。
+ */
+export type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * カラー電球のカラー候補。swatch は UI プレゼンテーション色。
+ * 表示名は安定 `id`（warm/neutral/… ）からフロントが翻訳する（Rust は日本語ラベルを返さない）。
+ */
 export type DeviceColorOption = {
   id: string;
-  label: string;
   swatch: string;
 };
 
@@ -146,59 +154,49 @@ export function isOtherDevice(device: Device): boolean {
   return deviceInteraction(device) === "none";
 }
 
-/** 運転モードの日本語ラベル。 */
-const AIRCON_MODE_LABEL: Record<AirconMode, string> = {
-  auto: "自動",
-  cool: "冷房",
-  dry: "除湿",
-  fan: "送風",
-  heat: "暖房",
-};
-
-/** 風量の日本語ラベル。 */
-const AIRCON_FAN_LABEL: Record<AirconFanSpeed, string> = {
-  auto: "自動",
-  low: "弱",
-  medium: "中",
-  high: "強",
-};
-
-/** 運転モードの表示ラベルを引く。 */
-export function airconModeLabel(mode: AirconMode): string {
-  return AIRCON_MODE_LABEL[mode];
+/** 運転モードの表示ラベルを引く（`devices` namespace の翻訳関数を渡す）。 */
+export function airconModeLabel(mode: AirconMode, t: Translate): string {
+  return t(`airconMode.${mode}`);
 }
 
-/** 風量の表示ラベルを引く。 */
-export function airconFanLabel(fan: AirconFanSpeed): string {
-  return AIRCON_FAN_LABEL[fan];
+/** 風量の表示ラベルを引く（`devices` namespace の翻訳関数を渡す）。 */
+export function airconFanLabel(fan: AirconFanSpeed, t: Translate): string {
+  return t(`airconFan.${fan}`);
 }
 
-/** カード・ヘッダのサブに出す状態ラベルを導出する。 */
-export function deviceStatusLabel(device: Device): string {
-  if (!device.supported) return "未対応";
+/**
+ * カード・ヘッダのサブに出す状態ラベルを導出する（`devices` namespace の翻訳関数を渡す）。
+ * 文言そのものは翻訳リソースに集約し、ここは種別ごとのキー選択と補間だけを担う。
+ */
+export function deviceStatusLabel(device: Device, t: Translate): string {
+  if (!device.supported) return t("status.unsupported");
   const { power, position, temperature, mode, botMode } = device.controls;
   switch (device.category) {
     case "bot":
       // pressMode は ON/OFF 状態を持たないため中立ラベル。switch/customize は従来の「オン/オフ」。
-      if (botMode === "press") return "押して操作";
-      return power ? "オン" : "オフ";
+      if (botMode === "press") return t("status.botPress");
+      return power ? t("status.botOn") : t("status.botOff");
     case "lock":
-      return power ? "施錠" : "解錠";
+      return power ? t("status.lockLocked") : t("status.lockUnlocked");
     case "curtain":
-      return position === undefined ? (power ? "開" : "閉") : `${position}% 開`;
+      return position === undefined
+        ? power
+          ? t("status.curtainOpen")
+          : t("status.curtainClosed")
+        : t("status.curtainPosition", { position });
     case "light":
-      return power ? "点灯中" : "オフ";
+      return power ? t("status.lightOn") : t("status.lightOff");
     case "ir_light":
       // 赤外線ライトは状態を返さないため「最後に送信した電源値」を点灯/消灯で表示する。
-      return power ? "点灯" : "消灯";
+      return power ? t("status.irLightOn") : t("status.irLightOff");
     case "aircon":
-      if (!power) return "オフ";
+      if (!power) return t("status.airconOff");
       // 運転中は「冷房 26℃」のように現在のモードと温度を出す。
       return mode !== undefined && temperature !== undefined
-        ? `${airconModeLabel(mode)} ${temperature}℃`
-        : "オン";
+        ? t("status.airconRunning", { mode: airconModeLabel(mode, t), temperature })
+        : t("status.airconOn");
     default:
-      return power ? "オン" : "オフ";
+      return power ? t("status.defaultOn") : t("status.defaultOff");
   }
 }
 
@@ -235,10 +233,12 @@ export type SensorIcon =
   | "motion"
   | "brightness";
 
-/** すべての計測が共通で持つメタ。Rust `SensorMetricDto` と camelCase で 1:1 対応。 */
+/**
+ * すべての計測が共通で持つメタ。Rust `SensorMetricDto` と camelCase で 1:1 対応。
+ * 表示ラベルは Rust から受け取らず、フロントが `icon` から翻訳する（i18n）。
+ */
 type SensorMetricBase = {
   id: string;
-  label: string;
   icon: SensorIcon;
 };
 
@@ -254,11 +254,13 @@ export type GaugeMetric = SensorMetricBase & {
 
 /**
  * 状態表示の計測（人感/明るさ）。区分テキストを表示しメーターは持たない。
+ * `state` は安定な状態キー（motion: "active"/"idle"、brightness: "bright"/"dim"）で、
+ * フロントが `sensors:state.<icon>.<state>` から区分テキストを翻訳する。
  * `tone` は強調区分（active=起きている状態を sd-accent 強調 / idle=静穏 / 無指定=ニュートラル）。
  */
 export type StateMetric = SensorMetricBase & {
   kind: "state";
-  text: string;
+  state: string;
   tone?: "active" | "idle";
 };
 

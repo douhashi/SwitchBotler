@@ -9,12 +9,12 @@ import { SensorsView } from "./sensors-view";
 import { SettingsView } from "./settings-view";
 
 /**
- * 画面メタ情報の SSoT。サイドバーのナビ（label / icon）と画面本体（render）が
- * 同じ定義を参照する。各画面のタイトル・サブタイトルは各 view の ViewHeader が持つ。
+ * 画面メタ情報の SSoT。サイドバーのナビ（icon）と画面本体（render）が同じ定義を参照する。
+ * ナビラベルは `id` をキーに `common:nav.<id>` を翻訳する（サイドバー側）。各画面の
+ * タイトル・サブタイトルは各 view の ViewHeader が持つ。
  */
 export type ViewMeta = {
   id: ViewId;
-  label: string;
   icon: LucideIcon;
   render: () => ReactElement;
 };
@@ -22,25 +22,21 @@ export type ViewMeta = {
 export const VIEWS: ViewMeta[] = [
   {
     id: "devices",
-    label: "デバイス",
     icon: LayoutGrid,
     render: () => <DevicesView />,
   },
   {
     id: "sensors",
-    label: "センサー",
     icon: Activity,
     render: () => <SensorsView />,
   },
   {
     id: "scenes",
-    label: "シーン",
     icon: Layers,
     render: () => <ScenesView />,
   },
   {
     id: "settings",
-    label: "設定",
     icon: Settings,
     render: () => <SettingsView />,
   },

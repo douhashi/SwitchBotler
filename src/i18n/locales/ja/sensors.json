@@ -1,0 +1,26 @@
+{
+  "title": "センサー",
+  "subtitle": "温湿度計・人感センサー",
+  "empty": "センサー（温湿度計・人感センサー）が見つかりませんでした。",
+  "sourceFallback": "センサー",
+  "updatedAt": "最終更新 {{time}}",
+  "moveUp": "{{name}} を上へ",
+  "moveDown": "{{name}} を下へ",
+  "metric": {
+    "temperature": "温度",
+    "humidity": "湿度",
+    "battery": "バッテリー",
+    "motion": "人感",
+    "brightness": "明るさ"
+  },
+  "state": {
+    "motion": {
+      "active": "検知あり",
+      "idle": "検知なし"
+    },
+    "brightness": {
+      "bright": "明るい",
+      "dim": "暗い"
+    }
+  }
+}

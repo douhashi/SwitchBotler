@@ -2,24 +2,68 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import enCommon from "./locales/en/common.json";
+import enConnection from "./locales/en/connection.json";
+import enDevices from "./locales/en/devices.json";
+import enErrors from "./locales/en/errors.json";
+import enOnboarding from "./locales/en/onboarding.json";
+import enScenes from "./locales/en/scenes.json";
+import enSensors from "./locales/en/sensors.json";
 import enSettings from "./locales/en/settings.json";
+import enTray from "./locales/en/tray.json";
 import jaCommon from "./locales/ja/common.json";
+import jaConnection from "./locales/ja/connection.json";
+import jaDevices from "./locales/ja/devices.json";
+import jaErrors from "./locales/ja/errors.json";
+import jaOnboarding from "./locales/ja/onboarding.json";
+import jaScenes from "./locales/ja/scenes.json";
+import jaSensors from "./locales/ja/sensors.json";
 import jaSettings from "./locales/ja/settings.json";
+import jaTray from "./locales/ja/tray.json";
 import { FALLBACK_LANGUAGE } from "./resolve";
 
 /** 横断的な共通語彙を置く既定 namespace。 */
 const defaultNS = "common";
 
 /** 利用可能な namespace（画面/機能単位で分割し、横断語彙は common）。 */
-const namespaces = ["common", "settings"] as const;
+const namespaces = [
+  "common",
+  "settings",
+  "connection",
+  "onboarding",
+  "devices",
+  "scenes",
+  "sensors",
+  "tray",
+  "errors",
+] as const;
 
 /**
  * 翻訳リソースはアプリに同梱し同期ロードする（外部フェッチなし）。
  * このため Suspense を使わずに `changeLanguage` だけで即時切替できる。
  */
 const resources = {
-  ja: { common: jaCommon, settings: jaSettings },
-  en: { common: enCommon, settings: enSettings },
+  ja: {
+    common: jaCommon,
+    settings: jaSettings,
+    connection: jaConnection,
+    onboarding: jaOnboarding,
+    devices: jaDevices,
+    scenes: jaScenes,
+    sensors: jaSensors,
+    tray: jaTray,
+    errors: jaErrors,
+  },
+  en: {
+    common: enCommon,
+    settings: enSettings,
+    connection: enConnection,
+    onboarding: enOnboarding,
+    devices: enDevices,
+    scenes: enScenes,
+    sensors: enSensors,
+    tray: enTray,
+    errors: enErrors,
+  },
 } as const;
 
 i18n.use(initReactI18next).init({

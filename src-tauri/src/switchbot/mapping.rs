@@ -73,11 +73,11 @@ impl ControlsDto {
 }
 
 /// カラー電球のカラー候補。swatch は UI プレゼンテーション色。
+/// 表示名は安定 `id`（warm/neutral/cool/red/green/purple）からフロントが翻訳する（i18n）。
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorOptionDto {
     pub id: String,
-    pub label: String,
     pub swatch: String,
 }
 
@@ -106,15 +106,17 @@ pub struct SceneDto {
 }
 
 /// センサー計測値 1 項目。数値メーター（温度/湿度/電池）と状態表示（人感/明るさ）の
-/// 2 表現を `kind` で判別する。gauge は `value`/`unit`、state は `text`/`tone` を使い、
+/// 2 表現を `kind` で判別する。gauge は `value`/`unit`、state は `state`/`tone` を使い、
 /// 使わない側は省略（`skip_serializing_if`）してフロントの判別共用体と 1:1 対応させる。
+/// 表示ラベル・区分テキストは持たず、フロントが `icon`・`state` キーから翻訳する（i18n）。
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SensorMetricDto {
     /// "gauge"（0-100 メーター）または "state"（区分テキスト）。
     pub kind: &'static str,
     pub id: String,
-    pub label: String,
+    /// 計測種別を表す安定キー（temperature/humidity/battery/motion/brightness）。
+    /// フロントがアイコンと計測ラベルの両方をこれから引く（i18n）。
     pub icon: String,
     /// gauge 用の数値。
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -122,9 +124,10 @@ pub struct SensorMetricDto {
     /// gauge 用の単位（"°C" / "%"）。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit: Option<String>,
-    /// state 用の区分テキスト（"検知あり" / "明るい" 等）。
+    /// state 用の安定な状態キー（motion: "active"/"idle"、brightness: "bright"/"dim"）。
+    /// フロントが `sensors:state.<icon>.<state>` から区分テキストを翻訳する（i18n）。
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub text: Option<String>,
+    pub state: Option<&'static str>,
     /// state 用の強調区分。"active"（起きている状態）/ "idle"（静穏）。無指定はニュートラル。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tone: Option<&'static str>,
@@ -132,29 +135,27 @@ pub struct SensorMetricDto {
 
 impl SensorMetricDto {
     /// 数値メーター表現（温度/湿度/電池）。
-    fn gauge(id: &str, label: &str, icon: &str, value: f64, unit: &str) -> Self {
+    fn gauge(icon: &str, value: f64, unit: &str) -> Self {
         Self {
             kind: "gauge",
-            id: id.into(),
-            label: label.into(),
+            id: icon.into(),
             icon: icon.into(),
             value: Some(value),
             unit: Some(unit.into()),
-            text: None,
+            state: None,
             tone: None,
         }
     }
 
-    /// 状態表示（人感/明るさ）。`tone` は None でニュートラル表示。
-    fn state(id: &str, label: &str, icon: &str, text: &str, tone: Option<&'static str>) -> Self {
+    /// 状態表示（人感/明るさ）。`state` は安定な状態キー、`tone` は None でニュートラル表示。
+    fn state(icon: &str, state: &'static str, tone: Option<&'static str>) -> Self {
         Self {
             kind: "state",
-            id: id.into(),
-            label: label.into(),
+            id: icon.into(),
             icon: icon.into(),
             value: None,
             unit: None,
-            text: Some(text.into()),
+            state: Some(state),
             tone,
         }
     }
@@ -376,60 +377,31 @@ pub fn map_scenes(body: &Value) -> Vec<SceneDto> {
 pub fn build_sensor_readings(id: &str, source: &str, body: &Value) -> SensorReadingsDto {
     let mut metrics = Vec::new();
     if let Some(v) = body.get("temperature").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto::gauge(
-            "temperature",
-            "温度",
-            "temperature",
-            v,
-            "°C",
-        ));
+        metrics.push(SensorMetricDto::gauge("temperature", v, "°C"));
     }
     if let Some(v) = body.get("humidity").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto::gauge(
-            "humidity", "湿度", "humidity", v, "%",
-        ));
+        metrics.push(SensorMetricDto::gauge("humidity", v, "%"));
     }
     if let Some(detected) = body.get("moveDetected").and_then(Value::as_bool) {
         // 検知は良し悪しでなく「起きている状態」なので tone は active/idle（sd-accent 強調）。
-        let (text, tone) = if detected {
-            ("検知あり", "active")
-        } else {
-            ("検知なし", "idle")
-        };
-        metrics.push(SensorMetricDto::state(
-            "motion",
-            "人感",
-            "motion",
-            text,
-            Some(tone),
-        ));
+        // 状態キーも active/idle で、フロントが sensors:state.motion.<state> を翻訳する。
+        let state = if detected { "active" } else { "idle" };
+        metrics.push(SensorMetricDto::state("motion", state, Some(state)));
     }
     // 人感センサーの brightness は String("bright"/"dim")。数値 brightness（light 系）は
-    // センサー画面の対象外なので as_str で自然に除外される。
+    // センサー画面の対象外なので as_str で自然に除外される。tone は無指定（ニュートラル）。
     if let Some(b) = body.get("brightness").and_then(Value::as_str) {
-        let text = match b {
-            "bright" => Some("明るい"),
-            "dim" => Some("暗い"),
+        let state = match b {
+            "bright" => Some("bright"),
+            "dim" => Some("dim"),
             _ => None,
         };
-        if let Some(text) = text {
-            metrics.push(SensorMetricDto::state(
-                "brightness",
-                "明るさ",
-                "brightness",
-                text,
-                None,
-            ));
+        if let Some(state) = state {
+            metrics.push(SensorMetricDto::state("brightness", state, None));
         }
     }
     if let Some(v) = body.get("battery").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto::gauge(
-            "battery",
-            "バッテリー",
-            "battery",
-            v,
-            "%",
-        ));
+        metrics.push(SensorMetricDto::gauge("battery", v, "%"));
     }
     SensorReadingsDto {
         id: id.to_string(),
@@ -493,43 +465,32 @@ pub fn aircon_parameter(temperature: u8, mode: &str, fan: &str, power: bool) -> 
 // ---- カラー preset ↔ RGB（決定2: Rust が変換を所有） ----
 
 /// カラー preset の定義。swatch は UI 表示色、rgb は実 API に送る色。
+/// 表示名は持たない（フロントが安定 `id` から翻訳する）。
 struct Preset {
     id: &'static str,
-    label: &'static str,
     swatch: &'static str,
     rgb: (u8, u8, u8),
 }
 
-const fn preset(
-    id: &'static str,
-    label: &'static str,
-    swatch: &'static str,
-    rgb: (u8, u8, u8),
-) -> Preset {
-    Preset {
-        id,
-        label,
-        swatch,
-        rgb,
-    }
+const fn preset(id: &'static str, swatch: &'static str, rgb: (u8, u8, u8)) -> Preset {
+    Preset { id, swatch, rgb }
 }
 
 const PRESETS: &[Preset] = &[
-    preset("warm", "電球色", "#F6D488", (255, 214, 136)),
-    preset("neutral", "昼白色", "#FDF6E3", (255, 246, 227)),
-    preset("cool", "昼光色", "#8FB7FF", (143, 183, 255)),
-    preset("red", "レッド", "#F58A8A", (255, 0, 0)),
-    preset("green", "グリーン", "#8CE0B0", (0, 200, 90)),
-    preset("purple", "パープル", "#B79CF0", (150, 80, 240)),
+    preset("warm", "#F6D488", (255, 214, 136)),
+    preset("neutral", "#FDF6E3", (255, 246, 227)),
+    preset("cool", "#8FB7FF", (143, 183, 255)),
+    preset("red", "#F58A8A", (255, 0, 0)),
+    preset("green", "#8CE0B0", (0, 200, 90)),
+    preset("purple", "#B79CF0", (150, 80, 240)),
 ];
 
-/// フロントに返すカラー候補（既存 preset 契約を維持）。
+/// フロントに返すカラー候補（既存 preset 契約を維持。表示名は id から front が翻訳）。
 pub fn color_options() -> Vec<ColorOptionDto> {
     PRESETS
         .iter()
         .map(|p| ColorOptionDto {
             id: p.id.to_string(),
-            label: p.label.to_string(),
             swatch: p.swatch.to_string(),
         })
         .collect()
@@ -856,19 +817,19 @@ mod tests {
         // 人感＝検知/明るさ/電池 の順。version は表示しない。
         assert_eq!(ids, vec!["motion", "brightness", "battery"]);
 
-        // 人感: state / 検知あり / tone active。
+        // 人感: state / 状態キー active / tone active（フロントが検知ありを翻訳）。
         let motion = &r.metrics[0];
         assert_eq!(motion.kind, "state");
         assert_eq!(motion.icon, "motion");
-        assert_eq!(motion.text.as_deref(), Some("検知あり"));
+        assert_eq!(motion.state, Some("active"));
         assert_eq!(motion.tone, Some("active"));
         assert_eq!(motion.value, None);
 
-        // 明るさ: state / 暗い / tone なし（ニュートラル）。
+        // 明るさ: state / 状態キー dim / tone なし（ニュートラル）。
         let brightness = &r.metrics[1];
         assert_eq!(brightness.kind, "state");
         assert_eq!(brightness.icon, "brightness");
-        assert_eq!(brightness.text.as_deref(), Some("暗い"));
+        assert_eq!(brightness.state, Some("dim"));
         assert_eq!(brightness.tone, None);
 
         // 電池: 既存どおり gauge（0-100 メーター）。
@@ -880,12 +841,12 @@ mod tests {
 
     #[test]
     fn motion_sensor_bright_and_idle_variants() {
-        // moveDetected=false → 検知なし / idle、brightness=bright → 明るい。
+        // moveDetected=false → 状態キー idle、brightness=bright → 状態キー bright。
         let body = json!({ "moveDetected": false, "brightness": "bright", "battery": 100 });
         let r = build_sensor_readings("m", "n", &body);
-        assert_eq!(r.metrics[0].text.as_deref(), Some("検知なし"));
+        assert_eq!(r.metrics[0].state, Some("idle"));
         assert_eq!(r.metrics[0].tone, Some("idle"));
-        assert_eq!(r.metrics[1].text.as_deref(), Some("明るい"));
+        assert_eq!(r.metrics[1].state, Some("bright"));
     }
 
     #[test]
@@ -927,27 +888,31 @@ mod tests {
 
     #[test]
     fn serializes_state_metric_as_camel_case() {
-        let m = SensorMetricDto::state("motion", "人感", "motion", "検知あり", Some("active"));
+        let m = SensorMetricDto::state("motion", "active", Some("active"));
         let json = serde_json::to_value(&m).unwrap();
         assert_eq!(json["kind"], "state");
         assert_eq!(json["id"], "motion");
         assert_eq!(json["icon"], "motion");
-        assert_eq!(json["text"], "検知あり");
+        // 表示名でなく安定な状態キーを持つ（フロントが翻訳する）。
+        assert_eq!(json["state"], "active");
         assert_eq!(json["tone"], "active");
-        // gauge 用フィールドは省略される。
+        // 日本語ラベルは持たない。gauge 用フィールドも省略される。
+        assert!(json.get("label").is_none());
         assert!(json.get("value").is_none());
         assert!(json.get("unit").is_none());
     }
 
     #[test]
     fn serializes_gauge_metric_without_state_fields() {
-        let m = SensorMetricDto::gauge("battery", "バッテリー", "battery", 100.0, "%");
+        let m = SensorMetricDto::gauge("battery", 100.0, "%");
         let json = serde_json::to_value(&m).unwrap();
         assert_eq!(json["kind"], "gauge");
+        assert_eq!(json["icon"], "battery");
         assert_eq!(json["value"], 100.0);
         assert_eq!(json["unit"], "%");
-        // state 用フィールドは省略される。
-        assert!(json.get("text").is_none());
+        // 日本語ラベル・state 用フィールドは省略される。
+        assert!(json.get("label").is_none());
+        assert!(json.get("state").is_none());
         assert!(json.get("tone").is_none());
     }
 
@@ -958,6 +923,22 @@ mod tests {
             let rgb = preset_to_rgb(p.id);
             assert_eq!(nearest_color_id(&rgb), p.id, "preset {} が安定しない", p.id);
         }
+    }
+
+    #[test]
+    fn color_options_expose_stable_ids_without_label() {
+        // 表示名は撤去し、安定 id（フロントが翻訳するキー）と swatch のみを返す。
+        let options = color_options();
+        let ids: Vec<&str> = options.iter().map(|o| o.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            vec!["warm", "neutral", "cool", "red", "green", "purple"]
+        );
+        let json = serde_json::to_value(&options[0]).unwrap();
+        assert_eq!(json["id"], "warm");
+        assert!(json["swatch"].is_string());
+        // 日本語ラベルは持たない。
+        assert!(json.get("label").is_none());
     }
 
     #[test]

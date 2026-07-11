@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -19,8 +20,10 @@ export function ViewHeader({
   subtitle,
   actions,
   onBack,
-  backLabel = "戻る",
+  backLabel,
 }: ViewHeaderProps) {
+  const { t } = useTranslation("common");
+  const backText = backLabel ?? t("actions.back");
   return (
     <header className="mb-4 flex items-end justify-between gap-3">
       <div className="flex items-center gap-2.5">
@@ -28,7 +31,7 @@ export function ViewHeader({
           <Button
             variant="outline"
             size="icon-sm"
-            aria-label={backLabel}
+            aria-label={backText}
             onClick={onBack}
           >
             <ChevronLeft strokeWidth={2} />

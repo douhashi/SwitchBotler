@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 
 import { DeviceCard } from "@/components/device/device-card";
@@ -14,6 +15,8 @@ import { useFavoritesStore } from "@/stores/favorites-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 
 export function DevicesView() {
+  const { t } = useTranslation("devices");
+  const { t: tc } = useTranslation("common");
   const devices = useDeviceStore((s) => s.devices);
   const loading = useDeviceStore((s) => s.loading);
   const loaded = useDeviceStore((s) => s.loaded);
@@ -41,27 +44,27 @@ export function DevicesView() {
   return (
     <div>
       <ViewHeader
-        title="デバイス"
-        subtitle="SwitchBot アカウントのデバイス"
+        title={t("title")}
+        subtitle={t("subtitle")}
         actions={
           <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
             <RefreshCw className={cn(loading && "animate-spin")} strokeWidth={2} />
-            更新
+            {tc("actions.refresh")}
           </Button>
         }
       />
       {loading && devices.length === 0 && <LoadingState />}
       {error && devices.length === 0 && (
-        <ErrorState message={error} onRetry={refresh} />
+        <ErrorState code={error} onRetry={refresh} />
       )}
       {loaded && !error && devices.length === 0 && (
-        <EmptyState>デバイスが見つかりませんでした。</EmptyState>
+        <EmptyState>{t("empty")}</EmptyState>
       )}
 
       {favorites.length > 0 && (
         <section className="mb-5">
           <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
-            お気に入り
+            {t("favorites")}
           </h2>
           <div className="grid-cards">
             {favorites.map((device) => (
@@ -75,7 +78,7 @@ export function DevicesView() {
         <section>
           {favorites.length > 0 && (
             <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
-              すべて
+              {t("all")}
             </h2>
           )}
           <div className="grid-cards">

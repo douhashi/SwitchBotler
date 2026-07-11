@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { LogoMark, Wordmark } from "@/components/brand";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ import { VIEWS } from "@/views/registry";
 
 /** 左サイドバー: ブランド + ナビ + 接続ステータス。 */
 export function Sidebar() {
+  const { t } = useTranslation("common");
   const activeView = useNavigationStore((s) => s.activeView);
   const navigate = useNavigationStore((s) => s.navigate);
 
@@ -32,8 +34,8 @@ export function Sidebar() {
         <Wordmark />
       </div>
 
-      <nav className="flex flex-col gap-1" aria-label="メインナビゲーション">
-        {VIEWS.map(({ id, label, icon: Icon }) => {
+      <nav className="flex flex-col gap-1" aria-label={t("nav.aria")}>
+        {VIEWS.map(({ id, icon: Icon }) => {
           const active = id === activeView;
           return (
             <button
@@ -49,7 +51,7 @@ export function Sidebar() {
               )}
             >
               <Icon size={18} strokeWidth={1.75} className="shrink-0" />
-              {label}
+              {t(`nav.${id}`)}
             </button>
           );
         })}
@@ -65,7 +67,9 @@ export function Sidebar() {
           )}
           style={connected ? { boxShadow: "0 0 8px var(--sd-ok)" } : undefined}
         />
-        {connected ? `接続済み · ${deviceCount}台` : "接続待機中"}
+        {connected
+          ? t("states.connectedCount", { count: deviceCount })
+          : t("states.waiting")}
       </div>
     </aside>
   );

@@ -24,6 +24,8 @@ import { useConnectionStore } from "@/stores/connection-store";
 export function SettingsView() {
   const { t } = useTranslation("settings");
   const { t: tc } = useTranslation("common");
+  const { t: tconn } = useTranslation("connection");
+  const { t: te } = useTranslation("errors");
   const connection = useConnectionStore((s) => s.connection);
   const error = useConnectionStore((s) => s.error);
   const load = useConnectionStore((s) => s.load);
@@ -71,67 +73,67 @@ export function SettingsView() {
       </section>
 
       <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
-        SwitchBot API 認証
+        {t("api.heading")}
       </h2>
       <ConnectionBanner connection={connection} />
 
       {error && (
         <div className="mb-5 flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-xs text-destructive shadow-inset-sm">
           <TriangleAlert size={15} strokeWidth={1.9} className="shrink-0" />
-          {error}
+          {te(error)}
         </div>
       )}
 
       <SecretField
         id="token"
-        label="トークン"
+        label={tconn("field.token")}
         value={token}
         onChange={setToken}
         saved={connection.saved}
       />
       <SecretField
         id="secret"
-        label="シークレット"
+        label={tconn("field.secret")}
         value={secret}
         onChange={setSecret}
         saved={connection.saved}
-        help="SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション で発行できます。"
+        help={tconn("field.secretHelp")}
       />
 
       <div className="mb-5 flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-xs text-muted-foreground shadow-inset-sm">
         <ShieldCheck size={15} strokeWidth={1.75} className="shrink-0 text-sd-ok" />
-        OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。
+        {t("api.storageNote")}
       </div>
 
       <div className="flex flex-wrap gap-2.5">
         <Button onClick={handleSave} disabled={!canSave}>
           <Save strokeWidth={2} />
-          保存して接続
+          {tconn("saveAndConnect")}
         </Button>
 
         <Button variant="secondary" onClick={testConnection} disabled={testing || !connection.saved}>
           <ArrowRight strokeWidth={2} />
-          {testing ? "確認中…" : "接続をテスト"}
+          {testing ? t("api.testing") : t("api.test")}
         </Button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" disabled={!connection.saved}>
               <X strokeWidth={2} />
-              接続を解除
+              {t("api.disconnect")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>
-              <AlertDialogTitle>接続を解除しますか？</AlertDialogTitle>
+              <AlertDialogTitle>{t("disconnectDialog.title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                保存された Token / Secret を削除し、SwitchBot API との接続を解除します。
+                {t("disconnectDialog.description")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>キャンセル</AlertDialogCancel>
+              <AlertDialogCancel>{tc("actions.cancel")}</AlertDialogCancel>
               <AlertDialogAction variant="destructive" onClick={disconnect}>
-                解除する
+                {t("disconnectDialog.confirm")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

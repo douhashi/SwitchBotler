@@ -1,10 +1,15 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { dataSource, type Scene } from "@/data";
+import { type AppErrorCode, errorCodeOf, statusCodeOf } from "@/i18n/error";
 import { cn } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
+
+/** シーン実行失敗の一過性エラー（コード + apiStatus 補間用の番号）。 */
+type SceneError = { code: AppErrorCode; statusCode?: number };
 
 /**
  * シーン 1 件のカード（mockup .scene）。幅に応じた 3/2/1 列グリッドに載る。
@@ -13,8 +18,10 @@ import { useFavoritesStore } from "@/stores/favorites-store";
  * 実行ボタンは実行中フィードバックと失敗メッセージを出す。
  */
 export function SceneRow({ scene }: { scene: Scene }) {
+  const { t } = useTranslation("scenes");
+  const { t: te } = useTranslation("errors");
   const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<SceneError | null>(null);
   const favorite = useFavoritesStore((s) => s.sceneIds.has(scene.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleSceneFavorite);
 
@@ -24,7 +31,7 @@ export function SceneRow({ scene }: { scene: Scene }) {
     try {
       await dataSource.executeScene(scene.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "シーンの実行に失敗しました。");
+      setError({ code: errorCodeOf(e), statusCode: statusCodeOf(e) });
     } finally {
       setRunning(false);
     }
@@ -39,13 +46,17 @@ export function SceneRow({ scene }: { scene: Scene }) {
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{scene.name}</div>
           {error && (
-            <div className="mt-0.5 text-[11.5px] text-destructive">{error}</div>
+            <div className="mt-0.5 text-[11.5px] text-destructive">
+              {te(error.code, { statusCode: error.statusCode })}
+            </div>
           )}
         </div>
         <button
           type="button"
           aria-label={
-            favorite ? `${scene.name} のお気に入りを解除` : `${scene.name} をお気に入り`
+            favorite
+              ? t("favoriteRemove", { name: scene.name })
+              : t("favoriteAdd", { name: scene.name })
           }
           aria-pressed={favorite}
           onClick={() => toggleFavorite(scene.id)}
@@ -65,7 +76,7 @@ export function SceneRow({ scene }: { scene: Scene }) {
         ) : (
           <Play strokeWidth={2} />
         )}
-        {running ? "実行中" : "実行"}
+        {running ? t("running") : t("run")}
       </Button>
     </div>
   );

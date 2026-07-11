@@ -5,6 +5,16 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+import i18n from "@/i18n";
+
+// テストは日本語ロケールを既定とする（実利用の主要ロケール）。
+// jsdom の navigator.language は "en-US" のため `system` 解決が en に寄るのを防ぎ、
+// i18n の描画言語も明示的に ja へ固定する（en 表示は各テストで setLanguage して検証する）。
+// resolve.test / language-store.test は `vi.spyOn(navigator, "language", "get")` で
+// 差し替えるため、data ではなく getter として定義する（spy 可能・restore で ja に戻る）。
+Object.defineProperty(navigator, "language", { get: () => "ja", configurable: true });
+void i18n.changeLanguage("ja");
+
 // Tauri IPC は外部境界。jsdom には存在しないため、既定のスタブを 1 か所で用意する。
 // 個別テストで挙動を差し替えたい場合は `@tauri-apps/api/core` を vi.mock する。
 type TauriWindow = Window & {

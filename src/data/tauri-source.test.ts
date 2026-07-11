@@ -104,11 +104,11 @@ describe("tauriDataSource", () => {
     );
   });
 
-  it("message を持たない reject でも安全なフォールバック文言になる", async () => {
+  it("message を持たない reject でも安全なフォールバック文言（診断ログ用）になる", async () => {
     invoke.mockRejectedValue("boom");
 
     await expect(tauriDataSource.getScenes()).rejects.toThrow(
-      "SwitchBot API との通信に失敗しました。",
+      "Communication with the SwitchBot API failed.",
     );
   });
 
@@ -118,7 +118,7 @@ describe("tauriDataSource", () => {
         id: "s1",
         source: "meter",
         metrics: [
-          { kind: "gauge", id: "temperature", label: "温度", icon: "temperature", value: 26.2, unit: "°C" },
+          { kind: "gauge", id: "temperature", icon: "temperature", value: 26.2, unit: "°C" },
         ],
       },
     ]);

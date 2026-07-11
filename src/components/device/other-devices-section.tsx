@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 
@@ -10,6 +11,7 @@ import { OtherDeviceRow } from "./other-device-row";
  * 既定は折りたたみ（展開状態は永続化しない）。対象が無ければ何も描画しない。
  */
 export function OtherDevicesSection({ devices }: { devices: Device[] }) {
+  const { t } = useTranslation("devices");
   const [open, setOpen] = useState(false);
 
   if (devices.length === 0) return null;
@@ -26,7 +28,7 @@ export function OtherDevicesSection({ devices }: { devices: Device[] }) {
         ) : (
           <ChevronRight size={14} strokeWidth={2.25} />
         )}
-        その他
+        {t("otherSection")}
         <span className="font-normal">({devices.length})</span>
       </CollapsiblePrimitive.Trigger>
       <CollapsiblePrimitive.Content className="mt-2">

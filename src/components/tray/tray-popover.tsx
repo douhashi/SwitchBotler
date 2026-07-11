@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { Layers, Pin, Play, RefreshCw } from "lucide-react";
 
@@ -26,6 +27,7 @@ function FootLink({ onClick, children }: { onClick: () => void; children: ReactN
 
 /** トレイに 1 台分のクイックトグル行を描く。 */
 function QuickDevice({ device }: { device: Device }) {
+  const { t } = useTranslation("devices");
   const toggle = useDeviceStore((s) => s.toggle);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
   const on = device.controls.power;
@@ -51,7 +53,7 @@ function QuickDevice({ device }: { device: Device }) {
       <span className="flex-1 text-[13px] font-medium">
         {device.name}
         {/* 色だけに頼らずオフラインの理由を小ラベルで併記する。 */}
-        {offline && <span className="ml-1.5 text-[11px] text-sd-warn">オフライン</span>}
+        {offline && <span className="ml-1.5 text-[11px] text-sd-warn">{t("offline")}</span>}
       </span>
       <Switch
         size="sm"
@@ -68,6 +70,7 @@ function QuickDevice({ device }: { device: Device }) {
 
 /** トレイのクイックシーン行（縦 1 列ずつ）。タップで実行 = クイックアクション。 */
 function QuickScene({ scene }: { scene: Scene }) {
+  const { t } = useTranslation("scenes");
   const [running, setRunning] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -88,7 +91,7 @@ function QuickScene({ scene }: { scene: Scene }) {
       type="button"
       onClick={run}
       disabled={running}
-      aria-label={`${scene.name} を実行`}
+      aria-label={t("runAria", { name: scene.name })}
       className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left transition-shadow hover:shadow-inset-sm active:shadow-inset-sm disabled:opacity-70"
     >
       <span className="grid size-[30px] shrink-0 place-items-center rounded-[9px] text-sd-accent shadow-raise-sm">
@@ -100,7 +103,7 @@ function QuickScene({ scene }: { scene: Scene }) {
       </span>
       <span className="flex-1 text-[13px] font-medium">{scene.name}</span>
       {failed ? (
-        <span className="text-[11px] text-destructive">失敗</span>
+        <span className="text-[11px] text-destructive">{t("failed")}</span>
       ) : (
         <Play size={15} strokeWidth={2} className="shrink-0 text-muted-foreground" />
       )}
@@ -110,16 +113,17 @@ function QuickScene({ scene }: { scene: Scene }) {
 
 /** お気に入りデバイスが未登録のときの空表示。 */
 function EmptyFavorites() {
+  const { t } = useTranslation("tray");
   return (
     <div className="flex flex-col items-center gap-1.5 px-3.5 pt-5 pb-5 text-center">
       <span className="grid size-10 place-items-center rounded-xl text-muted-foreground shadow-inset-sm">
         <Pin size={19} strokeWidth={1.75} />
       </span>
       <div className="text-[12.5px] font-semibold text-foreground">
-        お気に入りデバイスがありません
+        {t("emptyFavoritesTitle")}
       </div>
       <div className="max-w-[22ch] text-[11px] text-muted-foreground">
-        デバイス画面でピン留めすると、ここに表示されます。
+        {t("emptyFavoritesBody")}
       </div>
     </div>
   );
@@ -133,6 +137,9 @@ function EmptyFavorites() {
  * フッタは Tauri コマンド（show_main_window / quit / hide_tray_popup）へ結線する。
  */
 export function TrayPopover() {
+  const { t } = useTranslation("tray");
+  const { t: tc } = useTranslation("common");
+  const { t: te } = useTranslation("errors");
   const devices = useDeviceStore((s) => s.devices);
   const loading = useDeviceStore((s) => s.loading);
   const loaded = useDeviceStore((s) => s.loaded);
@@ -184,16 +191,18 @@ export function TrayPopover() {
             )}
             style={connected ? { boxShadow: "0 0 6px var(--sd-ok)" } : undefined}
           />
-          {connected ? "接続済み" : "未接続"}
+          {connected ? tc("states.connected") : tc("states.disconnected")}
         </span>
       </div>
 
       {showLoading && (
-        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">読み込み中…</p>
+        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
+          {tc("states.loading")}
+        </p>
       )}
       {showDisconnected && (
         <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
-          未接続です。設定から接続してください。
+          {t("disconnectedNote")}
         </p>
       )}
       {showEmptyFavorites && <EmptyFavorites />}
@@ -202,13 +211,15 @@ export function TrayPopover() {
         <QuickDevice key={device.id} device={device} />
       ))}
 
-      {error && <p className="px-2 pt-1 text-[11px] text-destructive">{error}</p>}
+      {error && (
+        <p className="px-2 pt-1 text-[11px] text-destructive">{te(error)}</p>
+      )}
 
       {favoriteScenes.length > 0 && (
         <>
           <div className="my-2 h-px bg-border" />
           <p className="px-2 pb-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-            お気に入りシーン
+            {t("favoriteScenes")}
           </p>
           <div className="flex flex-col gap-0.5">
             {favoriteScenes.map((scene) => (
@@ -221,9 +232,9 @@ export function TrayPopover() {
       <div className="my-2 h-px bg-border" />
 
       <div className="flex gap-2">
-        <FootLink onClick={openMain}>ウィンドウを開く</FootLink>
-        <FootLink onClick={openSettings}>設定</FootLink>
-        <FootLink onClick={quit}>終了</FootLink>
+        <FootLink onClick={openMain}>{t("openWindow")}</FootLink>
+        <FootLink onClick={openSettings}>{tc("nav.settings")}</FootLink>
+        <FootLink onClick={quit}>{t("quit")}</FootLink>
       </div>
     </div>
   );

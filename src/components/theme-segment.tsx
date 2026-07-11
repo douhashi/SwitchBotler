@@ -1,13 +1,14 @@
+import { useTranslation } from "react-i18next";
 import { Monitor, Moon, Sun } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { type Theme, useThemeStore } from "@/stores/theme-store";
 
-const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
-  { value: "system", label: "システム", icon: Monitor },
-  { value: "light", label: "ライト", icon: Sun },
-  { value: "dark", label: "ダーク", icon: Moon },
+const OPTIONS: { value: Theme; icon: LucideIcon }[] = [
+  { value: "system", icon: Monitor },
+  { value: "light", icon: Sun },
+  { value: "dark", icon: Moon },
 ];
 
 /**
@@ -15,16 +16,18 @@ const OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
  * 設定画面に置き、app-shell の常設トグルは廃止した（mockup 画面05）。
  */
 export function ThemeSegment() {
+  const { t } = useTranslation("settings");
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
 
   return (
     <div
       role="group"
-      aria-label="テーマ"
+      aria-label={t("theme.label")}
       className="inline-flex gap-1 rounded-xl bg-background p-1 shadow-inset"
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {OPTIONS.map(({ value, icon: Icon }) => {
+        const label = t(`theme.${value}`);
         const active = theme === value;
         return (
           <button

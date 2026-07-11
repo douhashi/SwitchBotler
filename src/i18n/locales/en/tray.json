@@ -1,0 +1,13 @@
+{
+  "disconnectedNote": "Not connected. Connect from Settings.",
+  "emptyFavoritesTitle": "No favorite devices",
+  "emptyFavoritesBody": "Pin devices on the Devices screen to show them here.",
+  "favoriteScenes": "Favorite scenes",
+  "openWindow": "Open window",
+  "quit": "Quit",
+  "closeToTray": {
+    "title": "Runs in the tray",
+    "description": "Closing the window doesn't quit the app; it keeps running in the menu bar (tray). To quit completely, choose \"Quit\" from the tray icon menu.",
+    "ack": "Got it"
+  }
+}

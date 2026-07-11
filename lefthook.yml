@@ -13,6 +13,10 @@ pre-commit:
     test-front:
       glob: "src/**/*.{ts,tsx}"
       run: mise run test-front
+    # UI 文言の日本語ハードコード検出（src 全体を走査。過去の残存も見逃さない）
+    i18n-guard:
+      glob: "src/**/*.{ts,tsx}"
+      run: mise run i18n-guard
 
 pre-push:
   parallel: true

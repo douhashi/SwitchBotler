@@ -1,0 +1,19 @@
+{
+  "welcomeTitle": "Welcome to <brand></brand>",
+  "intro": "Control your SwitchBot devices from the menu bar with a single tap. Start by setting up API credentials.",
+  "steps": {
+    "issue": {
+      "title": "Issue in the app",
+      "body": "SwitchBot app → Profile → Preferences → Developer Options"
+    },
+    "copy": {
+      "title": "Copy the two values",
+      "body": "Copy the Token and Secret."
+    },
+    "paste": {
+      "title": "Paste and connect",
+      "body": "Paste them into the form below and \"Save and connect\"."
+    }
+  },
+  "storageNote": "The values you enter are kept in your OS secure storage (Keychain / Credential Manager / Secret Service) and are never shown in plain text on screen or in logs."
+}

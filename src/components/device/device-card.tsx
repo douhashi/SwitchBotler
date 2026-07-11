@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ChevronRight, Hand, Pin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { DeviceIcon } from "./device-icon";
 
 /** デバイス 1 台のカード（mockup .device）。toggle 型は Switch、detail 型は chevron。 */
 export function DeviceCard({ device }: { device: Device }) {
+  const { t } = useTranslation("devices");
   const toggle = useDeviceStore((s) => s.toggle);
   const press = useDeviceStore((s) => s.press);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
@@ -54,15 +56,17 @@ export function DeviceCard({ device }: { device: Device }) {
             offline ? "text-sd-warn" : "text-muted-foreground",
           )}
         >
-          {device.model} · {deviceStatusLabel(device)}
-          {offline && " · オフライン"}
+          {device.model} · {deviceStatusLabel(device, t)}
+          {offline && ` · ${t("offline")}`}
         </div>
       </div>
 
       <button
         type="button"
         aria-label={
-          favorite ? `${device.name} のお気に入りを解除` : `${device.name} をお気に入り`
+          favorite
+            ? t("favoriteRemove", { name: device.name })
+            : t("favoriteAdd", { name: device.name })
         }
         aria-pressed={favorite}
         onClick={() => toggleFavorite(device.id)}
@@ -78,14 +82,14 @@ export function DeviceCard({ device }: { device: Device }) {
 
       {offline && (
         <span className="shrink-0 rounded-full px-[9px] py-[3px] text-[11px] font-semibold text-muted-foreground shadow-inset-sm">
-          オフライン
+          {t("offline")}
         </span>
       )}
 
       {interaction === "detail" && (
         <button
           type="button"
-          aria-label={`${device.name} の詳細`}
+          aria-label={t("detailAria", { name: device.name })}
           aria-disabled={offline || undefined}
           onClick={() => navigate("devices", device.id)}
           className={cn(
@@ -111,14 +115,14 @@ export function DeviceCard({ device }: { device: Device }) {
           type="button"
           size="sm"
           variant="secondary"
-          aria-label={`${device.name} を押す`}
+          aria-label={t("pressAria", { name: device.name })}
           disabled={offline}
           aria-disabled={offline || undefined}
           onClick={() => press(device.id)}
           className={cn("text-foreground", offline && "pointer-events-none")}
         >
           <Hand size={15} strokeWidth={2} />
-          押す
+          {t("press")}
         </Button>
       )}
     </div>

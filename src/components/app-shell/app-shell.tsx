@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MinusCircle } from "lucide-react";
 
@@ -28,6 +29,7 @@ import { Sidebar } from "./sidebar";
  * 初回案内を担う（テーマ切替は設定画面へ移動。アプリ内トレイプレビューは撤去。決定6）。
  */
 export function AppShell() {
+  const { t } = useTranslation("tray");
   const activeView = useNavigationStore((s) => s.activeView);
   const view = getView(activeView);
 
@@ -90,15 +92,14 @@ export function AppShell() {
             <AlertDialogMedia>
               <MinusCircle className="text-sd-accent" strokeWidth={1.75} />
             </AlertDialogMedia>
-            <AlertDialogTitle>トレイに常駐します</AlertDialogTitle>
+            <AlertDialogTitle>{t("closeToTray.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              ウィンドウを閉じてもアプリは終了せず、メニューバー（トレイ）に常駐して動作を続けます。
-              完全に終了するにはトレイアイコンのメニューから「終了」を選んでください。
+              {t("closeToTray.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={acknowledgeNotice}>
-              分かりました
+              {t("closeToTray.ack")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

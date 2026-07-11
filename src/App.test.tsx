@@ -134,7 +134,7 @@ describe("App 分岐（接続状態でシェル / オンボーディングを切
   it("saved:true かつ到達不能（disconnected）でもシェルを維持しオンボーディングに入らない（V1）", async () => {
     useConnectionStore.setState({
       loaded: true,
-      error: "接続できませんでした。ネットワークを確認してください。",
+      error: "network",
       connection: {
         status: "disconnected",
         lastCheckedAt: null,

@@ -93,7 +93,8 @@ describe("device-store aircon", () => {
     const state = useDeviceStore.getState();
     // controls は元の 26℃ に戻る。
     expect(state.devices.find((d) => d.id === "ac1")?.controls.temperature).toBe(26);
-    expect(state.error).toBe("リクエストが多すぎます。");
+    // ストアは日本語でなく安定コードを保持する（表示端で翻訳）。
+    expect(state.error).toBe("rateLimited");
     // 永続層には何も書かれない。
     expect(prefs.get("airconStates")).toBeUndefined();
   });
@@ -166,7 +167,7 @@ describe("device-store ir_light", () => {
     const state = useDeviceStore.getState();
     // power は元の off に戻る。
     expect(state.devices.find((d) => d.id === "l1")?.controls.power).toBe(false);
-    expect(state.error).toBe("リクエストが多すぎます。");
+    expect(state.error).toBe("rateLimited");
     // 永続層には何も書かれない。
     expect(prefs.get("irLightStates")).toBeUndefined();
   });
@@ -178,10 +179,10 @@ describe("device-store ir_light", () => {
 
     await useDeviceStore.getState().operateIrLight("l1", "dimmer");
 
-    expect(useDeviceStore.getState().error).toBe("リクエストが多すぎます。");
-    // 全画面横断で気付けるようトースト通知も出す。
-    expect(useNoticeStore.getState().notices.map((n) => n.message)).toContain(
-      "リクエストが多すぎます。",
+    expect(useDeviceStore.getState().error).toBe("rateLimited");
+    // 全画面横断で気付けるようトースト通知も出す（コードで保持し表示端で翻訳）。
+    expect(useNoticeStore.getState().notices.map((n) => n.code)).toContain(
+      "rateLimited",
     );
   });
 });
@@ -255,9 +256,9 @@ describe("device-store bot", () => {
 
     await useDeviceStore.getState().press("b-press");
 
-    expect(useDeviceStore.getState().error).toBe("リクエストが多すぎます。");
-    expect(useNoticeStore.getState().notices.map((n) => n.message)).toContain(
-      "リクエストが多すぎます。",
+    expect(useDeviceStore.getState().error).toBe("rateLimited");
+    expect(useNoticeStore.getState().notices.map((n) => n.code)).toContain(
+      "rateLimited",
     );
   });
 });
@@ -275,6 +276,7 @@ const plug: Device = {
 const OFFLINE_MESSAGE = "デバイスがオフラインのため操作できません。";
 
 describe("device-store offline（statusCode 161 検知）", () => {
+  // 以降の error/notice はストアが保持する安定コードで検証する（表示端で翻訳）。
   beforeEach(() => {
     invoke.mockReset();
     prefs.clear();
@@ -299,18 +301,20 @@ describe("device-store offline（statusCode 161 検知）", () => {
     expect(state.offlineIds.has("p1")).toBe(true);
     // 楽観更新はロールバックされ power は元の off。
     expect(state.devices.find((d) => d.id === "p1")?.controls.power).toBe(false);
-    expect(state.error).toBe(OFFLINE_MESSAGE);
-    // 全画面横断で気付けるようトースト通知も出す。
-    expect(useNoticeStore.getState().notices.map((n) => n.message)).toContain(
-      OFFLINE_MESSAGE,
-    );
+    expect(state.error).toBe("offline");
+    // 全画面横断で気付けるようトースト通知も出す（コードで保持）。
+    expect(useNoticeStore.getState().notices.map((n) => n.code)).toContain("offline");
+    // OFFLINE_MESSAGE は Rust の診断メッセージ（表示には使わない）。
+    expect(OFFLINE_MESSAGE).toBe("デバイスがオフラインのため操作できません。");
   });
 
-  it("apiStatus など offline 以外の失敗では offlineIds に入らない（V3）", async () => {
+  it("apiStatus など offline 以外の失敗では offlineIds に入らず statusCode を保持する（V3）", async () => {
     useDeviceStore.setState({ devices: [plug], loaded: true });
+    useNoticeStore.setState({ notices: [] });
     invoke.mockRejectedValue({
       code: "apiStatus",
-      message: "SwitchBot API がエラーを返しました（コード 190）。",
+      message: "SwitchBot API status code 190.",
+      statusCode: 190,
     });
 
     await useDeviceStore.getState().toggle("p1");
@@ -318,7 +322,10 @@ describe("device-store offline（statusCode 161 検知）", () => {
     const state = useDeviceStore.getState();
     expect(state.offlineIds.has("p1")).toBe(false);
     expect(state.devices.find((d) => d.id === "p1")?.controls.power).toBe(false);
-    expect(state.error).toBe("SwitchBot API がエラーを返しました（コード 190）。");
+    expect(state.error).toBe("apiStatus");
+    // apiStatus の番号は toast の補間用に notice へ引き継がれる（V6）。
+    const notice = useNoticeStore.getState().notices.find((n) => n.code === "apiStatus");
+    expect(notice?.statusCode).toBe(190);
   });
 
   it("refresh は offlineIds をクリアする（V4・方針 A）", async () => {

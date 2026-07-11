@@ -16,14 +16,15 @@ import {
   saveAirconState,
   saveIrLightState,
 } from "@/data/preferences";
+import { type AppErrorCode, errorCodeOf, statusCodeOf } from "@/i18n/error";
 import { notify } from "@/stores/notice-store";
 
 type DeviceState = {
   devices: Device[];
   loading: boolean;
   loaded: boolean;
-  /** 直近の取得/操作で発生したエラーメッセージ（日本語・秘匿値なし）。 */
-  error: string | null;
+  /** 直近の取得/操作で発生したエラーコード（表示端で `errors` namespace により翻訳する）。 */
+  error: AppErrorCode | null;
   /**
    * オフライン（コマンドが statusCode 161 を返した）と検知したデバイス id の集合。
    * `devices`/`loading`/`error` と同じ横断的な一時状態で、`Device` 型自体には
@@ -54,10 +55,6 @@ type DeviceState = {
 /** 該当デバイスの controls を差し替えた配列を返す。 */
 function withControls(devices: Device[], id: string, controls: DeviceControls): Device[] {
   return devices.map((d) => (d.id === id ? { ...d, controls } : d));
-}
-
-function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : "操作に失敗しました。";
 }
 
 /**
@@ -126,15 +123,16 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
     previous: DeviceControls | undefined,
     error: unknown,
   ): void => {
-    const message = messageOf(error);
+    const code = errorCodeOf(error);
+    const statusCode = statusCodeOf(error);
     set((s) => {
       const devices = previous ? withControls(s.devices, id, previous) : s.devices;
       const offlineIds = isOfflineError(error)
         ? new Set(s.offlineIds).add(id)
         : s.offlineIds;
-      return { devices, error: message, offlineIds };
+      return { devices, error: code, offlineIds };
     });
-    notify(message);
+    notify(code, statusCode);
   };
 
   return {
@@ -163,7 +161,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
         );
         set({ devices: overlaid, loaded: true, offlineIds: new Set<string>() });
       } catch (error) {
-        set({ error: messageOf(error), loaded: true });
+        set({ error: errorCodeOf(error), loaded: true });
       } finally {
         set({ loading: false });
       }

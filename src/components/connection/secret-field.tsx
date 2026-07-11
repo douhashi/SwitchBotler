@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ type SecretFieldProps = {
  *   実際の秘匿値（末尾等を含む）は WebView に一切渡さない。
  */
 export function SecretField({ id, label, value, onChange, saved, help }: SecretFieldProps) {
+  const { t } = useTranslation("connection");
   const [visible, setVisible] = useState(false);
   const showSavedMask = saved && value === "";
 
@@ -38,7 +40,7 @@ export function SecretField({ id, label, value, onChange, saved, help }: SecretF
         </label>
         {saved && (
           <Badge variant="secondary" className="text-sd-ok">
-            保存済み
+            {t("field.saved")}
           </Badge>
         )}
       </div>
@@ -58,7 +60,7 @@ export function SecretField({ id, label, value, onChange, saved, help }: SecretF
         />
         <button
           type="button"
-          aria-label={visible ? "隠す" : "表示"}
+          aria-label={visible ? t("field.hide") : t("field.show")}
           aria-pressed={visible}
           onClick={() => setVisible((v) => !v)}
           className="grid shrink-0 place-items-center text-muted-foreground transition-colors hover:text-foreground"
