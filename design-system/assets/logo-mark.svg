@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="SwitchBotler logo mark">
+  <!-- Bow-tie × toggle: 執事の蝶ネクタイと ON トグルのノブを1つの形に。currentColor で塗る単色グリフ。 -->
+  <g fill="currentColor" stroke="currentColor" stroke-width="8" stroke-linejoin="round">
+    <polygon points="27,43 27,77 53,60"/>
+    <polygon points="93,43 93,77 67,60"/>
+  </g>
+  <circle cx="60" cy="60" r="15.5" fill="currentColor"/>
+</svg>

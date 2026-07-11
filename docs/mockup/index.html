@@ -85,7 +85,8 @@
   .side { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
   .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; padding: 8px 8px 12px; letter-spacing: -.01em; }
   .brand .mk { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
-  .brand .mk svg { width: 16px; height: 16px; }
+  .brand .mk svg { width: 18px; height: 18px; }
+  .bot { color: var(--accent); }
   .nav { display: flex; flex-direction: column; gap: 4px; }
   .nav a { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 11px; color: var(--muted); font-size: 13.5px; font-weight: 550; cursor: pointer; text-decoration: none; }
   .nav a svg { width: 18px; height: 18px; flex: none; }
@@ -192,7 +193,7 @@
   .tray .th { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
   .tray .th .b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
   .tray .th .b .mk { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
-  .tray .th .b .mk svg { width: 13px; height: 13px; }
+  .tray .th .b .mk svg { width: 15px; height: 15px; }
   .tray .th .cn { font-size: 10.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
   .tray .th .cn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
   .tray .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; }
@@ -253,10 +254,10 @@
   <!-- 01 デバイス一覧 -->
   <div class="cap"><span class="n">01</span><h2>デバイス一覧</h2><span class="d">登録デバイスと状態</span></div>
   <div class="win-scroll"><div class="win">
-    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
       <aside class="side">
-        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
           <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
@@ -283,10 +284,10 @@
   <!-- 02 デバイス操作 -->
   <div class="cap"><span class="n">02</span><h2>デバイス操作</h2><span class="d">個別デバイスの詳細</span></div>
   <div class="win-scroll"><div class="win">
-    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
       <aside class="side">
-        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
           <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
@@ -324,10 +325,10 @@
   <!-- 03 センサーステータス -->
   <div class="cap"><span class="n">03</span><h2>センサーステータス</h2><span class="d">温湿度・空気・電池</span></div>
   <div class="win-scroll"><div class="win">
-    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
       <aside class="side">
-        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
           <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
@@ -368,10 +369,10 @@
   <!-- 04 シーン実行 -->
   <div class="cap"><span class="n">04</span><h2>シーン実行</h2><span class="d">ワンクリックで実行</span></div>
   <div class="win-scroll"><div class="win">
-    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app">
       <aside class="side">
-        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
@@ -394,10 +395,10 @@
   <!-- 05 認証設定 -->
   <div class="cap"><span class="n">05</span><h2>認証設定</h2><span class="d">Token / Secret とセキュア保管</span></div>
   <div class="win-scroll"><div class="win">
-    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">SwitchBotler</span></div>
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
     <div class="app tall">
       <aside class="side">
-        <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</div>
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
         <nav class="nav">
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>デバイス</a>
           <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>センサー</a>
@@ -425,7 +426,7 @@
   <div class="cap"><span class="n">06</span><h2>トレイメニュー</h2><span class="d">システムトレイのポップオーバー</span></div>
   <div class="tray-stage">
     <div class="tray">
-      <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span>SwitchBotler</span><span class="cn"><span class="dot"></span>接続済み</span></div>
+      <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
       <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">リビングの照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
       <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><span class="qn">サーキュレーター</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></div>
       <div class="qrow off"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18"/></svg></span><span class="qn">寝室のカーテン</span><div class="tgl sm" role="switch" aria-checked="false" tabindex="0" aria-label="寝室のカーテン"><span class="knob"></span></div></div>

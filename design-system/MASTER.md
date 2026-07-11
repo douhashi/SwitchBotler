@@ -1,6 +1,8 @@
 # SwitchBotler Design System — MASTER
 
 > Source of Truth。全画面はこのトークン/ルールに従う。個別画面の逸脱は `design-system/pages/<page>.md` に記録し、存在すればそれを優先する。
+>
+> ロゴ・アイコン・ワードマーク（アプリ名の配色）などブランド表現は [`brand.md`](./brand.md) を参照。
 
 ## Direction
 
