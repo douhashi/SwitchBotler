@@ -5,30 +5,30 @@ import type { SensorMetric } from "@/data";
 import { StatCard } from "./stat-card";
 
 describe("StatCard", () => {
-  it("gauge は大数値・単位・メーターを描画する", () => {
+  it("gauge は計測ラベル（icon から翻訳）・大数値・単位・メーターを描画する", () => {
     const metric: SensorMetric = {
       kind: "gauge",
       id: "battery",
-      label: "バッテリー",
       icon: "battery",
       value: 60,
       unit: "%",
     };
     render(<StatCard metric={metric} />);
 
+    // ラベルは Rust ではなく icon から翻訳する（ja 既定）。
+    expect(screen.getByText("バッテリー")).toBeInTheDocument();
     expect(screen.getByText("60")).toBeInTheDocument();
     expect(screen.getByText("%")).toBeInTheDocument();
     // gauge は BarMeter（role="meter"）を描画する。
     expect(screen.getByRole("meter")).toBeInTheDocument();
   });
 
-  it("state は区分テキストを表示しメーターを描画しない", () => {
+  it("state は状態キー（icon+state から翻訳）を表示しメーターを描画しない", () => {
     const metric: SensorMetric = {
       kind: "state",
       id: "motion",
-      label: "人感",
       icon: "motion",
-      text: "検知あり",
+      state: "active",
       tone: "active",
     };
     render(<StatCard metric={metric} />);
@@ -41,9 +41,8 @@ describe("StatCard", () => {
     const metric: SensorMetric = {
       kind: "state",
       id: "motion",
-      label: "人感",
       icon: "motion",
-      text: "検知あり",
+      state: "active",
       tone: "active",
     };
     render(<StatCard metric={metric} />);
@@ -55,9 +54,8 @@ describe("StatCard", () => {
     const metric: SensorMetric = {
       kind: "state",
       id: "brightness",
-      label: "明るさ",
       icon: "brightness",
-      text: "明るい",
+      state: "bright",
     };
     render(<StatCard metric={metric} />);
 

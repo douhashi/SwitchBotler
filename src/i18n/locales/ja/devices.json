@@ -1,0 +1,70 @@
+{
+  "title": "デバイス",
+  "subtitle": "SwitchBot アカウントのデバイス",
+  "empty": "デバイスが見つかりませんでした。",
+  "favorites": "お気に入り",
+  "all": "すべて",
+  "otherSection": "その他",
+  "power": "電源",
+  "brightness": "明るさ",
+  "color": "カラー",
+  "position": "開度",
+  "temperature": "温度",
+  "mode": "モード",
+  "fan": "風量",
+  "brighter": "明るく",
+  "dimmer": "暗く",
+  "offline": "オフライン",
+  "press": "押す",
+  "detailAria": "{{name}} の詳細",
+  "pressAria": "{{name}} を押す",
+  "favoriteAdd": "{{name}} をお気に入り",
+  "favoriteRemove": "{{name}} のお気に入りを解除",
+  "colorName": {
+    "warm": "電球色",
+    "neutral": "昼白色",
+    "cool": "昼光色",
+    "red": "レッド",
+    "green": "グリーン",
+    "purple": "パープル"
+  },
+  "airconMode": {
+    "auto": "自動",
+    "cool": "冷房",
+    "dry": "除湿",
+    "fan": "送風",
+    "heat": "暖房"
+  },
+  "airconFan": {
+    "auto": "自動",
+    "low": "弱",
+    "medium": "中",
+    "high": "強"
+  },
+  "status": {
+    "unsupported": "未対応",
+    "botPress": "押して操作",
+    "botOn": "オン",
+    "botOff": "オフ",
+    "lockLocked": "施錠",
+    "lockUnlocked": "解錠",
+    "curtainOpen": "開",
+    "curtainClosed": "閉",
+    "curtainPosition": "{{position}}% 開",
+    "lightOn": "点灯中",
+    "lightOff": "オフ",
+    "irLightOn": "点灯",
+    "irLightOff": "消灯",
+    "airconOff": "オフ",
+    "airconOn": "オン",
+    "airconRunning": "{{mode}} {{temperature}}℃",
+    "defaultOn": "オン",
+    "defaultOff": "オフ"
+  },
+  "hero": {
+    "aircon": "{{mode}} · 風量{{fan}}",
+    "brightnessColor": "明るさ {{brightness}}% · {{color}}",
+    "brightness": "明るさ {{brightness}}%",
+    "position": "開度 {{position}}%"
+  }
+}

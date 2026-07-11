@@ -1,0 +1,26 @@
+{
+  "title": "Sensors",
+  "subtitle": "Thermo-hygrometers and motion sensors",
+  "empty": "No sensors (thermo-hygrometers or motion sensors) found.",
+  "sourceFallback": "Sensor",
+  "updatedAt": "Updated {{time}}",
+  "moveUp": "Move {{name}} up",
+  "moveDown": "Move {{name}} down",
+  "metric": {
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "battery": "Battery",
+    "motion": "Motion",
+    "brightness": "Brightness"
+  },
+  "state": {
+    "motion": {
+      "active": "Detected",
+      "idle": "Clear"
+    },
+    "brightness": {
+      "bright": "Bright",
+      "dim": "Dim"
+    }
+  }
+}

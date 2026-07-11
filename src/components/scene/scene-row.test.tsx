@@ -38,13 +38,16 @@ describe("SceneRow", () => {
     expect(invoke).toHaveBeenCalledWith("execute_scene", { id: "goodnight" });
   });
 
-  it("実行失敗時は安全なエラーメッセージを表示する", async () => {
-    invoke.mockRejectedValue({ code: "network", message: "接続できませんでした。" });
+  it("実行失敗時は安全なエラーメッセージ（コードを翻訳）を表示する", async () => {
+    invoke.mockRejectedValue({ code: "network", message: "network failure" });
     render(<SceneRow scene={scene} />);
 
     await userEvent.click(screen.getByRole("button", { name: "実行" }));
 
-    await screen.findByText("接続できませんでした。");
+    // ストアは message でなく code を持ち、表示端が errors namespace で翻訳する（ja）。
+    await screen.findByText(
+      "SwitchBot API に接続できませんでした。ネットワーク接続を確認してください。",
+    );
     expect(screen.getByRole("button", { name: "実行" })).toBeEnabled();
   });
 });

@@ -1,27 +1,34 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { AppErrorCode } from "@/i18n/error";
 
 /** 取得中の共通表示。 */
-export function LoadingState({ label = "読み込み中…" }: { label?: string }) {
-  return <p className="text-sm text-muted-foreground">{label}</p>;
+export function LoadingState() {
+  const { t } = useTranslation("common");
+  return <p className="text-sm text-muted-foreground">{t("states.loading")}</p>;
 }
 
-/** エラーの共通表示（安全メッセージ + 再試行）。 */
+/** エラーの共通表示（コードを翻訳した安全メッセージ + 再試行）。 */
 export function ErrorState({
-  message,
+  code,
+  statusCode,
   onRetry,
 }: {
-  message: string;
+  code: AppErrorCode;
+  statusCode?: number;
   onRetry: () => void;
 }) {
+  const { t } = useTranslation("errors");
+  const { t: tc } = useTranslation("common");
   return (
     <div className="rounded-2xl bg-card p-4 shadow-raise">
-      <p className="text-sm text-destructive">{message}</p>
+      <p className="text-sm text-destructive">{t(code, { statusCode })}</p>
       <Button size="sm" variant="outline" className="mt-3" onClick={onRetry}>
         <RefreshCw strokeWidth={2} />
-        再試行
+        {tc("actions.retry")}
       </Button>
     </div>
   );

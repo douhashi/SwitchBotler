@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Battery, Droplet, type LucideIcon, Radar, Sun, Thermometer } from "lucide-react";
 
 import { BarMeter } from "@/components/charts/bar-meter";
@@ -16,16 +17,19 @@ const METRIC_ICON: Record<SensorIcon, LucideIcon> = {
  * センサー計測値カード（mockup .stat）。ラベル + 値表現。
  * - gauge（温度/湿度/電池）: 大数値 + メーター。
  * - state（人感/明るさ）: 区分テキスト（メーターなし）。tone で検知状態を強調する。
+ * ラベル・区分テキストは Rust から受け取らず、`icon`・`state` キーから翻訳する（i18n）。
  * API は単一時点値のみを返すため履歴（スパークライン）は持たない（決定3）。
  */
 export function StatCard({ metric }: { metric: SensorMetric }) {
+  const { t } = useTranslation("sensors");
   const Icon = METRIC_ICON[metric.icon];
+  const label = t(`metric.${metric.icon}`);
 
   return (
     <div className="rounded-[15px] bg-card px-[15px] py-3.5 shadow-raise">
       <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
         <Icon size={14} strokeWidth={1.75} />
-        {metric.label}
+        {label}
       </div>
 
       {metric.kind === "gauge" ? (
@@ -37,7 +41,7 @@ export function StatCard({ metric }: { metric: SensorMetric }) {
             </span>
           </div>
 
-          <BarMeter value={metric.value} label={metric.label} className="mt-3" />
+          <BarMeter value={metric.value} label={label} className="mt-3" />
         </>
       ) : (
         <div
@@ -47,7 +51,7 @@ export function StatCard({ metric }: { metric: SensorMetric }) {
             metric.tone === "idle" && "text-muted-foreground",
           )}
         >
-          {metric.text}
+          {t(`state.${metric.icon}.${metric.state}`)}
         </div>
       )}
     </div>

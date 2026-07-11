@@ -1,0 +1,17 @@
+{
+  "banner": {
+    "connectedDetail": "Last checked {{lastChecked}} · Limit {{limit}} / day",
+    "testing": "Testing connection…",
+    "testingDetail": "Contacting the SwitchBot API.",
+    "disconnectedDetail": "Enter your Token / Secret and test the connection."
+  },
+  "field": {
+    "token": "Token",
+    "secret": "Secret",
+    "secretHelp": "Issue it in the SwitchBot app → Profile → Preferences → Developer Options.",
+    "saved": "Saved",
+    "show": "Show",
+    "hide": "Hide"
+  },
+  "saveAndConnect": "Save and connect"
+}

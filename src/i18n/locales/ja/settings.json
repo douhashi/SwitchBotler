@@ -5,5 +5,23 @@
     "heading": "表示",
     "theme": "テーマ",
     "themeHint": "システムは OS の外観設定に追従します。"
+  },
+  "theme": {
+    "system": "システム",
+    "light": "ライト",
+    "dark": "ダーク",
+    "label": "テーマ"
+  },
+  "api": {
+    "heading": "SwitchBot API 認証",
+    "storageNote": "OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。",
+    "test": "接続をテスト",
+    "testing": "確認中…",
+    "disconnect": "接続を解除"
+  },
+  "disconnectDialog": {
+    "title": "接続を解除しますか？",
+    "description": "保存された Token / Secret を削除し、SwitchBot API との接続を解除します。",
+    "confirm": "解除する"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "title": "Scenes",
+  "subtitle": "Created in the SwitchBot app",
+  "empty": "No scenes yet.",
+  "run": "Run",
+  "running": "Running",
+  "runAria": "Run {{name}}",
+  "failed": "Failed",
+  "favoriteAdd": "Add {{name}} to favorites",
+  "favoriteRemove": "Remove {{name}} from favorites"
+}

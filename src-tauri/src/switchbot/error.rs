@@ -34,8 +34,11 @@ pub enum ErrorCode {
 #[serde(rename_all = "camelCase")]
 pub struct SwitchBotError {
     pub code: ErrorCode,
-    /// 利用者向けの安全な日本語メッセージ。
+    /// 診断ログ用の安全なメッセージ（秘匿値なし）。利用者向け表示はフロントが `code` から翻訳する。
     pub message: String,
+    /// API 封筒の statusCode（`apiStatus` のみ設定）。フロントが `errors.apiStatus` で補間する。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_code: Option<i64>,
 }
 
 impl SwitchBotError {
@@ -43,6 +46,7 @@ impl SwitchBotError {
         Self {
             code,
             message: message.into(),
+            status_code: None,
         }
     }
 
@@ -60,12 +64,14 @@ impl SwitchBotError {
         )
     }
 
-    /// API 封筒の statusCode 異常。数値コードのみ含める（秘匿値は含めない）。
+    /// API 封筒の statusCode 異常。番号は構造化フィールドで保持し、フロントが補間表示する。
     pub fn api_status(status_code: i64) -> Self {
-        Self::new(
-            ErrorCode::ApiStatus,
-            format!("SwitchBot API がエラーを返しました（コード {status_code}）。"),
-        )
+        Self {
+            code: ErrorCode::ApiStatus,
+            // 診断ログ用（利用者向け表示はフロントが `errors.apiStatus` で番号補間する）。
+            message: format!("SwitchBot API status code {status_code}."),
+            status_code: Some(status_code),
+        }
     }
 
     /// デバイスオフライン（封筒 statusCode 161）。deviceId・名称等の秘匿値は含めない。
@@ -125,5 +131,23 @@ mod tests {
         // 追加メッセージに秘匿値・deviceId・デバイス名を含めない（V5）。
         let err = SwitchBotError::offline();
         assert_eq!(err.message, "デバイスがオフラインのため操作できません。");
+    }
+
+    #[test]
+    fn api_status_serializes_status_code_as_camel_case() {
+        // フロントは `errors.apiStatus` に `{{statusCode}}` を補間するため、
+        // serde camelCase 出力が正確に "statusCode" で数値を保持することを固定する（V2/V3）。
+        let err = SwitchBotError::api_status(190);
+        let json = serde_json::to_value(&err).expect("シリアライズできること");
+        assert_eq!(json["code"], "apiStatus");
+        assert_eq!(json["statusCode"], 190);
+    }
+
+    #[test]
+    fn non_api_status_errors_omit_status_code() {
+        // apiStatus 以外は statusCode を持たない（skip_serializing_if で省略される）。
+        let err = SwitchBotError::offline();
+        let json = serde_json::to_value(&err).expect("シリアライズできること");
+        assert!(json.get("statusCode").is_none());
     }
 }

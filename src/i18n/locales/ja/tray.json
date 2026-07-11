@@ -1,0 +1,13 @@
+{
+  "disconnectedNote": "未接続です。設定から接続してください。",
+  "emptyFavoritesTitle": "お気に入りデバイスがありません",
+  "emptyFavoritesBody": "デバイス画面でピン留めすると、ここに表示されます。",
+  "favoriteScenes": "お気に入りシーン",
+  "openWindow": "ウィンドウを開く",
+  "quit": "終了",
+  "closeToTray": {
+    "title": "トレイに常駐します",
+    "description": "ウィンドウを閉じてもアプリは終了せず、メニューバー（トレイ）に常駐して動作を続けます。完全に終了するにはトレイアイコンのメニューから「終了」を選んでください。",
+    "ack": "分かりました"
+  }
+}

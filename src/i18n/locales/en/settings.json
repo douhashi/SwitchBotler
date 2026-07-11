@@ -5,5 +5,23 @@
     "heading": "Display",
     "theme": "Theme",
     "themeHint": "System follows your OS appearance setting."
+  },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "label": "Theme"
+  },
+  "api": {
+    "heading": "SwitchBot API credentials",
+    "storageNote": "Stored in your OS secure storage (Keychain / Credential Manager / Secret Service).",
+    "test": "Test connection",
+    "testing": "Testing…",
+    "disconnect": "Disconnect"
+  },
+  "disconnectDialog": {
+    "title": "Disconnect?",
+    "description": "Deletes the saved Token / Secret and disconnects from the SwitchBot API.",
+    "confirm": "Disconnect"
   }
 }

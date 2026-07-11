@@ -1,0 +1,10 @@
+{
+  "unauthorized": "認証情報またはリクエスト上限を確認してください。",
+  "rateLimited": "リクエストが多すぎます。しばらく待って再試行してください。",
+  "apiStatus": "SwitchBot API がエラーを返しました（コード {{statusCode}}）。",
+  "offline": "デバイスがオフラインのため操作できません。",
+  "network": "SwitchBot API に接続できませんでした。ネットワーク接続を確認してください。",
+  "storage": "認証情報の保存領域にアクセスできませんでした。",
+  "missingCredentials": "認証情報が保存されていません。",
+  "unknown": "SwitchBot API との通信に失敗しました。"
+}

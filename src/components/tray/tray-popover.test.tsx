@@ -84,7 +84,7 @@ describe("TrayPopover", () => {
       devices: [],
       loading: false,
       loaded: true,
-      error: "接続できませんでした。",
+      error: "network",
     });
 
     render(<TrayPopover />);

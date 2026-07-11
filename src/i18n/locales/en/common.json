@@ -4,5 +4,28 @@
     "system": "Follow system",
     "ja": "日本語",
     "en": "English"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "close": "Close",
+    "back": "Back"
+  },
+  "states": {
+    "loading": "Loading…",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "waiting": "Waiting to connect",
+    "connectedCount_one": "Connected · {{count}} device",
+    "connectedCount_other": "Connected · {{count}} devices"
+  },
+  "nav": {
+    "aria": "Main navigation",
+    "devices": "Devices",
+    "sensors": "Sensors",
+    "scenes": "Scenes",
+    "settings": "Settings"
   }
 }

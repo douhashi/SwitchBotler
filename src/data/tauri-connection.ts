@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import type { ConnectionGateway } from "./connection";
-import { toMessage } from "./ipc";
+import { toError } from "./ipc";
 import { type ConnectionState, RATE_LIMIT } from "./types";
 
 /** Rust コマンドが返す接続状態 DTO。秘匿値を含まない。 */
@@ -47,7 +47,8 @@ export const tauriConnectionGateway: ConnectionGateway = {
       const dto = await invoke<ConnectionStateDto>("test_connection");
       return toState(dto, nowLabel());
     } catch (error) {
-      throw new Error(toMessage(error));
+      // 安定コード（+ statusCode）を保持したまま投げ直し、表示端で翻訳する。
+      throw toError(error);
     }
   },
 

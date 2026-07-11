@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { ViewHeader } from "@/components/view-header";
@@ -12,6 +14,7 @@ import {
   deviceStatusLabel,
   hasPowerToggle,
   type IrLightAction,
+  type Translate,
 } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
@@ -22,23 +25,31 @@ const AIRCON_MODES: AirconMode[] = ["auto", "cool", "dry", "fan", "heat"];
 const AIRCON_FANS: AirconFanSpeed[] = ["auto", "low", "medium", "high"];
 
 /** 赤外線ライトの相対明暗ボタン（絶対値・状態を持たない送信専用アクション）。 */
-const IR_LIGHT_BRIGHTNESS_ACTIONS: { action: IrLightAction; label: string }[] = [
-  { action: "brighter", label: "明るく" },
-  { action: "dimmer", label: "暗く" },
+const IR_LIGHT_BRIGHTNESS_ACTIONS: { action: IrLightAction; labelKey: string }[] = [
+  { action: "brighter", labelKey: "brighter" },
+  { action: "dimmer", labelKey: "dimmer" },
 ];
 
-/** hero に出す説明行を制御値から組み立てる。 */
-function heroDetail(device: Device): string {
+/** hero に出す説明行を制御値から組み立てる（`devices` namespace の翻訳関数を渡す）。 */
+function heroDetail(device: Device, t: Translate): string {
   const { brightness, position, colorId, mode, fanSpeed } = device.controls;
   if (device.category === "aircon") {
     if (mode === undefined || fanSpeed === undefined) return device.model;
-    return `${airconModeLabel(mode)} · 風量${airconFanLabel(fanSpeed)}`;
+    return t("hero.aircon", {
+      mode: airconModeLabel(mode, t),
+      fan: airconFanLabel(fanSpeed, t),
+    });
   }
   if (brightness !== undefined) {
     const color = device.colorOptions?.find((c) => c.id === colorId);
-    return color ? `明るさ ${brightness}% · ${color.label}` : `明るさ ${brightness}%`;
+    return color
+      ? t("hero.brightnessColor", {
+          brightness,
+          color: t(`colorName.${color.id}`),
+        })
+      : t("hero.brightness", { brightness });
   }
-  if (position !== undefined) return `開度 ${position}%`;
+  if (position !== undefined) return t("hero.position", { position });
   return device.model;
 }
 
@@ -92,6 +103,7 @@ function Segmented<T extends string>({
 
 /** 個別デバイスの詳細操作（mockup 02）。 */
 export function DeviceDetail({ device }: { device: Device }) {
+  const { t } = useTranslation("devices");
   const navigate = useNavigationStore((s) => s.navigate);
   const toggle = useDeviceStore((s) => s.toggle);
   const updateControl = useDeviceStore((s) => s.updateControl);
@@ -116,7 +128,7 @@ export function DeviceDetail({ device }: { device: Device }) {
               disabled={offline}
               aria-disabled={offline || undefined}
               onCheckedChange={() => toggle(device.id)}
-              aria-label="電源"
+              aria-label={t("power")}
               className={cn(offline && "pointer-events-none")}
             />
           ) : undefined
@@ -133,11 +145,11 @@ export function DeviceDetail({ device }: { device: Device }) {
           <DeviceIcon category={device.category} size={28} strokeWidth={1.6} />
         </span>
         <div>
-          <div className="text-[17px] font-bold">{deviceStatusLabel(device)}</div>
+          <div className="text-[17px] font-bold">{deviceStatusLabel(device, t)}</div>
           <div className="mt-0.5 text-[12.5px] text-muted-foreground">
-            {heroDetail(device)}
+            {heroDetail(device, t)}
             {/* 一覧と同じく理由を色だけに頼らず常時可読にする（インライン併記）。 */}
-            {offline && <span className="text-sd-warn"> · オフライン</span>}
+            {offline && <span className="text-sd-warn"> · {t("offline")}</span>}
           </div>
         </div>
       </div>
@@ -145,7 +157,7 @@ export function DeviceDetail({ device }: { device: Device }) {
       {brightness !== undefined && (
         <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
           <div className="mb-3 flex items-center justify-between text-[12.5px] text-muted-foreground">
-            <span>明るさ</span>
+            <span>{t("brightness")}</span>
             <b className="font-mono font-semibold text-foreground">
               {brightness}%
             </b>
@@ -155,7 +167,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             min={0}
             max={100}
             disabled={offline}
-            aria-label="明るさ"
+            aria-label={t("brightness")}
             onValueChange={([v]) => updateControl(device.id, { brightness: v })}
           />
         </div>
@@ -163,8 +175,8 @@ export function DeviceDetail({ device }: { device: Device }) {
 
       {device.colorOptions && (
         <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
-          <div className="mb-3.5 text-[12.5px] text-muted-foreground">カラー</div>
-          <div role="radiogroup" aria-label="カラー" className="flex gap-2.5">
+          <div className="mb-3.5 text-[12.5px] text-muted-foreground">{t("color")}</div>
+          <div role="radiogroup" aria-label={t("color")} className="flex gap-2.5">
             {device.colorOptions.map((color) => {
               const selected = color.id === colorId;
               return (
@@ -173,7 +185,7 @@ export function DeviceDetail({ device }: { device: Device }) {
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  aria-label={color.label}
+                  aria-label={t(`colorName.${color.id}`)}
                   disabled={offline}
                   aria-disabled={offline || undefined}
                   onClick={() => updateControl(device.id, { colorId: color.id })}
@@ -194,7 +206,7 @@ export function DeviceDetail({ device }: { device: Device }) {
       {position !== undefined && (
         <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
           <div className="mb-3 flex items-center justify-between text-[12.5px] text-muted-foreground">
-            <span>開度</span>
+            <span>{t("position")}</span>
             <b className="font-mono font-semibold text-foreground">{position}%</b>
           </div>
           <Slider
@@ -202,7 +214,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             min={0}
             max={100}
             disabled={offline}
-            aria-label="開度"
+            aria-label={t("position")}
             onValueChange={([v]) => updateControl(device.id, { position: v })}
           />
         </div>
@@ -211,13 +223,13 @@ export function DeviceDetail({ device }: { device: Device }) {
       {isAircon && (
         <>
           <div className="mb-3 flex items-center justify-between rounded-2xl bg-card p-4 shadow-raise">
-            <span className="text-[12.5px] text-muted-foreground">電源</span>
+            <span className="text-[12.5px] text-muted-foreground">{t("power")}</span>
             <Switch
               checked={power}
               disabled={offline}
               aria-disabled={offline || undefined}
               onCheckedChange={() => updateControl(device.id, { power: !power })}
-              aria-label="電源"
+              aria-label={t("power")}
               className={cn(offline && "pointer-events-none")}
             />
           </div>
@@ -225,7 +237,7 @@ export function DeviceDetail({ device }: { device: Device }) {
           {temperature !== undefined && (
             <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
               <div className="mb-3 flex items-center justify-between text-[12.5px] text-muted-foreground">
-                <span>温度</span>
+                <span>{t("temperature")}</span>
                 <b className="font-mono font-semibold text-foreground">{temperature}℃</b>
               </div>
               <Slider
@@ -233,26 +245,26 @@ export function DeviceDetail({ device }: { device: Device }) {
                 min={AIRCON_TEMP_MIN}
                 max={AIRCON_TEMP_MAX}
                 disabled={offline}
-                aria-label="温度"
+                aria-label={t("temperature")}
                 onValueChange={([v]) => updateControl(device.id, { temperature: v })}
               />
             </div>
           )}
 
           <Segmented
-            label="モード"
+            label={t("mode")}
             options={AIRCON_MODES}
             value={mode}
-            labelOf={airconModeLabel}
+            labelOf={(v) => airconModeLabel(v, t)}
             disabled={offline}
             onSelect={(v) => updateControl(device.id, { mode: v })}
           />
 
           <Segmented
-            label="風量"
+            label={t("fan")}
             options={AIRCON_FANS}
             value={fanSpeed}
-            labelOf={airconFanLabel}
+            labelOf={(v) => airconFanLabel(v, t)}
             disabled={offline}
             onSelect={(v) => updateControl(device.id, { fanSpeed: v })}
           />
@@ -262,22 +274,22 @@ export function DeviceDetail({ device }: { device: Device }) {
       {isIrLight && (
         <>
           <div className="mb-3 flex items-center justify-between rounded-2xl bg-card p-4 shadow-raise">
-            <span className="text-[12.5px] text-muted-foreground">電源</span>
+            <span className="text-[12.5px] text-muted-foreground">{t("power")}</span>
             <Switch
               checked={power}
               disabled={offline}
               aria-disabled={offline || undefined}
               onCheckedChange={() => operateIrLight(device.id, power ? "off" : "on")}
-              aria-label="電源"
+              aria-label={t("power")}
               className={cn(offline && "pointer-events-none")}
             />
           </div>
 
           <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
-            <div className="mb-3 text-[12.5px] text-muted-foreground">明るさ</div>
+            <div className="mb-3 text-[12.5px] text-muted-foreground">{t("brightness")}</div>
             {/* 赤外線ライトは絶対値を持たず相対コマンドのみ。状態を持たない送信専用アクション。 */}
             <div className="flex gap-1.5">
-              {IR_LIGHT_BRIGHTNESS_ACTIONS.map(({ action, label }) => (
+              {IR_LIGHT_BRIGHTNESS_ACTIONS.map(({ action, labelKey }) => (
                 <button
                   key={action}
                   type="button"
@@ -289,7 +301,7 @@ export function DeviceDetail({ device }: { device: Device }) {
                     offline && "pointer-events-none opacity-50",
                   )}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               ))}
             </div>

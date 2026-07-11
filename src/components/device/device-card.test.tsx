@@ -110,7 +110,8 @@ describe("DeviceCard", () => {
     await waitFor(() => {
       const state = useDeviceStore.getState();
       expect(state.devices.find((d) => d.id === "circulator")?.controls.power).toBe(false);
-      expect(state.error).toBe("リクエストが多すぎます。");
+      // ストアは日本語でなく安定コードを保持する（表示端で翻訳）。
+      expect(state.error).toBe("rateLimited");
     });
   });
 

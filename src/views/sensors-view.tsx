@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
 
 import { StatCard } from "@/components/sensor/stat-card";
@@ -6,6 +7,7 @@ import { ViewHeader } from "@/components/view-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
 import { useSensors } from "@/data";
 import { loadSensorOrder, saveSensorOrder } from "@/data/preferences";
+import { errorCodeOf, statusCodeOf } from "@/i18n/error";
 import { cn } from "@/lib/utils";
 import type { SensorReadings } from "@/data";
 
@@ -28,6 +30,7 @@ function orderSensors(items: SensorReadings[], order: string[]): SensorReadings[
 }
 
 export function SensorsView() {
+  const { t } = useTranslation("sensors");
   const { data, loading, error, refetch } = useSensors();
   const [order, setOrder] = useState<string[]>([]);
   const dragIndex = useRef<number | null>(null);
@@ -69,14 +72,16 @@ export function SensorsView() {
 
   return (
     <div>
-      <ViewHeader title="センサー" subtitle="温湿度計・人感センサー" />
+      <ViewHeader title={t("title")} subtitle={t("subtitle")} />
       {loading && !data && <LoadingState />}
-      {error && !data && <ErrorState message={error.message} onRetry={refetch} />}
-      {data && !hasSensors && (
-        <EmptyState>
-          センサー（温湿度計・人感センサー）が見つかりませんでした。
-        </EmptyState>
+      {error && !data && (
+        <ErrorState
+          code={errorCodeOf(error)}
+          statusCode={statusCodeOf(error)}
+          onRetry={refetch}
+        />
       )}
+      {data && !hasSensors && <EmptyState>{t("empty")}</EmptyState>}
 
       {hasSensors &&
         sensors.map((sensor, i) => (
@@ -96,17 +101,17 @@ export function SensorsView() {
                 <GripVertical size={16} strokeWidth={1.9} />
               </span>
               <h2 className="truncate text-sm font-semibold tracking-tight">
-                {sensor.source || "センサー"}
+                {sensor.source || t("sourceFallback")}
               </h2>
               <span className="ml-auto shrink-0 text-[11.5px] tabular-nums text-muted-foreground">
-                最終更新 {sensor.updatedAt}
+                {t("updatedAt", { time: sensor.updatedAt })}
               </span>
               <div className="flex shrink-0 gap-1">
                 <button
                   type="button"
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
-                  aria-label={`${sensor.source || "センサー"} を上へ`}
+                  aria-label={t("moveUp", { name: sensor.source || t("sourceFallback") })}
                   className={cn(
                     "grid size-7 place-items-center rounded-lg text-muted-foreground shadow-raise-sm transition-colors hover:text-foreground active:shadow-inset-sm disabled:opacity-40 disabled:shadow-none",
                   )}
@@ -117,7 +122,7 @@ export function SensorsView() {
                   type="button"
                   onClick={() => move(i, 1)}
                   disabled={i === sensors.length - 1}
-                  aria-label={`${sensor.source || "センサー"} を下へ`}
+                  aria-label={t("moveDown", { name: sensor.source || t("sourceFallback") })}
                   className={cn(
                     "grid size-7 place-items-center rounded-lg text-muted-foreground shadow-raise-sm transition-colors hover:text-foreground active:shadow-inset-sm disabled:opacity-40 disabled:shadow-none",
                   )}

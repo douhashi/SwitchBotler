@@ -1,0 +1,70 @@
+{
+  "title": "Devices",
+  "subtitle": "Devices in your SwitchBot account",
+  "empty": "No devices found.",
+  "favorites": "Favorites",
+  "all": "All",
+  "otherSection": "Other",
+  "power": "Power",
+  "brightness": "Brightness",
+  "color": "Color",
+  "position": "Position",
+  "temperature": "Temperature",
+  "mode": "Mode",
+  "fan": "Fan speed",
+  "brighter": "Brighter",
+  "dimmer": "Dimmer",
+  "offline": "Offline",
+  "press": "Press",
+  "detailAria": "{{name}} details",
+  "pressAria": "Press {{name}}",
+  "favoriteAdd": "Add {{name}} to favorites",
+  "favoriteRemove": "Remove {{name}} from favorites",
+  "colorName": {
+    "warm": "Warm White",
+    "neutral": "Natural White",
+    "cool": "Cool White",
+    "red": "Red",
+    "green": "Green",
+    "purple": "Purple"
+  },
+  "airconMode": {
+    "auto": "Auto",
+    "cool": "Cool",
+    "dry": "Dry",
+    "fan": "Fan",
+    "heat": "Heat"
+  },
+  "airconFan": {
+    "auto": "Auto",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "status": {
+    "unsupported": "Unsupported",
+    "botPress": "Press to operate",
+    "botOn": "On",
+    "botOff": "Off",
+    "lockLocked": "Locked",
+    "lockUnlocked": "Unlocked",
+    "curtainOpen": "Open",
+    "curtainClosed": "Closed",
+    "curtainPosition": "{{position}}% open",
+    "lightOn": "On",
+    "lightOff": "Off",
+    "irLightOn": "On",
+    "irLightOff": "Off",
+    "airconOff": "Off",
+    "airconOn": "On",
+    "airconRunning": "{{mode}} {{temperature}}°C",
+    "defaultOn": "On",
+    "defaultOff": "Off"
+  },
+  "hero": {
+    "aircon": "{{mode}} · Fan {{fan}}",
+    "brightnessColor": "Brightness {{brightness}}% · {{color}}",
+    "brightness": "Brightness {{brightness}}%",
+    "position": "Position {{position}}%"
+  }
+}

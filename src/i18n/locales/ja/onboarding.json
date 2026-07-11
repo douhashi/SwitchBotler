@@ -1,0 +1,19 @@
+{
+  "welcomeTitle": "<brand></brand> へようこそ",
+  "intro": "お使いの SwitchBot デバイスを、メニューバーからワンタップで操作できます。はじめに API 認証を設定しましょう。",
+  "steps": {
+    "issue": {
+      "title": "アプリで発行",
+      "body": "SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション"
+    },
+    "copy": {
+      "title": "2つの値をコピー",
+      "body": "トークンとシークレットをそれぞれコピーします。"
+    },
+    "paste": {
+      "title": "貼り付けて接続",
+      "body": "下のフォームに貼り付け、「保存して接続」。"
+    }
+  },
+  "storageNote": "入力した値は OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管され、画面やログに平文で表示されません。"
+}

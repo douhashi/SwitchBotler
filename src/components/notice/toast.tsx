@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, X } from "lucide-react";
 
 import { useNoticeStore } from "@/stores/notice-store";
@@ -7,6 +8,8 @@ import { useNoticeStore } from "@/stores/notice-store";
  * 操作失敗（楽観ロールバック時）など、全画面横断の回復導線を補う。
  */
 export function ToastViewport() {
+  const { t } = useTranslation("errors");
+  const { t: tc } = useTranslation("common");
   const notices = useNoticeStore((s) => s.notices);
   const dismiss = useNoticeStore((s) => s.dismiss);
 
@@ -25,10 +28,12 @@ export function ToastViewport() {
             strokeWidth={2}
             className="mt-0.5 shrink-0 text-destructive"
           />
-          <span className="flex-1 text-foreground">{notice.message}</span>
+          <span className="flex-1 text-foreground">
+            {t(notice.code, { statusCode: notice.statusCode })}
+          </span>
           <button
             type="button"
-            aria-label="閉じる"
+            aria-label={tc("actions.close")}
             onClick={() => dismiss(notice.id)}
             className="shrink-0 rounded-md text-muted-foreground transition-colors hover:text-foreground"
           >
