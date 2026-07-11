@@ -9,7 +9,7 @@ export function ConnectionBanner({
 }: {
   connection: ConnectionState;
 }) {
-  const { status, lastCheckedAt, rateRemaining, rateLimit } = connection;
+  const { status, lastCheckedAt, rateLimit } = connection;
 
   if (status === "connected") {
     return (
@@ -17,8 +17,7 @@ export function ConnectionBanner({
         <ShieldCheck strokeWidth={1.9} />
         <AlertTitle className="text-foreground">接続済み</AlertTitle>
         <AlertDescription>
-          最終確認 {lastCheckedAt ?? "—"} · レート残{" "}
-          {rateRemaining.toLocaleString()} / {rateLimit.toLocaleString()}
+          最終確認 {lastCheckedAt ?? "—"} · 上限 {rateLimit.toLocaleString()} / 日
         </AlertDescription>
       </Alert>
     );

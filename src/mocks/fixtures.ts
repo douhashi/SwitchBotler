@@ -1,10 +1,4 @@
-import type {
-  ConnectionState,
-  Device,
-  DeviceColorOption,
-  Scene,
-  SensorReadings,
-} from "@/data/types";
+import type { Device, DeviceColorOption, Scene, SensorReadings } from "@/data/types";
 
 /** カラー電球のカラー候補（mockup 02 のスウォッチ行）。swatch は表示色。 */
 const BULB_COLORS: DeviceColorOption[] = [
@@ -142,17 +136,4 @@ export const SENSORS: SensorReadings = {
       tone: "accent",
     },
   ],
-};
-
-/**
- * 接続状態の初期値（mockup 05 準拠）。
- * Token / Secret はマスク済みプレースホルダのみ。平文の実値は保持しない。
- */
-export const CONNECTION: ConnectionState = {
-  status: "connected",
-  lastCheckedAt: "21:04",
-  rateRemaining: 9860,
-  rateLimit: 10000,
-  tokenMasked: "••••••••••••••••••••••••",
-  secretMasked: "••••••••••••••••••••••••",
 };
