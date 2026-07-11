@@ -3,6 +3,7 @@ import type {
   Device,
   DeviceCategory,
   DeviceControls,
+  IrLightAction,
   Scene,
   SensorReadings,
 } from "./types";
@@ -28,6 +29,11 @@ export interface SwitchBotlerDataSource {
    * 赤外線は状態を返さないため turnOn/turnOff は使わず常に全状態を同送する。
    */
   setAircon(id: string, state: AirconState): Promise<void>;
+  /**
+   * 赤外線ライトに電源・相対明暗の action を送信する（Light / DIY Light）。
+   * Light は状態も絶対的な明るさも持たないため、action（on/off/brighter/dimmer）のみ渡す。
+   */
+  sendIrLight(id: string, action: IrLightAction): Promise<void>;
   getScenes(): Promise<Scene[]>;
   executeScene(id: string): Promise<void>;
   /** すべての Meter 系センサーをセンサーごとに返す。 */

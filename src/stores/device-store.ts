@@ -6,8 +6,15 @@ import {
   type Device,
   type DeviceControls,
   hasPowerToggle,
+  type IrLightAction,
+  type IrLightState,
 } from "@/data";
-import { loadAirconStates, saveAirconState } from "@/data/preferences";
+import {
+  loadAirconStates,
+  loadIrLightStates,
+  saveAirconState,
+  saveIrLightState,
+} from "@/data/preferences";
 import { notify } from "@/stores/notice-store";
 
 type DeviceState = {
@@ -24,6 +31,11 @@ type DeviceState = {
   toggle: (id: string) => Promise<void>;
   /** 制御値を部分更新する（楽観更新・失敗時ロールバック）。 */
   updateControl: (id: string, patch: Partial<DeviceControls>) => Promise<void>;
+  /**
+   * 赤外線ライトを操作する。電源（on/off）は楽観更新 + 永続化 + 失敗時ロールバック、
+   * 明暗（brighter/dimmer）は状態を持たず送信のみ（失敗時トースト）。
+   */
+  operateIrLight: (id: string, action: IrLightAction) => Promise<void>;
 };
 
 /** 該当デバイスの controls を差し替えた配列を返す。 */
@@ -72,6 +84,22 @@ function overlayAirconStates(
   });
 }
 
+/**
+ * 永続化した「最後に送信した電源値」を、対応する赤外線ライトの controls に重畳する。
+ * 赤外線は status が無く build_device の初期値（power off）しか持たないため、これが電源表示の
+ * 唯一のソース（V4）。明暗は状態を持たないため重畳対象は power のみ。
+ */
+function overlayIrLightStates(
+  devices: Device[],
+  persisted: Record<string, IrLightState>,
+): Device[] {
+  return devices.map((d) => {
+    const state = d.category === "ir_light" ? persisted[d.id] : undefined;
+    if (!state) return d;
+    return { ...d, controls: { ...d.controls, power: state.power } };
+  });
+}
+
 export const useDeviceStore = create<DeviceState>((set, get) => ({
   devices: [],
   loading: false,
@@ -84,12 +112,17 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
   refresh: async () => {
     set({ loading: true, error: null });
     try {
-      const [devices, persisted] = await Promise.all([
+      const [devices, airconStates, irLightStates] = await Promise.all([
         dataSource.getDevices(),
         loadAirconStates(),
+        loadIrLightStates(),
       ]);
-      // 赤外線エアコンは status を持たないため、永続化した最終送信値を重畳する（V4）。
-      set({ devices: overlayAirconStates(devices, persisted), loaded: true });
+      // 赤外線デバイスは status を持たないため、永続化した最終送信値を重畳する（V4）。
+      const overlaid = overlayIrLightStates(
+        overlayAirconStates(devices, airconStates),
+        irLightStates,
+      );
+      set({ devices: overlaid, loaded: true });
     } catch (error) {
       set({ error: messageOf(error), loaded: true });
     } finally {
@@ -140,6 +173,36 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     } catch (error) {
       const message = messageOf(error);
       set((s) => ({ devices: withControls(s.devices, id, previous), error: message }));
+      notify(message);
+    }
+  },
+  operateIrLight: async (id, action) => {
+    const device = get().devices.find((d) => d.id === id);
+    if (!device) return;
+
+    // 電源（on/off）は「最後に送信した値」を持つため楽観更新 + 永続化する。
+    if (action === "on" || action === "off") {
+      const previous = device.controls;
+      const next = { ...previous, power: action === "on" };
+      set((s) => ({ devices: withControls(s.devices, id, next), error: null }));
+      try {
+        await dataSource.sendIrLight(id, action);
+        await saveIrLightState(id, { power: next.power });
+      } catch (error) {
+        const message = messageOf(error);
+        set((s) => ({ devices: withControls(s.devices, id, previous), error: message }));
+        notify(message);
+      }
+      return;
+    }
+
+    // 明暗（brighter/dimmer）は絶対値・状態を持たないため送信のみ（永続化しない）。
+    set({ error: null });
+    try {
+      await dataSource.sendIrLight(id, action);
+    } catch (error) {
+      const message = messageOf(error);
+      set({ error: message });
       notify(message);
     }
   },

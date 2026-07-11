@@ -18,7 +18,14 @@ export type DeviceCategory =
   | "lock"
   | "bot"
   | "aircon"
+  | "ir_light"
   | "other";
+
+/**
+ * 赤外線ライトの操作 action（意味論。SwitchBot コマンド名への変換は Rust が所有）。
+ * Light は絶対的な明るさ・状態を持たず、電源と相対的な明暗のみを扱う（公式 README）。
+ */
+export type IrLightAction = "on" | "off" | "brighter" | "dimmer";
 
 /** エアコンの運転モード（意味論。数値エンコードは Rust が所有・決定1）。 */
 export type AirconMode = "auto" | "cool" | "dry" | "fan" | "heat";
@@ -56,6 +63,14 @@ export type AirconState = {
   temperature: number;
   mode: AirconMode;
   fanSpeed: AirconFanSpeed;
+};
+
+/**
+ * 赤外線ライトの送信状態。赤外線は状態を返さず明るさも絶対値を持たないため、
+ * 永続化・表示のソースは「最後に送信した電源値」のみ（明暗の増減は永続化しない）。
+ */
+export type IrLightState = {
+  power: boolean;
 };
 
 /** カラー電球のカラー候補。swatch は UI プレゼンテーション色。 */
@@ -97,6 +112,7 @@ export function deviceInteraction(device: Device): DeviceInteraction {
   if (
     device.category === "lock" ||
     device.category === "aircon" ||
+    device.category === "ir_light" ||
     brightness !== undefined ||
     position !== undefined
   ) {
@@ -143,6 +159,9 @@ export function deviceStatusLabel(device: Device): string {
       return position === undefined ? (power ? "開" : "閉") : `${position}% 開`;
     case "light":
       return power ? "点灯中" : "オフ";
+    case "ir_light":
+      // 赤外線ライトは状態を返さないため「最後に送信した電源値」を点灯/消灯で表示する。
+      return power ? "点灯" : "消灯";
     case "aircon":
       if (!power) return "オフ";
       // 運転中は「冷房 26℃」のように現在のモードと温度を出す。
@@ -157,10 +176,16 @@ export function deviceStatusLabel(device: Device): string {
 /**
  * 電源トグル（turnOn/turnOff・鍵は lock/unlock）で操作できるカテゴリか。
  * カーテンは開度操作（setPosition）のみ、エアコンは詳細内で電源を含む全状態を
- * setAll 送信するため、いずれもカード/ヘッダの電源トグルを持たない。
+ * setAll 送信、赤外線ライトは詳細内で電源・明暗を個別 action 送信するため、
+ * いずれもカード/ヘッダの電源トグルを持たない。
  */
 export function hasPowerToggle(device: Device): boolean {
-  return device.supported && device.category !== "curtain" && device.category !== "aircon";
+  return (
+    device.supported &&
+    device.category !== "curtain" &&
+    device.category !== "aircon" &&
+    device.category !== "ir_light"
+  );
 }
 
 /**

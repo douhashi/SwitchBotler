@@ -192,12 +192,26 @@ pub fn category_for(device_type: &str) -> &'static str {
     }
 }
 
-/// remoteType（赤外線・仮想デバイス）→ カテゴリ。操作対応は現状エアコンのみ。
-/// remoteType の実値は実 API 未確認のため "Air Conditioner" / "DIY Air Conditioner" を両対応。
+/// remoteType（赤外線・仮想デバイス）→ カテゴリ。操作対応はエアコンとライト。
+/// remoteType の実値は実 API 未確認のため各種別の標準名・DIY 名を両対応でマップする。
 pub fn infrared_category_for(remote_type: &str) -> &'static str {
     match remote_type {
         "Air Conditioner" | "DIY Air Conditioner" => "aircon",
+        "Light" | "DIY Light" => "ir_light",
         _ => "other",
+    }
+}
+
+/// 赤外線ライトの操作 action（view-model）→ SwitchBot コマンド名。
+/// Light は絶対的な明るさ・状態を持たず、電源と相対的な明暗のみを扱う（公式 README）。
+/// 未知 action は安全側（消灯）にフォールバックする。
+pub fn ir_light_command(action: &str) -> &'static str {
+    match action {
+        "on" => "turnOn",
+        "brighter" => "brightnessUp",
+        "dimmer" => "brightnessDown",
+        // "off" とそれ以外は安全側の消灯へ。
+        _ => "turnOff",
     }
 }
 
@@ -613,6 +627,48 @@ mod tests {
         assert_eq!(infrared_category_for("Air Conditioner"), "aircon");
         assert_eq!(infrared_category_for("DIY Air Conditioner"), "aircon");
         assert_eq!(infrared_category_for("TV"), "other");
+    }
+
+    #[test]
+    fn light_and_diy_light_map_to_ir_light() {
+        // Light / DIY Light を共に標準コマンド経路（ir_light）へマップする（PO 論点1: (A)）。
+        // remoteType 実値未確認のため両対応（実機で確定要）。
+        assert_eq!(infrared_category_for("Light"), "ir_light");
+        assert_eq!(infrared_category_for("DIY Light"), "ir_light");
+        assert_eq!(infrared_category_for("TV"), "other");
+    }
+
+    #[test]
+    fn builds_ir_light_power_off_controls_without_status_call() {
+        // 赤外線ライトは status を持たないため build_device は None を受け、電源 off を返す。
+        // 明るさ・状態は持たない（相対コマンドのみ）。
+        let meta = DeviceMeta {
+            id: "r1".into(),
+            name: "light".into(),
+            device_type: "Light".into(),
+            category: "ir_light",
+            supported: true,
+            infrared: true,
+        };
+        let dto = build_device(&meta, None);
+        assert_eq!(dto.category, "ir_light");
+        assert!(dto.supported);
+        assert!(!dto.controls.power);
+        // ライト系フィールドは持たない（絶対値を扱わない）。
+        assert_eq!(dto.controls.brightness, None);
+        assert_eq!(dto.controls.temperature, None);
+        assert!(dto.color_options.is_none());
+    }
+
+    #[test]
+    fn ir_light_command_maps_action_to_command() {
+        // 公式 README: Light は turnOn/turnOff（電源）と brightnessUp/Down（相対明暗）。
+        assert_eq!(ir_light_command("on"), "turnOn");
+        assert_eq!(ir_light_command("off"), "turnOff");
+        assert_eq!(ir_light_command("brighter"), "brightnessUp");
+        assert_eq!(ir_light_command("dimmer"), "brightnessDown");
+        // 未知 action は安全側の消灯へフォールバック。
+        assert_eq!(ir_light_command("unknown"), "turnOff");
     }
 
     #[test]

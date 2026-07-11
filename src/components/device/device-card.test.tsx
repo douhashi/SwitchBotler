@@ -49,6 +49,15 @@ const aircon: Device = {
   controls: { power: true, temperature: 26, mode: "cool", fanSpeed: "auto" },
 };
 
+const irLight: Device = {
+  id: "living-light",
+  name: "リビングの間接照明",
+  model: "Light",
+  category: "ir_light",
+  supported: true,
+  controls: { power: true },
+};
+
 describe("DeviceCard", () => {
   beforeEach(() => {
     invoke.mockReset();
@@ -111,6 +120,19 @@ describe("DeviceCard", () => {
     // chevron で詳細へ遷移する。
     await userEvent.click(screen.getByRole("button", { name: "リビングのエアコン の詳細" }));
     expect(useNavigationStore.getState().selectedDeviceId).toBe("living-aircon");
+  });
+
+  it("赤外線ライトカードは電源トグルを出さず detail 経路（chevron）と点灯/消灯ラベルを出す", async () => {
+    render(<DeviceCard device={irLight} />);
+
+    // カード上に電源スイッチは無い（電源・明暗は詳細内で action 送信するため）。
+    expect(screen.queryByRole("switch")).toBeNull();
+    // 点灯中は「点灯」ラベル。
+    expect(screen.getByText(/点灯/)).toBeInTheDocument();
+
+    // chevron で詳細へ遷移する。
+    await userEvent.click(screen.getByRole("button", { name: "リビングの間接照明 の詳細" }));
+    expect(useNavigationStore.getState().selectedDeviceId).toBe("living-light");
   });
 
   it("未対応デバイスは操作要素（スイッチ・詳細）を出さず「未対応」表示にする", () => {

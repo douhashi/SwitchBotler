@@ -71,6 +71,19 @@ describe("tauriDataSource", () => {
     });
   });
 
+  it("sendIrLight は send_ir_light を action そのままの引数で呼ぶ", async () => {
+    invoke.mockResolvedValue(null);
+
+    await tauriDataSource.sendIrLight("l1", "on");
+    expect(invoke).toHaveBeenLastCalledWith("send_ir_light", { id: "l1", action: "on" });
+
+    await tauriDataSource.sendIrLight("l1", "brighter");
+    expect(invoke).toHaveBeenLastCalledWith("send_ir_light", {
+      id: "l1",
+      action: "brighter",
+    });
+  });
+
   it("invoke の reject を Rust の安全メッセージ付き Error へ変換する", async () => {
     invoke.mockRejectedValue({ code: "unauthorized", message: "認証情報またはリクエスト上限を確認してください。" });
 

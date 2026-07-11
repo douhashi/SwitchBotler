@@ -136,3 +136,33 @@ SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**この
   実疎通は `src-tauri/src/switchbot/mod.rs` の #[ignore] テスト `send_aircon_succeeds` で
   `infisical run --env=dev -- cargo test -- --ignored` により確認できる（本サンドボックスでは
   Infisical 非対話ログイン不可のため未実行。`.tmp/spira-evidence/V1-V2-aircon-real-api.md` 参照）。
+
+### 赤外線（仮想）デバイス — ライト（Light / DIY Light）
+
+赤外線ライトもエアコン同様 `body.infraredRemoteList[]` に載り、**status エンドポイントを持たない**。
+表示値（電源）は「最後に送信した電源値」をローカル（plugin-store `irLightStates`）に永続保持したものを
+唯一のソースとし、device-store が refresh 時に controls へ重畳する（エアコンと同一の overlay パターン）。
+
+ライトは公式 README「Command set for virtual infrared remote devices」の**標準コマンド**で操作する。
+Light は**絶対的な明るさ値・状態を持たず**、電源（turnOn/turnOff）と**相対的な明暗**
+（brightnessUp/brightnessDown）のみを扱う。UI は明るさスライダではなく「明るく／暗く」の
+モーメンタリボタン（相対アクション）で提供する（既存の brightness スライダ経路とは実装を分離。決定）。
+
+| 対象 | commandType | command | parameter |
+|---|---|---|---|
+| すべての家電種別 | `command` | `turnOn` / `turnOff` | `default` |
+| Light | `command` | `brightnessUp` / `brightnessDown` | `default` |
+| Others（学習リモコン） | `customize` | {ユーザ定義ボタン名} | `default` |
+
+- 形式: `{ "command": "turnOn" | "turnOff" | "brightnessUp" | "brightnessDown", "parameter": "default", "commandType": "command" }`
+- アプリは action（`"on"`/`"off"`/`"brighter"`/`"dimmer"`）だけを扱い、SwitchBot コマンド名への変換は
+  Rust `mapping.rs`（`ir_light_command`）が所有する（決定1。setColor/setAll と同型）。
+- `Light` と `DIY Light` を共に `ir_light`（同一の**標準コマンド経路**）へ二重マッピングする
+  （PO 論点1: (A)。エアコンが AC/DIY AC を同一経路にした前例に倣う）。`remoteType` の実値は
+  **実 API 未確認**のため両対応。
+- **DIY の未検証点**: `DIY Light` が標準コマンド（turnOn/turnOff/brightnessUp/Down）に応答するかは
+  実機（V3）で確認する。応答するなら `customize`（ユーザ定義ボタン）経路は作らない（本 Issue スコープ外）。
+  実疎通は `src-tauri/src/switchbot/mod.rs` の #[ignore] テスト `send_ir_light_succeeds` で
+  `infisical run --env=dev -- cargo test -- --ignored` により確認できる（DIY Light にも同コマンドを送る。
+  本サンドボックスでは Infisical 非対話ログイン不可のため未実行。
+  `.tmp/spira-evidence/V1-V2-ir-light-real-api.md` 参照）。

@@ -224,6 +224,32 @@ impl SwitchBotClient {
         Ok(())
     }
 
+    /// 赤外線ライトに電源・相対明暗コマンドを送る。
+    /// Light は絶対的な明るさ・状態を持たないため、標準コマンド
+    /// `{command, parameter:"default", commandType:"command"}` を POST する。
+    /// action→command の対応は `mapping::ir_light_command` が所有する。
+    pub async fn send_ir_light(
+        &self,
+        creds: &Credentials,
+        id: &str,
+        action: &str,
+    ) -> Result<(), SwitchBotError> {
+        let command = mapping::ir_light_command(action);
+        let payload = json!({
+            "command": command,
+            "parameter": "default",
+            "commandType": "command",
+        });
+        self.request_json(
+            creds,
+            Method::POST,
+            &format!("/devices/{id}/commands"),
+            Some(payload),
+        )
+        .await?;
+        Ok(())
+    }
+
     /// `GET /v1.1/scenes` → SceneDto 一覧（body 直下が配列）。
     pub async fn list_scenes(&self, creds: &Credentials) -> Result<Vec<SceneDto>, SwitchBotError> {
         let body = self

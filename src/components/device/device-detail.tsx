@@ -11,6 +11,7 @@ import {
   type Device,
   deviceStatusLabel,
   hasPowerToggle,
+  type IrLightAction,
 } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
@@ -19,6 +20,12 @@ import { DeviceIcon } from "./device-icon";
 
 const AIRCON_MODES: AirconMode[] = ["auto", "cool", "dry", "fan", "heat"];
 const AIRCON_FANS: AirconFanSpeed[] = ["auto", "low", "medium", "high"];
+
+/** 赤外線ライトの相対明暗ボタン（絶対値・状態を持たない送信専用アクション）。 */
+const IR_LIGHT_BRIGHTNESS_ACTIONS: { action: IrLightAction; label: string }[] = [
+  { action: "brighter", label: "明るく" },
+  { action: "dimmer", label: "暗く" },
+];
 
 /** hero に出す説明行を制御値から組み立てる。 */
 function heroDetail(device: Device): string {
@@ -83,10 +90,12 @@ export function DeviceDetail({ device }: { device: Device }) {
   const navigate = useNavigationStore((s) => s.navigate);
   const toggle = useDeviceStore((s) => s.toggle);
   const updateControl = useDeviceStore((s) => s.updateControl);
+  const operateIrLight = useDeviceStore((s) => s.operateIrLight);
 
   const { power, brightness, position, colorId, temperature, mode, fanSpeed } =
     device.controls;
   const isAircon = device.category === "aircon";
+  const isIrLight = device.category === "ir_light";
 
   return (
     <div>
@@ -225,6 +234,36 @@ export function DeviceDetail({ device }: { device: Device }) {
             labelOf={airconFanLabel}
             onSelect={(v) => updateControl(device.id, { fanSpeed: v })}
           />
+        </>
+      )}
+
+      {isIrLight && (
+        <>
+          <div className="mb-3 flex items-center justify-between rounded-2xl bg-card p-4 shadow-raise">
+            <span className="text-[12.5px] text-muted-foreground">電源</span>
+            <Switch
+              checked={power}
+              onCheckedChange={() => operateIrLight(device.id, power ? "off" : "on")}
+              aria-label="電源"
+            />
+          </div>
+
+          <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
+            <div className="mb-3 text-[12.5px] text-muted-foreground">明るさ</div>
+            {/* 赤外線ライトは絶対値を持たず相対コマンドのみ。状態を持たない送信専用アクション。 */}
+            <div className="flex gap-1.5">
+              {IR_LIGHT_BRIGHTNESS_ACTIONS.map(({ action, label }) => (
+                <button
+                  key={action}
+                  type="button"
+                  onClick={() => operateIrLight(device.id, action)}
+                  className="flex-1 rounded-[10px] px-3.5 py-2 text-xs font-semibold text-muted-foreground shadow-inset-sm transition-colors hover:text-foreground"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </>
       )}
     </div>

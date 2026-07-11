@@ -98,6 +98,7 @@ pub fn run() {
             commands::list_devices,
             commands::send_command,
             commands::send_aircon,
+            commands::send_ir_light,
             commands::list_scenes,
             commands::execute_scene,
             commands::get_sensors,
