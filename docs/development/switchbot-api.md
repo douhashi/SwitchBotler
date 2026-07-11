@@ -1,6 +1,21 @@
 # SwitchBot API の要点
 
-SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。実装時は必ず公式ドキュメントを参照し、実環境で 1 度疎通させた証拠を残すこと（[philosophy.md](./philosophy.md) 「外部境界の正しさはモックで担保しない」参照）。
+SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**このページは要約であり、常に公式ドキュメントが正典**。
+
+## 公式ドキュメント（正典）
+
+- **SwitchBot Open API（v1.1）**: <https://github.com/OpenWonderLabs/SwitchBotAPI>
+  - リポジトリ: `OpenWonderLabs/SwitchBotAPI`（"SwitchBot Open API Documents"）。現行 `README.md` が v1.1、旧版は `README-v1.0.md`。
+- **Webhook / デバイス別コマンド仕様など**は上記 README を参照。
+
+## 実装ルール（必読）
+
+外部境界（SwitchBot API）を扱う実装・モックは、次を厳守する（[philosophy.md](./philosophy.md) 「外部境界の正しさはモックで担保しない」参照）:
+
+- **想像で実装しない**。エンドポイント・パラメータ・レスポンス形・デバイス種別ごとのコマンドは、必ず上記**公式ドキュメントを参照**して確定する。
+- **モック / スタブを作る場合も、実際に API へアクセスして確かめる**。実レスポンスと突き合わせ、リクエスト/レスポンスのログ等の**疎通証拠を残す**（Token/Secret/署名は伏せる）。
+- 完全モックの単体テストが通っただけでは「完了」としない。
+- 仕様が不明な点は憶測で埋めず、公式ドキュメント該当箇所へのリンクを残して判断根拠を明示する。
 
 ## 基本情報
 
