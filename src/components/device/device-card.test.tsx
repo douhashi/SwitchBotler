@@ -40,6 +40,15 @@ const meter: Device = {
   controls: { power: false },
 };
 
+const aircon: Device = {
+  id: "living-aircon",
+  name: "リビングのエアコン",
+  model: "Air Conditioner",
+  category: "aircon",
+  supported: true,
+  controls: { power: true, temperature: 26, mode: "cool", fanSpeed: "auto" },
+};
+
 describe("DeviceCard", () => {
   beforeEach(() => {
     invoke.mockReset();
@@ -89,6 +98,19 @@ describe("DeviceCard", () => {
     const nav = useNavigationStore.getState();
     expect(nav.activeView).toBe("devices");
     expect(nav.selectedDeviceId).toBe("bedroom-curtain");
+  });
+
+  it("エアコンカードは電源トグルを出さず detail 経路（chevron）と運転状態ラベルを出す", async () => {
+    render(<DeviceCard device={aircon} />);
+
+    // カード上に電源スイッチは無い（電源は詳細内で setAll 操作するため）。
+    expect(screen.queryByRole("switch")).toBeNull();
+    // 運転中は「冷房 26℃」ラベル。
+    expect(screen.getByText(/冷房 26℃/)).toBeInTheDocument();
+
+    // chevron で詳細へ遷移する。
+    await userEvent.click(screen.getByRole("button", { name: "リビングのエアコン の詳細" }));
+    expect(useNavigationStore.getState().selectedDeviceId).toBe("living-aircon");
   });
 
   it("未対応デバイスは操作要素（スイッチ・詳細）を出さず「未対応」表示にする", () => {

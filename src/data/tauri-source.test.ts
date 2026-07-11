@@ -52,6 +52,25 @@ describe("tauriDataSource", () => {
     });
   });
 
+  it("setAircon は send_aircon を意味論のままの引数で呼ぶ（数値エンコードは Rust）", async () => {
+    invoke.mockResolvedValue(null);
+
+    await tauriDataSource.setAircon("ac1", {
+      power: true,
+      temperature: 24,
+      mode: "heat",
+      fanSpeed: "high",
+    });
+
+    expect(invoke).toHaveBeenLastCalledWith("send_aircon", {
+      id: "ac1",
+      temperature: 24,
+      mode: "heat",
+      fanSpeed: "high",
+      power: true,
+    });
+  });
+
   it("invoke の reject を Rust の安全メッセージ付き Error へ変換する", async () => {
     invoke.mockRejectedValue({ code: "unauthorized", message: "認証情報またはリクエスト上限を確認してください。" });
 

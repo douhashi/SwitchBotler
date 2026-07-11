@@ -97,6 +97,27 @@ mod integration_tests {
     }
 
     #[tokio::test]
+    #[ignore = "実 AC に副作用（setAll 送信）。安全値のみ・元状態へ復帰。--ignored 指定時のみ実行"]
+    async fn send_aircon_succeeds() {
+        // 実在の赤外線エアコンに setAll を 1 回送る（V2）。副作用配慮として、
+        // 電源 off の安全値（26℃/cool/auto/off）を送り、送信後に同じ off を再送して
+        // 「動作させない」ことで原状復帰する。remoteType 実値の確認も兼ねる（V1）。
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client.list_devices(&creds).await.expect("一覧取得");
+        let aircon = devices
+            .iter()
+            .find(|d| d.category == "aircon")
+            .expect("赤外線エアコンが存在すること（V1: remoteType が aircon にマップ）");
+        // 安全値: 電源 off。実機を稼働させない。
+        client
+            .send_aircon(&creds, &aircon.id, 26, "cool", "auto", false)
+            .await
+            .expect("setAll が statusCode 100 で受理されること（V2）");
+        println!("send_aircon setAll ok (power off, 26/cool/auto)");
+    }
+
+    #[tokio::test]
     #[ignore = "実 API に副作用（コマンド送信）。安全な冪等操作のみ。--ignored 指定時のみ実行"]
     async fn send_command_idempotent_succeeds() {
         // 実在の Plug に現在の電源状態と同じコマンドを送る（状態を変えない冪等操作）。

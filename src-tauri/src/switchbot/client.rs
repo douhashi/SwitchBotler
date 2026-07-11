@@ -129,7 +129,9 @@ impl SwitchBotClient {
 
         let mut devices = Vec::with_capacity(metas.len());
         for meta in &metas {
-            let status = if meta.supported {
+            // 赤外線（infrared）は status エンドポイントを持たないため取得しない（V5）。
+            // 表示値は「最後に送信した値」をフロントが永続ストアから重畳する。
+            let status = if meta.supported && !meta.infrared {
                 // 個別 status の失敗は致命ではない（未取得＝プレースホルダ）が、
                 // 認証/レートは全体失敗として伝播させる。
                 match self.get_status_body(creds, &meta.id).await {
@@ -182,6 +184,35 @@ impl SwitchBotClient {
             "command": command,
             "parameter": parameter,
             "commandType": command_type,
+        });
+        self.request_json(
+            creds,
+            Method::POST,
+            &format!("/devices/{id}/commands"),
+            Some(payload),
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// 赤外線エアコンに `setAll`（温度・モード・風量・電源を一括送信）する。
+    /// 決定1: フロントは意味論（"cool"/"high"）だけを渡し、"{t},{m},{f},{state}" への
+    /// 数値エンコードは `mapping::aircon_parameter` が所有する。赤外線は状態を返さないため
+    /// turnOn/turnOff は使わず常に setAll で全状態を同送する。
+    pub async fn send_aircon(
+        &self,
+        creds: &Credentials,
+        id: &str,
+        temperature: u8,
+        mode: &str,
+        fan_speed: &str,
+        power: bool,
+    ) -> Result<(), SwitchBotError> {
+        let parameter = mapping::aircon_parameter(temperature, mode, fan_speed, power);
+        let payload = json!({
+            "command": "setAll",
+            "parameter": parameter,
+            "commandType": "command",
         });
         self.request_json(
             creds,

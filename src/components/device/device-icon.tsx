@@ -1,4 +1,5 @@
 import {
+  AirVent,
   Blinds,
   CircleHelp,
   Droplet,
@@ -20,6 +21,7 @@ const CATEGORY_ICON: Record<DeviceCategory, LucideIcon> = {
   humidifier: Droplet,
   lock: Lock,
   bot: ToggleRight,
+  aircon: AirVent,
   other: CircleHelp,
 };
 

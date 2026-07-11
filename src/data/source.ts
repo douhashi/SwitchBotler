@@ -1,4 +1,11 @@
-import type { Device, DeviceCategory, DeviceControls, Scene, SensorReadings } from "./types";
+import type {
+  AirconState,
+  Device,
+  DeviceCategory,
+  DeviceControls,
+  Scene,
+  SensorReadings,
+} from "./types";
 
 /**
  * デバイス / シーン / センサーのデータ境界。実体は Tauri IPC 実装
@@ -16,6 +23,11 @@ export interface SwitchBotlerDataSource {
   setPower(id: string, category: DeviceCategory, on: boolean): Promise<void>;
   /** 明るさ・開度・カラーを操作する。 */
   updateControl(id: string, patch: Partial<DeviceControls>): Promise<void>;
+  /**
+   * 赤外線エアコンに温度・モード・風量・電源を一括送信する（setAll）。
+   * 赤外線は状態を返さないため turnOn/turnOff は使わず常に全状態を同送する。
+   */
+  setAircon(id: string, state: AirconState): Promise<void>;
   getScenes(): Promise<Scene[]>;
   executeScene(id: string): Promise<void>;
   /** すべての Meter 系センサーをセンサーごとに返す。 */
