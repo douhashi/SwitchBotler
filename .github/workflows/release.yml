@@ -77,7 +77,18 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "SwitchBotler ${{ github.ref_name }}"
-          releaseBody: "各 OS のインストーラをダウンロードしてください。未署名のため、OS のセキュリティ警告が出る場合があります。"
+          releaseBody: |
+            Thank you for trying SwitchBotler! 🎩
+
+            Download the installer for your operating system from the **Assets** below and follow your platform's usual installation steps.
+
+            > ⚠️ **These builds are not code-signed yet**, so your OS may show a security warning the first time you open the app. This is expected — you can safely proceed:
+            >
+            > - **macOS** — Right-click the app and choose **Open**, then confirm in the dialog. (Or allow it under *System Settings → Privacy & Security*.)
+            > - **Windows** — On the SmartScreen prompt, click **More info → Run anyway**.
+            > - **Linux** — Make the AppImage executable (`chmod +x`) before running it.
+            >
+            > Code signing is planned for a future release.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
