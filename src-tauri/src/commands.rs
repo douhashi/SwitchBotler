@@ -4,7 +4,8 @@
 //! エラーは [`SwitchBotError`] としてシリアライズされ、安全な文言のみを載せる。
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::menu::MenuItem;
+use tauri::{AppHandle, Emitter, Manager, State, Wry};
 
 use crate::switchbot::mapping::{DeviceDto, SceneDto, SensorReadingsDto};
 use crate::switchbot::{credentials, SwitchBotClient, SwitchBotError};
@@ -163,4 +164,35 @@ pub fn hide_tray_popup(app: AppHandle) {
     if let Some(window) = app.get_webview_window("tray") {
         let _ = window.hide();
     }
+}
+
+/// `setup_tray` で構築した native トレイメニュー項目のハンドル。
+/// managed state として保持し、`set_tray_menu_labels` から実行時にラベルを更新する。
+pub struct TrayMenuItems {
+    pub open: MenuItem<Wry>,
+    pub settings: MenuItem<Wry>,
+    pub quit: MenuItem<Wry>,
+}
+
+/// native 右クリックトレイメニューのラベルを更新する。
+///
+/// 翻訳の SSoT はフロントの i18n JSON。Rust は翻訳表を持たず、フロントが解決した
+/// 翻訳済み文字列を受け取り `MenuItem::set_text` で反映するだけ（同一ラベルで冪等）。
+#[tauri::command]
+pub fn set_tray_menu_labels(
+    state: State<'_, TrayMenuItems>,
+    open_window: String,
+    settings: String,
+    quit: String,
+) -> Result<(), String> {
+    state
+        .open
+        .set_text(open_window)
+        .map_err(|e| e.to_string())?;
+    state
+        .settings
+        .set_text(settings)
+        .map_err(|e| e.to_string())?;
+    state.quit.set_text(quit).map_err(|e| e.to_string())?;
+    Ok(())
 }

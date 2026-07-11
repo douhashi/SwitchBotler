@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Tauri IPC は外部境界。native トレイメニュー同期の invoke を検証するためモックする。
+const invokeMock = vi.fn();
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: (...args: unknown[]) => invokeMock(...args),
+}));
+
 import i18n from "@/i18n";
 import { useLanguageStore } from "./language-store";
 
@@ -12,6 +18,8 @@ describe("language-store", () => {
   beforeEach(() => {
     localStorage.clear();
     useLanguageStore.setState({ language: "system" });
+    invokeMock.mockReset();
+    invokeMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -48,6 +56,26 @@ describe("language-store", () => {
     useLanguageStore.getState().setLanguage("system");
 
     expect(i18n.language).toBe("en");
+  });
+
+  it("setLanguage('en') で native トレイメニューが英語ラベルで同期される", () => {
+    useLanguageStore.getState().setLanguage("en");
+
+    expect(invokeMock).toHaveBeenLastCalledWith("set_tray_menu_labels", {
+      openWindow: "Open window",
+      settings: "Settings",
+      quit: "Quit",
+    });
+  });
+
+  it("setLanguage('ja') で native トレイメニューが日本語ラベルで同期される", () => {
+    useLanguageStore.getState().setLanguage("ja");
+
+    expect(invokeMock).toHaveBeenLastCalledWith("set_tray_menu_labels", {
+      openWindow: "ウィンドウを開く",
+      settings: "設定",
+      quit: "終了",
+    });
   });
 
   it("選択した言語が localStorage に永続化される", () => {
