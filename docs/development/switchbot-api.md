@@ -84,6 +84,23 @@ SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**この
 > `doorState` / `battery`）・Humidifier（`power` / `humidity` / `nebulizationEfficiency` /
 > `auto`）は**当アカウントに実機が無く**、mapping は公式 README 準拠（ハードウェア実行は未検証）。
 
+#### センサー画面統合（Meter / Motion Sensor）
+
+温湿度計（Meter 系）と人感センサー（Motion Sensor）は、デバイス一覧では従来どおり
+`category_for` が `other`（読み取り表示）だが、**センサー画面には `is_sensor` 経由で並ぶ**。
+`build_sensor_readings` が status body のフィールド有無で計測を積み分ける（数値は gauge、
+状態は state）。
+
+| deviceType | 計測（表示順） | 表現 |
+|---|---|---|
+| Meter 系 | 温度 / 湿度 / バッテリー | すべて gauge（0-100 メーター + 数値） |
+| Motion Sensor | 人感（`moveDetected`）/ 明るさ（`brightness`）/ バッテリー | 人感・明るさは state（区分テキスト）、バッテリーは gauge |
+
+- `moveDetected`(bool) → 「検知あり」/「検知なし」（検知は tone `active` で強調）。
+- `brightness`("bright"/"dim") → 「明るい」/「暗い」（tone なし・ニュートラル）。
+- `battery`(Integer) は 4 段階（`<10→10 / 10-20→20 / 20-60→60 / ≥60→100`）を
+  そのまま 0-100 gauge に載せる（段階の明示表示はしない）。`version` は表示しない。
+
 ### コマンド（`POST /devices/{id}/commands`）
 
 - 形式: `{ command, parameter, commandType }`（`commandType: "command"`）。

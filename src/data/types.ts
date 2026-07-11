@@ -107,19 +107,42 @@ export type Scene = {
 };
 
 /** ラベルアイコン種別。stat-card が lucide にマップする。 */
-export type SensorIcon = "temperature" | "humidity" | "battery";
+export type SensorIcon =
+  | "temperature"
+  | "humidity"
+  | "battery"
+  | "motion"
+  | "brightness";
 
-/**
- * センサー計測値 1 項目。
- * API は単一時点値のみを返すため履歴は持たず、全項目をメーター表示する（決定3）。
- */
-export type SensorMetric = {
+/** すべての計測が共通で持つメタ。Rust `SensorMetricDto` と camelCase で 1:1 対応。 */
+type SensorMetricBase = {
   id: string;
   label: string;
   icon: SensorIcon;
+};
+
+/**
+ * 数値メーター表現の計測（温度/湿度/電池）。0-100 メーターと大数値で描画する。
+ * API は単一時点値のみを返すため履歴は持たない（決定3）。
+ */
+export type GaugeMetric = SensorMetricBase & {
+  kind: "gauge";
   value: number;
   unit: string;
 };
+
+/**
+ * 状態表示の計測（人感/明るさ）。区分テキストを表示しメーターは持たない。
+ * `tone` は強調区分（active=起きている状態を sd-accent 強調 / idle=静穏 / 無指定=ニュートラル）。
+ */
+export type StateMetric = SensorMetricBase & {
+  kind: "state";
+  text: string;
+  tone?: "active" | "idle";
+};
+
+/** センサー計測値 1 項目。`kind` で数値メーターと状態表示を判別する。 */
+export type SensorMetric = GaugeMetric | StateMetric;
 
 export type SensorReadings = {
   /** センサーの deviceId。セクションの key と並べ替え順の永続化に使う。 */

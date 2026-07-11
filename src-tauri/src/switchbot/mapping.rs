@@ -68,15 +68,59 @@ pub struct SceneDto {
     pub name: String,
 }
 
-/// センサー計測値 1 項目。
+/// センサー計測値 1 項目。数値メーター（温度/湿度/電池）と状態表示（人感/明るさ）の
+/// 2 表現を `kind` で判別する。gauge は `value`/`unit`、state は `text`/`tone` を使い、
+/// 使わない側は省略（`skip_serializing_if`）してフロントの判別共用体と 1:1 対応させる。
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SensorMetricDto {
+    /// "gauge"（0-100 メーター）または "state"（区分テキスト）。
+    pub kind: &'static str,
     pub id: String,
     pub label: String,
     pub icon: String,
-    pub value: f64,
-    pub unit: String,
+    /// gauge 用の数値。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<f64>,
+    /// gauge 用の単位（"°C" / "%"）。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit: Option<String>,
+    /// state 用の区分テキスト（"検知あり" / "明るい" 等）。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    /// state 用の強調区分。"active"（起きている状態）/ "idle"（静穏）。無指定はニュートラル。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tone: Option<&'static str>,
+}
+
+impl SensorMetricDto {
+    /// 数値メーター表現（温度/湿度/電池）。
+    fn gauge(id: &str, label: &str, icon: &str, value: f64, unit: &str) -> Self {
+        Self {
+            kind: "gauge",
+            id: id.into(),
+            label: label.into(),
+            icon: icon.into(),
+            value: Some(value),
+            unit: Some(unit.into()),
+            text: None,
+            tone: None,
+        }
+    }
+
+    /// 状態表示（人感/明るさ）。`tone` は None でニュートラル表示。
+    fn state(id: &str, label: &str, icon: &str, text: &str, tone: Option<&'static str>) -> Self {
+        Self {
+            kind: "state",
+            id: id.into(),
+            label: label.into(),
+            icon: icon.into(),
+            value: None,
+            unit: None,
+            text: Some(text.into()),
+            tone,
+        }
+    }
 }
 
 /// センサー 1 台分の読み取り（履歴なし。決定3）。センサーごとに 1 件返す。
@@ -225,35 +269,66 @@ pub fn map_scenes(body: &Value) -> Vec<SceneDto> {
         .unwrap_or_default()
 }
 
-/// Meter 系 status body → センサー読み取り（温度・湿度・バッテリー）。
+/// センサー系 status body → センサー読み取り。フィールドの有無で温湿度計（温度/湿度/電池）
+/// と人感センサー（人感/明るさ/電池）を単一関数で吸収する（DRY）。抽出順がそのまま
+/// 表示順になる（温湿度計＝温度/湿度/電池、人感＝検知/明るさ/電池）。
 pub fn build_sensor_readings(id: &str, source: &str, body: &Value) -> SensorReadingsDto {
     let mut metrics = Vec::new();
     if let Some(v) = body.get("temperature").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto {
-            id: "temperature".into(),
-            label: "温度".into(),
-            icon: "temperature".into(),
-            value: v,
-            unit: "°C".into(),
-        });
+        metrics.push(SensorMetricDto::gauge(
+            "temperature",
+            "温度",
+            "temperature",
+            v,
+            "°C",
+        ));
     }
     if let Some(v) = body.get("humidity").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto {
-            id: "humidity".into(),
-            label: "湿度".into(),
-            icon: "humidity".into(),
-            value: v,
-            unit: "%".into(),
-        });
+        metrics.push(SensorMetricDto::gauge(
+            "humidity", "湿度", "humidity", v, "%",
+        ));
+    }
+    if let Some(detected) = body.get("moveDetected").and_then(Value::as_bool) {
+        // 検知は良し悪しでなく「起きている状態」なので tone は active/idle（sd-accent 強調）。
+        let (text, tone) = if detected {
+            ("検知あり", "active")
+        } else {
+            ("検知なし", "idle")
+        };
+        metrics.push(SensorMetricDto::state(
+            "motion",
+            "人感",
+            "motion",
+            text,
+            Some(tone),
+        ));
+    }
+    // 人感センサーの brightness は String("bright"/"dim")。数値 brightness（light 系）は
+    // センサー画面の対象外なので as_str で自然に除外される。
+    if let Some(b) = body.get("brightness").and_then(Value::as_str) {
+        let text = match b {
+            "bright" => Some("明るい"),
+            "dim" => Some("暗い"),
+            _ => None,
+        };
+        if let Some(text) = text {
+            metrics.push(SensorMetricDto::state(
+                "brightness",
+                "明るさ",
+                "brightness",
+                text,
+                None,
+            ));
+        }
     }
     if let Some(v) = body.get("battery").and_then(Value::as_f64) {
-        metrics.push(SensorMetricDto {
-            id: "battery".into(),
-            label: "バッテリー".into(),
-            icon: "battery".into(),
-            value: v,
-            unit: "%".into(),
-        });
+        metrics.push(SensorMetricDto::gauge(
+            "battery",
+            "バッテリー",
+            "battery",
+            v,
+            "%",
+        ));
     }
     SensorReadingsDto {
         id: id.to_string(),
@@ -262,11 +337,13 @@ pub fn build_sensor_readings(id: &str, source: &str, body: &Value) -> SensorRead
     }
 }
 
-/// Meter 系（センサー画面の対象）deviceType か。
-pub fn is_meter(device_type: &str) -> bool {
+/// センサー画面の対象 deviceType か（温湿度計系 + 人感センサー）。
+/// 一覧では従来どおり `category_for` が "other"（読み取り表示）だが、センサー画面には
+/// この判定で並べる（Meter と同一方針）。
+pub fn is_sensor(device_type: &str) -> bool {
     matches!(
         device_type,
-        "Meter" | "MeterPlus" | "WoIOSensor" | "MeterPro" | "MeterPro(CO2)"
+        "Meter" | "MeterPlus" | "WoIOSensor" | "MeterPro" | "MeterPro(CO2)" | "Motion Sensor"
     )
 }
 
@@ -513,8 +590,115 @@ mod tests {
         assert_eq!(r.source, "meter-name");
         let ids: Vec<&str> = r.metrics.iter().map(|m| m.id.as_str()).collect();
         assert_eq!(ids, vec!["temperature", "humidity", "battery"]);
-        assert_eq!(r.metrics[0].value, 26.2);
-        assert_eq!(r.metrics[0].unit, "°C");
+        // Meter は全項目 gauge（数値メーター）。
+        assert!(r.metrics.iter().all(|m| m.kind == "gauge"));
+        assert_eq!(r.metrics[0].value, Some(26.2));
+        assert_eq!(r.metrics[0].unit.as_deref(), Some("°C"));
+    }
+
+    #[test]
+    fn builds_sensor_readings_from_motion_sensor_status() {
+        // V1 公式仕様準拠の body（Motion Sensor）。moveDetected=true / dim / battery。
+        let body =
+            json!({ "moveDetected": true, "brightness": "dim", "battery": 60, "version": "V4.2" });
+        let r = build_sensor_readings("motion-id", "motion-name", &body);
+        let ids: Vec<&str> = r.metrics.iter().map(|m| m.id.as_str()).collect();
+        // 人感＝検知/明るさ/電池 の順。version は表示しない。
+        assert_eq!(ids, vec!["motion", "brightness", "battery"]);
+
+        // 人感: state / 検知あり / tone active。
+        let motion = &r.metrics[0];
+        assert_eq!(motion.kind, "state");
+        assert_eq!(motion.icon, "motion");
+        assert_eq!(motion.text.as_deref(), Some("検知あり"));
+        assert_eq!(motion.tone, Some("active"));
+        assert_eq!(motion.value, None);
+
+        // 明るさ: state / 暗い / tone なし（ニュートラル）。
+        let brightness = &r.metrics[1];
+        assert_eq!(brightness.kind, "state");
+        assert_eq!(brightness.icon, "brightness");
+        assert_eq!(brightness.text.as_deref(), Some("暗い"));
+        assert_eq!(brightness.tone, None);
+
+        // 電池: 既存どおり gauge（0-100 メーター）。
+        let battery = &r.metrics[2];
+        assert_eq!(battery.kind, "gauge");
+        assert_eq!(battery.value, Some(60.0));
+        assert_eq!(battery.unit.as_deref(), Some("%"));
+    }
+
+    #[test]
+    fn motion_sensor_bright_and_idle_variants() {
+        // moveDetected=false → 検知なし / idle、brightness=bright → 明るい。
+        let body = json!({ "moveDetected": false, "brightness": "bright", "battery": 100 });
+        let r = build_sensor_readings("m", "n", &body);
+        assert_eq!(r.metrics[0].text.as_deref(), Some("検知なし"));
+        assert_eq!(r.metrics[0].tone, Some("idle"));
+        assert_eq!(r.metrics[1].text.as_deref(), Some("明るい"));
+    }
+
+    #[test]
+    fn meter_and_motion_bodies_pick_disjoint_metrics() {
+        // V4: 両種別が相互に誤フィールドを拾わず、別メトリクス集合になること。
+        let meter = build_sensor_readings(
+            "m",
+            "n",
+            &json!({ "temperature": 20.0, "humidity": 50, "battery": 100 }),
+        );
+        let meter_ids: Vec<&str> = meter.metrics.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(meter_ids, vec!["temperature", "humidity", "battery"]);
+        assert!(!meter_ids.contains(&"motion"));
+        assert!(!meter_ids.contains(&"brightness"));
+
+        let motion = build_sensor_readings(
+            "m",
+            "n",
+            &json!({ "moveDetected": true, "brightness": "bright", "battery": 100 }),
+        );
+        let motion_ids: Vec<&str> = motion.metrics.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(motion_ids, vec!["motion", "brightness", "battery"]);
+        assert!(!motion_ids.contains(&"temperature"));
+        assert!(!motion_ids.contains(&"humidity"));
+    }
+
+    #[test]
+    fn is_sensor_covers_meter_family_and_motion() {
+        assert!(is_sensor("Meter"));
+        assert!(is_sensor("WoIOSensor"));
+        assert!(is_sensor("MeterPro(CO2)"));
+        assert!(is_sensor("Motion Sensor"));
+        // センサー画面の対象外。
+        assert!(!is_sensor("Plug"));
+        assert!(!is_sensor("Hub Mini"));
+        // 一覧のカテゴリは Meter と同様 other 維持（読み取り表示）。
+        assert_eq!(category_for("Motion Sensor"), "other");
+    }
+
+    #[test]
+    fn serializes_state_metric_as_camel_case() {
+        let m = SensorMetricDto::state("motion", "人感", "motion", "検知あり", Some("active"));
+        let json = serde_json::to_value(&m).unwrap();
+        assert_eq!(json["kind"], "state");
+        assert_eq!(json["id"], "motion");
+        assert_eq!(json["icon"], "motion");
+        assert_eq!(json["text"], "検知あり");
+        assert_eq!(json["tone"], "active");
+        // gauge 用フィールドは省略される。
+        assert!(json.get("value").is_none());
+        assert!(json.get("unit").is_none());
+    }
+
+    #[test]
+    fn serializes_gauge_metric_without_state_fields() {
+        let m = SensorMetricDto::gauge("battery", "バッテリー", "battery", 100.0, "%");
+        let json = serde_json::to_value(&m).unwrap();
+        assert_eq!(json["kind"], "gauge");
+        assert_eq!(json["value"], 100.0);
+        assert_eq!(json["unit"], "%");
+        // state 用フィールドは省略される。
+        assert!(json.get("text").is_none());
+        assert!(json.get("tone").is_none());
     }
 
     #[test]

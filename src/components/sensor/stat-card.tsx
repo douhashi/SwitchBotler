@@ -1,16 +1,21 @@
-import { Battery, Droplet, type LucideIcon, Thermometer } from "lucide-react";
+import { Battery, Droplet, type LucideIcon, Radar, Sun, Thermometer } from "lucide-react";
 
 import { BarMeter } from "@/components/charts/bar-meter";
+import { cn } from "@/lib/utils";
 import type { SensorIcon, SensorMetric } from "@/data";
 
 const METRIC_ICON: Record<SensorIcon, LucideIcon> = {
   temperature: Thermometer,
   humidity: Droplet,
   battery: Battery,
+  motion: Radar,
+  brightness: Sun,
 };
 
 /**
- * センサー計測値カード（mockup .stat）。ラベル + 大数値 + メーター。
+ * センサー計測値カード（mockup .stat）。ラベル + 値表現。
+ * - gauge（温度/湿度/電池）: 大数値 + メーター。
+ * - state（人感/明るさ）: 区分テキスト（メーターなし）。tone で検知状態を強調する。
  * API は単一時点値のみを返すため履歴（スパークライン）は持たない（決定3）。
  */
 export function StatCard({ metric }: { metric: SensorMetric }) {
@@ -23,14 +28,28 @@ export function StatCard({ metric }: { metric: SensorMetric }) {
         {metric.label}
       </div>
 
-      <div className="mt-[7px] font-mono text-[27px] leading-none font-semibold tracking-tight tabular-nums">
-        {metric.value}
-        <span className="ml-0.5 text-sm font-medium text-muted-foreground">
-          {metric.unit}
-        </span>
-      </div>
+      {metric.kind === "gauge" ? (
+        <>
+          <div className="mt-[7px] font-mono text-[27px] leading-none font-semibold tracking-tight tabular-nums">
+            {metric.value}
+            <span className="ml-0.5 text-sm font-medium text-muted-foreground">
+              {metric.unit}
+            </span>
+          </div>
 
-      <BarMeter value={metric.value} label={metric.label} className="mt-3" />
+          <BarMeter value={metric.value} label={metric.label} className="mt-3" />
+        </>
+      ) : (
+        <div
+          className={cn(
+            "mt-[7px] text-xl leading-none font-semibold tracking-tight",
+            metric.tone === "active" && "text-sd-accent",
+            metric.tone === "idle" && "text-muted-foreground",
+          )}
+        >
+          {metric.text}
+        </div>
+      )}
     </div>
   );
 }
