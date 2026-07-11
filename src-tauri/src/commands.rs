@@ -4,6 +4,7 @@
 //! エラーは [`SwitchBotError`] としてシリアライズされ、安全な文言のみを載せる。
 
 use serde::Serialize;
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::switchbot::mapping::{DeviceDto, SceneDto, SensorReadingsDto};
 use crate::switchbot::{credentials, SwitchBotClient, SwitchBotError};
@@ -100,4 +101,40 @@ pub async fn execute_scene(id: String) -> Result<(), SwitchBotError> {
 pub async fn get_sensors() -> Result<SensorReadingsDto, SwitchBotError> {
     let (client, creds) = client_with_creds()?;
     client.get_sensors(&creds).await
+}
+
+/// アプリを終了する（トレイ「終了」用のフェイルセーフ経路。決定1）。
+#[tauri::command]
+pub fn quit(app: AppHandle) {
+    app.exit(0);
+}
+
+/// メインウィンドウを表示・前面化し、必要なら画面遷移イベントを emit する。
+/// `view` があれば "navigate"、表示時は常に "main-shown" を emit する
+/// （フロントは navigate で画面遷移、main-shown で device-store を reload。決定4）。
+/// トレイメニュー / single-instance / フロント invoke の共通実装（SSoT）。
+pub fn show_main(app: &AppHandle, view: Option<&str>) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+        if let Some(view) = view {
+            let _ = app.emit_to("main", "navigate", view);
+        }
+        let _ = app.emit_to("main", "main-shown", ());
+    }
+}
+
+/// フロント（トレイポップアップ）からメインウィンドウを開くコマンド。
+#[tauri::command]
+pub fn show_main_window(app: AppHandle, view: Option<String>) {
+    show_main(&app, view.as_deref());
+}
+
+/// トレイのポップアップウィンドウを隠す。
+#[tauri::command]
+pub fn hide_tray_popup(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("tray") {
+        let _ = window.hide();
+    }
 }

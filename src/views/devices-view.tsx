@@ -8,6 +8,7 @@ import { ViewHeader } from "@/components/view-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 
 export function DevicesView() {
@@ -18,13 +19,18 @@ export function DevicesView() {
   const load = useDeviceStore((s) => s.load);
   const refresh = useDeviceStore((s) => s.refresh);
   const selectedDeviceId = useNavigationStore((s) => s.selectedDeviceId);
+  const favoriteIds = useFavoritesStore((s) => s.deviceIds);
+  const loadFavorites = useFavoritesStore((s) => s.load);
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadFavorites();
+  }, [load, loadFavorites]);
 
   const selected = devices.find((d) => d.id === selectedDeviceId);
   if (selected) return <DeviceDetail device={selected} />;
+
+  const favorites = devices.filter((d) => favoriteIds.has(d.id));
 
   return (
     <div>
@@ -45,12 +51,33 @@ export function DevicesView() {
       {loaded && !error && devices.length === 0 && (
         <EmptyState>デバイスが見つかりませんでした。</EmptyState>
       )}
+
+      {favorites.length > 0 && (
+        <section className="mb-5">
+          <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
+            お気に入り
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {favorites.map((device) => (
+              <DeviceCard key={device.id} device={device} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {devices.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          {devices.map((device) => (
-            <DeviceCard key={device.id} device={device} />
-          ))}
-        </div>
+        <section>
+          {favorites.length > 0 && (
+            <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
+              すべて
+            </h2>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            {devices.map((device) => (
+              <DeviceCard key={device.id} device={device} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

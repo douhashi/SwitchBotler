@@ -1,9 +1,10 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pin } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { type Device, deviceInteraction, deviceStatusLabel } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 import { DeviceIcon } from "./device-icon";
 
@@ -11,6 +12,8 @@ import { DeviceIcon } from "./device-icon";
 export function DeviceCard({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
   const navigate = useNavigationStore((s) => s.navigate);
+  const favorite = useFavoritesStore((s) => s.deviceIds.has(device.id));
+  const toggleFavorite = useFavoritesStore((s) => s.toggleDeviceFavorite);
 
   const interaction = deviceInteraction(device);
   const on = device.controls.power;
@@ -41,6 +44,23 @@ export function DeviceCard({ device }: { device: Device }) {
           {device.model} · {deviceStatusLabel(device)}
         </div>
       </div>
+
+      <button
+        type="button"
+        aria-label={
+          favorite ? `${device.name} のお気に入りを解除` : `${device.name} をお気に入り`
+        }
+        aria-pressed={favorite}
+        onClick={() => toggleFavorite(device.id)}
+        className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+          favorite
+            ? "text-sd-accent shadow-inset-sm"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Pin size={15} strokeWidth={2} className={cn(favorite && "fill-current")} />
+      </button>
 
       {interaction === "detail" && (
         <button

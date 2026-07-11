@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Layers, Play, RefreshCw } from "lucide-react";
+import { Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { dataSource, type Scene } from "@/data";
+import { cn } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
 
 /**
  * シーン 1 件の行（mockup .scene）。
@@ -13,6 +15,8 @@ import { dataSource, type Scene } from "@/data";
 export function SceneRow({ scene }: { scene: Scene }) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const favorite = useFavoritesStore((s) => s.sceneIds.has(scene.id));
+  const toggleFavorite = useFavoritesStore((s) => s.toggleSceneFavorite);
 
   const run = async () => {
     setRunning(true);
@@ -37,6 +41,22 @@ export function SceneRow({ scene }: { scene: Scene }) {
           <div className="mt-0.5 text-[11.5px] text-destructive">{error}</div>
         )}
       </div>
+      <button
+        type="button"
+        aria-label={
+          favorite ? `${scene.name} のお気に入りを解除` : `${scene.name} をお気に入り`
+        }
+        aria-pressed={favorite}
+        onClick={() => toggleFavorite(scene.id)}
+        className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+          favorite
+            ? "text-sd-accent shadow-inset-sm"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <Pin size={15} strokeWidth={2} className={cn(favorite && "fill-current")} />
+      </button>
       <Button size="sm" onClick={run} disabled={running}>
         {running ? (
           <RefreshCw className="animate-spin" strokeWidth={2} />

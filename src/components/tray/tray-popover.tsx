@@ -1,22 +1,36 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
-import { Layers, Zap } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
+import { Layers, RefreshCw, Zap } from "lucide-react";
 
 import { DeviceIcon } from "@/components/device/device-icon";
 import { Switch } from "@/components/ui/switch";
-import { hasPowerToggle, useScenes } from "@/data";
+import { dataSource, type Device, hasPowerToggle, type Scene, useScenes } from "@/data";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
-import { useNavigationStore } from "@/stores/navigation-store";
+import { useFavoritesStore } from "@/stores/favorites-store";
+
+/** トレイに出す件数の上限（お気に入り優先 + 先頭で補完。決定5）。 */
+const MAX_DEVICES = 4;
+const MAX_SCENES = 3;
+
+/**
+ * お気に入りを先頭に寄せ、残り枠を先頭から補完して上限で切る。
+ * 未設定でも先頭 N 件が出るため、初回体験でも即操作できる（決定5）。
+ */
+function favoritesFirst<T extends { id: string }>(
+  items: T[],
+  isFavorite: (id: string) => boolean,
+  limit: number,
+): T[] {
+  const favorites = items.filter((i) => isFavorite(i.id));
+  const rest = items.filter((i) => !isFavorite(i.id));
+  return [...favorites, ...rest].slice(0, limit);
+}
 
 /** フッタのテキストリンク（ウィンドウ / 設定 / 終了 で共通）。 */
-function FootLink({
-  onClick,
-  children,
-}: {
-  onClick: () => void;
-  children: ReactNode;
-}) {
+function FootLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -28,21 +42,104 @@ function FootLink({
   );
 }
 
-/** トレイのポップオーバー本体（mockup 06）。UI のみ（実 Tauri トレイ結線は #10）。 */
-export function TrayPopover({ onClose }: { onClose: () => void }) {
-  const devices = useDeviceStore((s) => s.devices);
+/** トレイに 1 台分のクイックトグル行を描く。 */
+function QuickDevice({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
+  const on = device.controls.power;
+  return (
+    <div className="flex items-center gap-2.5 rounded-xl px-2 py-2.5">
+      <span
+        className={cn(
+          "grid size-[30px] shrink-0 place-items-center rounded-[9px]",
+          on ? "text-sd-accent shadow-raise-sm" : "text-muted-foreground shadow-inset-sm",
+        )}
+      >
+        <DeviceIcon category={device.category} size={16} strokeWidth={1.75} />
+      </span>
+      <span className="flex-1 text-[13px] font-medium">{device.name}</span>
+      <Switch
+        size="sm"
+        checked={on}
+        onCheckedChange={() => toggle(device.id)}
+        aria-label={device.name}
+      />
+    </div>
+  );
+}
+
+/** トレイのクイックシーンボタン（タップで実行 = クイックアクション）。 */
+function QuickScene({ scene }: { scene: Scene }) {
+  const [running, setRunning] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const run = async () => {
+    setRunning(true);
+    setFailed(false);
+    try {
+      await dataSource.executeScene(scene.id);
+    } catch {
+      setFailed(true);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={running}
+      aria-label={`${scene.name} を実行`}
+      className={cn(
+        "flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] font-semibold shadow-raise-sm active:shadow-inset-sm disabled:opacity-70",
+        failed && "text-destructive",
+      )}
+    >
+      {running ? (
+        <RefreshCw size={13} strokeWidth={2} className="animate-spin" />
+      ) : (
+        <Layers size={13} strokeWidth={1.9} className="text-sd-accent" />
+      )}
+      {failed ? "失敗" : scene.name}
+    </button>
+  );
+}
+
+/**
+ * トレイのポップオーバー本体（mockup 06）。実データ結線済み（#10）。
+ * フッタは Tauri コマンド（show_main_window / quit / hide_tray_popup）へ結線する。
+ */
+export function TrayPopover() {
+  const devices = useDeviceStore((s) => s.devices);
+  const loading = useDeviceStore((s) => s.loading);
+  const loaded = useDeviceStore((s) => s.loaded);
+  const error = useDeviceStore((s) => s.error);
   const connection = useConnectionStore((s) => s.connection);
-  const navigate = useNavigationStore((s) => s.navigate);
+  const favoriteDeviceIds = useFavoritesStore((s) => s.deviceIds);
+  const favoriteSceneIds = useFavoritesStore((s) => s.sceneIds);
   const { data: scenes } = useScenes();
 
   const connected = connection.status === "connected";
-  // クイックトグルは電源操作できるデバイスに限る（未対応・カーテンは除外）。
-  const quickDevices = devices.filter(hasPowerToggle).slice(0, 3);
-  const quickScenes = (scenes ?? []).slice(0, 2);
+  const togglable = devices.filter(hasPowerToggle);
+  const quickDevices = favoritesFirst(togglable, (id) => favoriteDeviceIds.has(id), MAX_DEVICES);
+  const quickScenes = favoritesFirst(
+    scenes ?? [],
+    (id) => favoriteSceneIds.has(id),
+    MAX_SCENES,
+  );
+
+  const openMain = () => {
+    void invoke("show_main_window", { view: null });
+    void invoke("hide_tray_popup");
+  };
+  const openSettings = () => {
+    void invoke("show_main_window", { view: "settings" });
+    void invoke("hide_tray_popup");
+  };
+  const quit = () => void invoke("quit");
 
   return (
-    <div className="w-[278px]">
+    <div className="w-full">
       <div className="flex items-center justify-between px-1.5 pb-3">
         <span className="flex items-center gap-2 text-[13px] font-bold">
           <span className="grid size-[22px] place-items-center rounded-[7px] bg-card text-sd-accent shadow-raise-sm">
@@ -62,63 +159,43 @@ export function TrayPopover({ onClose }: { onClose: () => void }) {
         </span>
       </div>
 
-      {quickDevices.map((device) => {
-        const on = device.controls.power;
-        return (
-          <div
-            key={device.id}
-            className="flex items-center gap-2.5 rounded-xl px-2 py-2.5"
-          >
-            <span
-              className={cn(
-                "grid size-[30px] shrink-0 place-items-center rounded-[9px]",
-                on
-                  ? "text-sd-accent shadow-raise-sm"
-                  : "text-muted-foreground shadow-inset-sm",
-              )}
-            >
-              <DeviceIcon category={device.category} size={16} strokeWidth={1.75} />
-            </span>
-            <span className="flex-1 text-[13px] font-medium">{device.name}</span>
-            <Switch
-              size="sm"
-              checked={on}
-              onCheckedChange={() => toggle(device.id)}
-              aria-label={device.name}
-            />
+      {loading && devices.length === 0 && (
+        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">読み込み中…</p>
+      )}
+      {loaded && !connected && quickDevices.length === 0 && (
+        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
+          未接続です。設定から接続してください。
+        </p>
+      )}
+      {loaded && connected && quickDevices.length === 0 && (
+        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
+          操作できるデバイスがありません。
+        </p>
+      )}
+
+      {quickDevices.map((device) => (
+        <QuickDevice key={device.id} device={device} />
+      ))}
+
+      {error && <p className="px-2 pt-1 text-[11px] text-destructive">{error}</p>}
+
+      {quickScenes.length > 0 && (
+        <>
+          <div className="my-2 h-px bg-border" />
+          <div className="flex flex-wrap gap-2 px-1 pb-2">
+            {quickScenes.map((scene) => (
+              <QuickScene key={scene.id} scene={scene} />
+            ))}
           </div>
-        );
-      })}
-
-      <div className="my-2 h-px bg-border" />
-
-      <div className="flex gap-2 px-1 pb-2">
-        {quickScenes.map((scene) => (
-          <button
-            key={scene.id}
-            type="button"
-            onClick={() => navigate("scenes")}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] font-semibold shadow-raise-sm active:shadow-inset-sm"
-          >
-            <Layers size={13} strokeWidth={1.9} className="text-sd-accent" />
-            {scene.name}
-          </button>
-        ))}
-      </div>
+        </>
+      )}
 
       <div className="my-2 h-px bg-border" />
 
       <div className="flex gap-2">
-        <FootLink onClick={onClose}>ウィンドウを開く</FootLink>
-        <FootLink
-          onClick={() => {
-            navigate("settings");
-            onClose();
-          }}
-        >
-          設定
-        </FootLink>
-        <FootLink onClick={onClose}>終了</FootLink>
+        <FootLink onClick={openMain}>ウィンドウを開く</FootLink>
+        <FootLink onClick={openSettings}>設定</FootLink>
+        <FootLink onClick={quit}>終了</FootLink>
       </div>
     </div>
   );
