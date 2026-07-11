@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
-import type { Device } from "@/data";
+import type { Device, Scene } from "@/data";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { TrayPopover } from "./tray-popover";
@@ -48,6 +48,10 @@ const pressBot: Device = {
   supported: true,
   controls: { power: false, botMode: "press" },
 };
+
+function scene(n: number): Scene {
+  return { id: `scene-${n}`, name: `シーン${n}` };
+}
 
 describe("TrayPopover", () => {
   beforeEach(() => {
@@ -206,5 +210,45 @@ describe("TrayPopover", () => {
         commandType: "command",
       }),
     );
+  });
+
+  it("デバイスとシーンをそれぞれ独立したスクロール領域に描画する", async () => {
+    // デバイス 6 件超・シーン 3 件超（各領域の px 上限を超える件数）を投入する。
+    const devices = Array.from({ length: 8 }, (_, i) => plug(i + 1));
+    const scenes = Array.from({ length: 5 }, (_, i) => scene(i + 1));
+    invoke.mockImplementation((cmd: string) =>
+      Promise.resolve(cmd === "list_scenes" ? scenes : []),
+    );
+    useDeviceStore.setState({
+      devices,
+      loading: false,
+      loaded: true,
+      error: null,
+    });
+    useFavoritesStore.setState({
+      deviceIds: new Set(devices.map((d) => d.id)),
+      sceneIds: new Set(scenes.map((s) => s.id)),
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    const deviceRegion = await screen.findByTestId("tray-device-scroll");
+    const sceneRegion = await screen.findByTestId("tray-scene-scroll");
+    // デバイス領域とシーン領域は別々のスクロールコンテナ。
+    expect(deviceRegion).not.toBe(sceneRegion);
+    expect(deviceRegion).not.toContainElement(sceneRegion);
+
+    // 全デバイス行はデバイス領域に、全シーン行はシーン領域に属する。
+    for (const d of devices) {
+      const row = screen.getByText(d.name);
+      expect(deviceRegion).toContainElement(row);
+      expect(sceneRegion).not.toContainElement(row);
+    }
+    for (const s of scenes) {
+      const run = screen.getByRole("button", { name: `${s.name} を実行` });
+      expect(sceneRegion).toContainElement(run);
+      expect(deviceRegion).not.toContainElement(run);
+    }
   });
 });
