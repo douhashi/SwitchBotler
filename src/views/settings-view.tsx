@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { ThemeSegment } from "@/components/theme-segment";
 import { ViewHeader } from "@/components/view-header";
 import { useConnectionStore } from "@/stores/connection-store";
 
@@ -46,8 +47,22 @@ export function SettingsView() {
 
   return (
     <div>
-      <ViewHeader title="認証設定" subtitle="SwitchBot API の認証情報" />
+      <ViewHeader title="設定" subtitle="表示テーマと SwitchBot API の認証" />
 
+      <section className="mb-6">
+        <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
+          表示
+        </h2>
+        <span className="mb-2 block text-xs font-medium">テーマ</span>
+        <ThemeSegment />
+        <p className="mt-2 px-0.5 text-[11.5px] text-muted-foreground">
+          システムは OS の外観設定に追従します。
+        </p>
+      </section>
+
+      <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
+        SwitchBot API 認証
+      </h2>
       <ConnectionBanner connection={connection} />
 
       {error && (

@@ -79,11 +79,12 @@ export const tauriDataSource: SwitchBotlerDataSource = {
     }
   },
 
-  async getSensors(): Promise<SensorReadings> {
+  async getSensors(): Promise<SensorReadings[]> {
     try {
-      // Rust は { source, metrics } を返す。更新時刻はフロントで付与する。
-      const dto = await invoke<Omit<SensorReadings, "updatedAt">>("get_sensors");
-      return { ...dto, updatedAt: nowLabel() };
+      // Rust は { id, source, metrics } の配列を返す。更新時刻はフロントで付与する。
+      const dtos = await invoke<Omit<SensorReadings, "updatedAt">[]>("get_sensors");
+      const updatedAt = nowLabel();
+      return dtos.map((dto) => ({ ...dto, updatedAt }));
     } catch (error) {
       throw toError(error);
     }

@@ -18,5 +18,6 @@ export interface SwitchBotlerDataSource {
   updateControl(id: string, patch: Partial<DeviceControls>): Promise<void>;
   getScenes(): Promise<Scene[]>;
   executeScene(id: string): Promise<void>;
-  getSensors(): Promise<SensorReadings>;
+  /** すべての Meter 系センサーをセンサーごとに返す。 */
+  getSensors(): Promise<SensorReadings[]>;
 }

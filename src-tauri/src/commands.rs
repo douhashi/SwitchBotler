@@ -96,9 +96,9 @@ pub async fn execute_scene(id: String) -> Result<(), SwitchBotError> {
     client.execute_scene(&creds, &id).await
 }
 
-/// 先頭 Meter のセンサー読み取りを返す（単一 Meter・履歴なし。決定3）。
+/// すべての Meter のセンサー読み取りをセンサーごとに返す（履歴なし。決定3）。
 #[tauri::command]
-pub async fn get_sensors() -> Result<SensorReadingsDto, SwitchBotError> {
+pub async fn get_sensors() -> Result<Vec<SensorReadingsDto>, SwitchBotError> {
     let (client, creds) = client_with_creds()?;
     client.get_sensors(&creds).await
 }

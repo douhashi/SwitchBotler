@@ -122,7 +122,9 @@ export type SensorMetric = {
 };
 
 export type SensorReadings = {
-  /** センサー名（例: "リビングの温湿度計"）。センサー無しなら空文字。 */
+  /** センサーの deviceId。セクションの key と並べ替え順の永続化に使う。 */
+  id: string;
+  /** センサー名（例: "リビングの温湿度計"）。 */
   source: string;
   /** 最終更新の表示文字列（例: "21:04"）。 */
   updatedAt: string;

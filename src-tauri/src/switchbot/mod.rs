@@ -88,9 +88,12 @@ mod integration_tests {
             .get_sensors(&creds)
             .await
             .expect("get_sensors が成功すること");
-        // メトリクス種別のみ出力（値・センサー名は出さない）。
-        let ids: Vec<&str> = readings.metrics.iter().map(|m| m.id.as_str()).collect();
-        println!("sensor metrics = {ids:?}");
+        // センサー台数とメトリクス種別のみ出力（値・センサー名は出さない）。
+        println!("sensor count = {}", readings.len());
+        for r in &readings {
+            let ids: Vec<&str> = r.metrics.iter().map(|m| m.id.as_str()).collect();
+            println!("sensor metrics = {ids:?}");
+        }
     }
 
     #[tokio::test]

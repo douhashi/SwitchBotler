@@ -57,7 +57,7 @@ export function DevicesView() {
           <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
             お気に入り
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid-cards">
             {favorites.map((device) => (
               <DeviceCard key={device.id} device={device} />
             ))}
@@ -72,7 +72,7 @@ export function DevicesView() {
               すべて
             </h2>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid-cards">
             {devices.map((device) => (
               <DeviceCard key={device.id} device={device} />
             ))}
