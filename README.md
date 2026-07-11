@@ -16,6 +16,27 @@
 Tauri v2 + Rust（バックエンド） / React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand（フロントエンド）。
 詳細は [`docs/development/architecture.md`](docs/development/architecture.md) を参照。
 
+## 開発環境のセットアップ
+
+ツールチェーンは [mise](https://mise.jdx.dev/) で管理する（Node.js 24 系 / Rust stable / lefthook）。
+
+```sh
+mise install     # Node.js・Rust・lefthook を導入
+mise run setup   # npm install + git hooks（lefthook）の有効化
+mise run dev     # Tauri アプリを開発モードで起動
+```
+
+そのほかの主なタスク:
+
+| タスク | 内容 |
+|---|---|
+| `mise run lint` | 型チェック + Rust fmt-check + clippy を一括実行 |
+| `mise run typecheck` | フロントエンドの型チェック（`tsc --noEmit`） |
+| `mise run fmt` | Rust コードの整形 |
+| `mise run clippy` | Rust の静的解析 |
+
+git hooks は commit 時に Rust 整形チェックと型チェック、push 時に clippy を実行する。
+
 ## ドキュメント
 
 - **ビジネス**: [プロジェクト概要](docs/business/overview.md) / [OSS・ライセンス・商標](docs/business/model.md)
