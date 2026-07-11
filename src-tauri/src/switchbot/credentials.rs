@@ -10,8 +10,8 @@ use keyring::Entry;
 
 use super::error::SwitchBotError;
 
-/// keyring のサービス名（アプリ識別子）。
-const SERVICE: &str = "com.douhashi.botler";
+/// keyring のサービス名（アプリ識別子。tauri.conf.json の identifier と一致させる）。
+const SERVICE: &str = "io.github.douhashi.switchbotler";
 /// keyring のアカウント名。token / secret を別エントリで保持する。
 const TOKEN_ACCOUNT: &str = "switchbot-token";
 const SECRET_ACCOUNT: &str = "switchbot-secret";
