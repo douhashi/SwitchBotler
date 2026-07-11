@@ -26,6 +26,12 @@ mise run setup   # npm install + git hooks（lefthook）の有効化
 mise run dev     # Tauri アプリを開発モードで起動
 ```
 
+SwitchBot API の認証情報など開発時のシークレットは [Infisical](https://infisical.com/) で管理する（`.env` は使わない）。詳細は [`docs/development/secrets.md`](docs/development/secrets.md) を参照。
+
+```sh
+infisical run --env=dev -- mise run dev   # シークレットを注入して起動
+```
+
 そのほかの主なタスク:
 
 | タスク | 内容 |

@@ -1,8 +1,6 @@
-# Environment variables
+# Environment variables (シークレットは Infisical で管理。.env は使わない)
 .env
 .env.*
-!.env.example
-!.env.sample
 
 # direnv
 .envrc

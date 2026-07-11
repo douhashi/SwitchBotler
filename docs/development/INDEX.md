@@ -5,3 +5,4 @@
 - `switchbot-api.md`: SwitchBot Cloud API v1.1 の要点（ベース URL・認証ヘッダー・署名生成手順・レート制限・主なエンドポイント）
 - `security.md`: セキュリティ / プライバシー方針（セキュアストレージ保管・秘匿情報の露出防止・ログ出力禁止）
 - `roadmap.md`: マイルストーン（M0〜M5）・未決事項 / 検討ポイント
+- `secrets.md`: 開発時のシークレット管理（Infisical）・env キー（`SWITCHBOT_TOKEN` / `SWITCHBOT_SECRET`）・実行方法
