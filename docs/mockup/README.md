@@ -9,6 +9,7 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 | ファイル | 内容 |
 |---|---|
 | [`index.html`](./index.html) | 主要6画面（認証設定 / デバイス一覧 / デバイス操作 / センサーステータス / シーン実行 / トレイメニュー）。右上の「テーマ」ボタンでライト/ダーク切替 |
+| [`index.en.html`](./index.en.html) | `index.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`onboarding.html`](./onboarding.html) | 未接続（`saved:false`）時のメニューなしオンボーディング画面＋トレイの表記案（未設定 / 到達不能 / 接続済みの3状態）。右上で Light/Dark/System 切替 |
 | [`themes.html`](./themes.html) | Soft Depth のライト/ダークを同一UIで並べた比較＋セマンティックトークン表 |
 

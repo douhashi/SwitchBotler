@@ -1,0 +1,661 @@
+<title>SwitchBotler — Screen Mockups</title>
+<style>
+  :root {
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+
+    /* Soft Depth — LIGHT (default) */
+    --bg: #E6E9F1; --surface: #EDEFF6; --ink: #2C3444; --muted: #7B8497;
+    --accent: #6366F1; --accent-strong: #4F46E5; --on-accent: #FFFFFF;
+    --ok: #0E9E76; --warn: #C77700; --danger: #DC2626;
+    --raise: 4px 4px 10px #D4D8E2, -4px -4px 10px #F6F8FC;
+    --raise-sm: 3px 3px 7px #D6DAE3, -3px -3px 7px #F6F8FC;
+    --inset: inset 2px 2px 5px #D6DAE3, inset -2px -2px 5px #F7F9FD;
+    --inset-sm: inset 1px 1px 3px #D6DAE3, inset -1px -1px 3px #F7F9FD;
+    --knob: #F7F8FC; --knob-shadow: 1px 1px 3px #CDD1DB, -1px -1px 2px #FBFCFE;
+    --tgl-on-shadow: 2px 2px 6px #C9CCEA, -2px -2px 6px #F6F8FC;
+    --hair: rgba(120,130,150,.14);
+
+    /* page chrome */
+    --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+      --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+      --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+      --raise: 5px 5px 12px #191C23, -4px -4px 11px #2C303A;
+      --raise-sm: 3px 3px 8px #191C23, -3px -3px 7px #2C303A;
+      --inset: inset 2px 2px 6px #191C23, inset -2px -2px 6px #2C303A;
+      --inset-sm: inset 1px 1px 4px #191C23, inset -1px -1px 4px #2C303A;
+      --knob: #D6D9E3; --knob-shadow: 1px 1px 4px #16181E, -1px -1px 2px #30343E;
+      --tgl-on-shadow: 2px 2px 8px #191C23, -2px -2px 7px #2C303A;
+      --hair: rgba(200,210,230,.08);
+      --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #E6E9F1; --surface: #EDEFF6; --ink: #2C3444; --muted: #7B8497;
+    --accent: #6366F1; --accent-strong: #4F46E5; --on-accent: #FFFFFF;
+    --ok: #0E9E76; --warn: #C77700; --danger: #DC2626;
+    --raise: 4px 4px 10px #D4D8E2, -4px -4px 10px #F6F8FC;
+    --raise-sm: 3px 3px 7px #D6DAE3, -3px -3px 7px #F6F8FC;
+    --inset: inset 2px 2px 5px #D6DAE3, inset -2px -2px 5px #F7F9FD;
+    --inset-sm: inset 1px 1px 3px #D6DAE3, inset -1px -1px 3px #F7F9FD;
+    --knob: #F7F8FC; --knob-shadow: 1px 1px 3px #CDD1DB, -1px -1px 2px #FBFCFE;
+    --tgl-on-shadow: 2px 2px 6px #C9CCEA, -2px -2px 6px #F6F8FC; --hair: rgba(120,130,150,.14);
+    --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
+  }
+  :root[data-theme="dark"] {
+    --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+    --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+    --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+    --raise: 7px 7px 16px #131519, -6px -6px 14px #2F333E;
+    --raise-sm: 4px 4px 10px #131519, -4px -4px 9px #2F333E;
+    --inset: inset 3px 3px 8px #131519, inset -3px -3px 8px #2E323D;
+    --inset-sm: inset 2px 2px 5px #131519, inset -2px -2px 5px #2E323D;
+    --knob: #D6D9E3; --knob-shadow: 2px 2px 5px #121418, -1px -1px 3px #343945;
+    --tgl-on-shadow: 2px 2px 8px #191C23, -2px -2px 7px #2C303A; --hair: rgba(200,210,230,.08);
+    --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); color: var(--page-ink); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 52px 22px 90px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 12px; }
+  h1 { font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
+  .lede { font-size: 16px; color: var(--page-muted); max-width: 60ch; margin: 0; }
+  .cap { display: flex; align-items: baseline; gap: 10px; margin: 46px 0 14px; flex-wrap: wrap; }
+  .cap .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .cap h2 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+  .cap .d { font-size: 13px; color: var(--page-muted); }
+
+  /* window frame */
+  .win-scroll { overflow-x: auto; border-radius: 22px; }
+  .win { border-radius: 22px; background: var(--bg); box-shadow: 0 1px 2px rgba(20,22,30,.06), 0 30px 60px -34px rgba(20,22,30,.5); overflow: hidden; min-width: 620px; }
+  .bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--bg); }
+  .bar .dots { display: flex; gap: 7px; }
+  .bar .dots i { width: 11px; height: 11px; border-radius: 50%; box-shadow: var(--inset-sm); display: block; }
+  .bar .t { font-size: 12px; color: var(--muted); margin-left: 6px; font-weight: 500; }
+
+  .app { display: grid; grid-template-columns: 194px 1fr; min-height: 496px; }
+  .app.tall { min-height: 560px; }
+
+  /* sidebar */
+  .side { padding: 8px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; padding: 8px 8px 12px; letter-spacing: -.01em; }
+  .brand .mk { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
+  .brand .mk svg { width: 18px; height: 18px; }
+  .bot { color: var(--accent); }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav a { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 11px; color: var(--muted); font-size: 13.5px; font-weight: 550; cursor: pointer; text-decoration: none; }
+  .nav a svg { width: 18px; height: 18px; flex: none; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.on { color: var(--accent); box-shadow: var(--inset-sm); background: var(--bg); }
+  .side .sp { flex: 1; }
+  .side .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 10px 11px; border-radius: 11px; box-shadow: var(--inset-sm); }
+  .side .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+
+  /* main — container-type で幅に応じたレスポンシブ列を有効化 */
+  .main { padding: 20px 22px 24px; background: var(--bg); overflow: hidden; container-type: inline-size; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .head h3 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+  .head .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .head .backrow { display: flex; align-items: center; gap: 10px; }
+  .iconbtn { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--ink); background: var(--surface); box-shadow: var(--raise-sm); cursor: pointer; flex: none; }
+  .iconbtn svg { width: 17px; height: 17px; }
+
+  /* responsive card grid — 幅に応じて 3 / 2 / 1 列（コンテナクエリ） */
+  .grid-cards { display: grid; gap: 13px; grid-template-columns: 1fr; }
+  @container (min-width: 380px) { .grid-cards { grid-template-columns: repeat(2, 1fr); } }
+  @container (min-width: 560px) { .grid-cards { grid-template-columns: repeat(3, 1fr); } }
+
+  /* cards / devices */
+  .device { background: var(--surface); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; box-shadow: var(--raise); }
+  .device .ico { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
+  .device .ico svg { width: 20px; height: 20px; }
+  .device.off .ico { color: var(--muted); box-shadow: var(--inset-sm); }
+  .device .body { flex: 1; min-width: 0; }
+  .device .name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .device .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .device.link { cursor: pointer; }
+  /* オフライン: グレーアウトして操作不能。色だけに頼らず「オフライン」表記を併記する。 */
+  .device.offline { opacity: .5; cursor: not-allowed; }
+  .device.offline .ico { color: var(--muted); box-shadow: var(--inset-sm); }
+  .device.offline .sub { color: var(--warn); }
+  .device.offline .tgl, .device.offline .chev { pointer-events: none; }
+  .device.offline .off-tag { font-size: 11px; font-weight: 600; color: var(--muted); flex: none; padding: 3px 9px; border-radius: 999px; box-shadow: var(--inset-sm); }
+
+  .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--bg); position: relative; box-shadow: var(--inset-sm); transition: background .22s ease; }
+  .tgl .knob { position: absolute; top: 50%; left: 3.5px; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--knob); box-shadow: var(--knob-shadow); transition: left .22s cubic-bezier(.34,1.56,.64,1); }
+  .tgl.on { background: var(--accent); box-shadow: var(--tgl-on-shadow); }
+  .tgl.on .knob { left: 22.5px; }
+  .chev { color: var(--muted); display: grid; place-items: center; }
+  .chev svg { width: 18px; height: 18px; }
+
+  /* sensors — センサーごとのセクション（並べ替え可）＋ レスポンシブなカード */
+  .sensor-list { display: flex; flex-direction: column; gap: 20px; }
+  .sensor-sec { border-radius: 14px; }
+  .sensor-sec.dragging { opacity: .45; }
+  .sensor-sec.dragover { outline: 2px dashed var(--accent); outline-offset: 5px; }
+  .sh { display: flex; align-items: center; gap: 10px; margin: 0 2px 11px; }
+  .sh .grip { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--surface); box-shadow: var(--raise-sm); cursor: grab; flex: none; }
+  .sh .grip:active { cursor: grabbing; box-shadow: var(--inset-sm); }
+  .sh .grip svg { width: 16px; height: 16px; }
+  .sh .shname { font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+  .sh .shmeta { font-size: 11.5px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  /* stats */
+  .stat { background: var(--surface); border-radius: 15px; padding: 14px 15px; box-shadow: var(--raise); }
+  .stat .lab { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .stat .lab svg { width: 14px; height: 14px; }
+  .stat .big { font-family: var(--mono); font-size: 27px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 7px; line-height: 1; }
+  .stat .big .u { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .stat .spark { margin-top: 10px; display: block; width: 100%; height: 26px; }
+  .bar-meter { margin-top: 12px; height: 9px; border-radius: 999px; box-shadow: var(--inset-sm); overflow: hidden; }
+  .bar-meter i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; border: 0; color: var(--ink); background: var(--surface); box-shadow: var(--raise-sm); font-family: inherit; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.primary { background: var(--accent-strong); color: var(--on-accent); box-shadow: var(--tgl-on-shadow); }
+  .btn.primary svg { color: var(--on-accent); }
+  .btn.danger { color: var(--danger); }
+  .btn.sm { padding: 8px 13px; font-size: 12.5px; }
+  .btn:active { box-shadow: var(--inset-sm); }
+
+  /* fields */
+  .field { margin-bottom: 15px; }
+  .field .flab { font-size: 12px; color: var(--ink); font-weight: 550; margin: 0 0 8px; display: block; }
+  .field .inp { background: var(--bg); border-radius: 12px; box-shadow: var(--inset); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .field .inp .val { flex: 1; font-family: var(--mono); font-size: 14px; letter-spacing: 1.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .field .inp .val.ph { color: var(--muted); letter-spacing: 0; font-family: var(--sans); }
+  .field .eye { color: var(--muted); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .field .eye svg { width: 17px; height: 17px; }
+  .field .help { font-size: 11.5px; color: var(--muted); margin: 8px 2px 0; }
+
+  /* settings — テーマ切替（右上ではなく設定に配置） */
+  .settings-sec { margin-bottom: 24px; }
+  .sec-title { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 2px 11px; }
+  .seg { display: inline-flex; padding: 4px; border-radius: 12px; box-shadow: var(--inset); gap: 4px; background: var(--bg); }
+  .seg button { font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; padding: 8px 15px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .seg button svg { width: 15px; height: 15px; }
+  .seg button.on { color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
+  .seg-help { font-size: 11.5px; color: var(--muted); margin: 9px 2px 0; }
+
+  .note-line { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); padding: 11px 13px; border-radius: 12px; box-shadow: var(--inset-sm); margin: 4px 0 20px; }
+  .note-line svg { width: 15px; height: 15px; color: var(--ok); flex: none; }
+
+  .banner { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: 15px; padding: 14px 16px; box-shadow: var(--raise); margin-bottom: 20px; }
+  .banner .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; box-shadow: var(--raise-sm); color: var(--ok); flex: none; }
+  .banner .ic svg { width: 19px; height: 19px; }
+  .banner .tt { font-weight: 650; font-size: 14px; }
+  .banner .ss { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  /* slider */
+  .ctrl { background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--raise); margin-bottom: 13px; }
+  .ctrl .ct { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .ctrl .ct b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+  .slider { position: relative; height: 14px; border-radius: 999px; box-shadow: var(--inset); }
+  .slider .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); }
+  .slider .knob { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--knob); box-shadow: var(--knob-shadow); }
+  .swrow { display: flex; gap: 10px; }
+  .sw { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; box-shadow: var(--raise-sm); }
+  .sw.on { box-shadow: var(--raise-sm), 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+  /* device hero */
+  .hero { display: flex; align-items: center; gap: 15px; background: var(--surface); border-radius: 18px; padding: 18px; box-shadow: var(--raise); margin-bottom: 15px; }
+  .hero .hic { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .hero .hic svg { width: 28px; height: 28px; }
+  .hero .nm { font-size: 17px; font-weight: 700; }
+  .hero .st { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  /* scene cards — デバイス同様レスポンシブ（3/2/1 列） */
+  .scene { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border-radius: 15px; padding: 14px; box-shadow: var(--raise); }
+  .scene .stop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .scene .ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .scene .ico svg { width: 19px; height: 19px; }
+  .scene .body { min-width: 0; }
+  .scene .nm { font-weight: 600; font-size: 14px; }
+  .scene .ds { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .scene .btn { width: 100%; }
+
+  /* tray popover */
+  .tray-stage { display: flex; justify-content: center; align-items: flex-start; gap: 28px; flex-wrap: wrap; padding: 30px; background: var(--page-bg); border-radius: 18px; box-shadow: var(--inset-sm); }
+  .tray-demo { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+  .tray-cap { font-size: 12px; font-weight: 600; color: var(--page-muted); }
+  .tray { width: 306px; background: var(--bg); border-radius: 18px; padding: 14px 14px 7px; box-shadow: 0 1px 2px rgba(20,22,30,.1), 0 24px 48px -20px rgba(20,22,30,.55); }
+  .tray .th { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
+  .tray .th .b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
+  .tray .th .b .mk { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
+  .tray .th .b .mk svg { width: 15px; height: 15px; }
+  .tray .th .cn { font-size: 10.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+  .tray .th .cn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .tray .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; }
+  .tray .qrow:hover { box-shadow: var(--inset-sm); }
+  .tray .qrow .qi { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .tray .qrow.off .qi { color: var(--muted); box-shadow: var(--inset-sm); }
+  .tray .qrow .qi svg { width: 16px; height: 16px; }
+  .tray .qrow .qn { flex: 1; font-size: 13px; font-weight: 550; }
+  .tray .tgl.sm { width: 38px; height: 22px; }
+  .tray .tgl.sm .knob { width: 16px; height: 16px; left: 3px; }
+  .tray .tgl.sm.on .knob { left: 19px; }
+  .tray .sep { height: 1px; background: var(--hair); margin: 8px 6px; }
+  /* section label + お気に入りシーン（縦に 1 列ずつ） */
+  .tray .seclab { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 2px 8px 6px; }
+  .tray .sc { display: flex; flex-direction: column; gap: 3px; padding: 0 0 4px; }
+  .tray .srow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; cursor: pointer; }
+  .tray .srow:hover { box-shadow: var(--inset-sm); }
+  .tray .srow .si { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
+  .tray .srow .si svg { width: 15px; height: 15px; }
+  .tray .srow .sn { flex: 1; font-size: 13px; font-weight: 550; }
+  .tray .srow .go { color: var(--muted); display: grid; place-items: center; flex: none; }
+  .tray .srow .go svg { width: 15px; height: 15px; }
+  /* お気に入りデバイスが無いときの空表示 */
+  .tray .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px; padding: 20px 14px 22px; }
+  .tray .empty .ei { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); box-shadow: var(--inset-sm); }
+  .tray .empty .ei svg { width: 19px; height: 19px; }
+  .tray .empty .et { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .tray .empty .eh { font-size: 11px; color: var(--muted); max-width: 22ch; line-height: 1.5; }
+  .tray .foot { display: flex; gap: 8px; padding: 4px; }
+  .tray .foot a { flex: 1; text-align: center; font-size: 11.5px; color: var(--muted); padding: 8px; border-radius: 9px; cursor: pointer; text-decoration: none; }
+  .tray .foot a:hover { box-shadow: var(--inset-sm); color: var(--ink); }
+
+  .themehint { font-size: 12.5px; color: var(--page-muted); margin-top: 16px; display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px 9px 14px; border-radius: 12px; box-shadow: var(--inset-sm); flex-wrap: wrap; }
+  .themehint svg.tip { width: 15px; height: 15px; color: var(--accent); flex: none; }
+  .preview-btn { display: inline-flex; align-items: center; gap: 7px; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--page-ink); background: var(--surface); border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer; box-shadow: var(--raise-sm); }
+  .preview-btn:active { box-shadow: var(--inset-sm); }
+  .preview-btn svg { width: 15px; height: 15px; color: var(--accent); }
+  .preview-btn .moon { display: none; }
+  :root[data-theme="dark"] .preview-btn .moon { display: block; }
+  :root[data-theme="dark"] .preview-btn .sun { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .preview-btn .moon { display: block; }
+    :root:not([data-theme="light"]) .preview-btn .sun { display: none; }
+  }
+
+  .foot-box { margin-top: 50px; padding: 22px; border-radius: 16px; box-shadow: var(--raise); background: var(--bg); }
+  .foot-box h3 { margin: 0 0 8px; font-size: 15px; }
+  .foot-box p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+  @media (prefers-reduced-motion: reduce) { .tgl, .tgl .knob { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SwitchBotler · Mockups</p>
+    <h1>6 Screens Built with Soft Depth</h1>
+    <p class="lede">Built the 6 main screens with the finalized Soft Depth design system (<code>design-system/MASTER.md</code>). Press the toggles and chips to feel the interactions.</p>
+    <div class="themehint">
+      <svg class="tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg>
+      In the app itself, theme switching lives in the "Settings" screen (Screen 05). The button below previews this mockup's appearance.
+      <button class="preview-btn" id="previewBtn" type="button" aria-label="Toggle preview light / dark">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <span id="previewLabel">Preview: Light</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 01 Devices -->
+  <div class="cap"><span class="n">01</span><h2>Devices</h2><span class="d">Registered devices and status · 3 / 2 / 1 columns by width · offline is grayed out (not operable)</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected · 8 devices</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Devices</h3><div class="sub">Living Room, Bedroom, and more</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Refresh</button></div>
+        <div class="grid-cards">
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">Living Room Light</div><div class="sub">Color Bulb · On</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="Living Room Light"><span class="knob"></span></div></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span><div class="body"><div class="name">Circulator</div><div class="sub">Plug Mini · Off</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="Circulator"><span class="knob"></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18M12 3c3 4 3 14 0 18"/></svg></span><div class="body"><div class="name">Bedroom Curtain</div><div class="sub">Curtain 3 · 80% open</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">Humidifier</div><div class="sub">Humidifier · Off</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="Humidifier"><span class="knob"></span></div></div>
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">Entrance Light</div><div class="sub">Bulb · On</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="Entrance Light"><span class="knob"></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">Entrance Lock</div><div class="sub">Lock Pro · Locked</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+          <div class="device offline" aria-disabled="true"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">Study Light</div><div class="sub">Bulb · Offline</div></div><span class="off-tag">Offline</span></div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 02 Device Control -->
+  <div class="cap"><span class="n">02</span><h2>Device Control</h2><span class="d">Individual device details</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected · 8 devices</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div class="backrow"><span class="iconbtn" role="button" tabindex="0" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></span><div><h3>Living Room Light</h3><div class="sub">Color Bulb · Living Room</div></div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="Power"><span class="knob"></span></div></div>
+        <div class="hero">
+          <span class="hic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
+          <div><div class="nm">On</div><div class="st">Brightness 72% · Warm White 3000K</div></div>
+        </div>
+        <div class="ctrl">
+          <div class="ct"><span>Brightness</span><b>72%</b></div>
+          <div class="slider"><div class="fill" style="width:72%"></div><div class="knob" style="left:72%"></div></div>
+        </div>
+        <div class="ctrl">
+          <div class="ct" style="margin-bottom:14px"><span>Color</span></div>
+          <div class="swrow">
+            <span class="sw on" style="background:#F6D488" aria-label="Warm White"></span>
+            <span class="sw" style="background:#FDF6E3" aria-label="Neutral White"></span>
+            <span class="sw" style="background:#8FB7FF" aria-label="Daylight"></span>
+            <span class="sw" style="background:#F58A8A" aria-label="Red"></span>
+            <span class="sw" style="background:#8CE0B0" aria-label="Green"></span>
+            <span class="sw" style="background:#B79CF0" aria-label="Purple"></span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 03 Sensor Status -->
+  <div class="cap"><span class="n">03</span><h2>Sensor Status</h2><span class="d">Sectioned per sensor · drag to reorder · cards in 3 / 2 / 1 columns by width</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app tall">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Last updated 21:04</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Sensors</h3><div class="sub">Thermo-Hygrometer · CO₂ Sensor</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg>Refresh</button></div>
+        <div class="sensor-list" id="sensorList">
+          <section class="sensor-sec" draggable="true" aria-label="Living Room Thermo-Hygrometer (drag to reorder)">
+            <div class="sh">
+              <span class="grip" role="button" tabindex="0" aria-label="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
+              <div class="shname">Living Room Thermo-Hygrometer</div>
+              <div class="shmeta">Last updated 21:04</div>
+            </div>
+            <div class="grid-cards">
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>Temperature</div>
+                <div class="big">24.5<span class="u">°C</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,19 L20,16 L40,17 L60,10 L80,13 L100,6 L120,8 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,19 20,16 40,17 60,10 80,13 100,6 120,8" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="8" r="2.6" fill="var(--accent)"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>Humidity</div>
+                <div class="big">52<span class="u">%</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,11 L20,13 L40,10 L60,14 L80,12 L100,15 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,11 20,13 40,10 60,14 80,12 100,15 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-2.5"/></svg>CO₂</div>
+                <div class="big">620<span class="u">ppm</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,14 L20,15 L40,12 L60,13 L80,9 L100,11 L120,10 V26 H0 Z" fill="rgba(14,158,118,.13)"/><polyline points="0,14 20,15 40,12 60,13 80,9 100,11 120,10" fill="none" stroke="var(--ok)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>Battery</div>
+                <div class="big">88<span class="u">%</span></div>
+                <div class="bar-meter"><i style="width:88%"></i></div>
+              </div>
+            </div>
+          </section>
+          <section class="sensor-sec" draggable="true" aria-label="Bedroom Thermo-Hygrometer (drag to reorder)">
+            <div class="sh">
+              <span class="grip" role="button" tabindex="0" aria-label="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
+              <div class="shname">Bedroom Thermo-Hygrometer</div>
+              <div class="shmeta">Last updated 21:03</div>
+            </div>
+            <div class="grid-cards">
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V5a2 2 0 1 0-4 0v9.76a4 4 0 1 0 4 0Z"/></svg>Temperature</div>
+                <div class="big">22.1<span class="u">°C</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,16 L20,17 L40,15 L60,16 L80,14 L100,15 L120,13 V26 H0 Z" fill="rgba(99,102,241,.14)"/><polyline points="0,16 20,17 40,15 60,16 80,14 100,15 120,13" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="120" cy="13" r="2.6" fill="var(--accent)"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg>Humidity</div>
+                <div class="big">58<span class="u">%</span></div>
+                <svg class="spark" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0,12 L20,11 L40,13 L60,12 L80,14 L100,12 L120,13 V26 H0 Z" fill="rgba(120,132,151,.13)"/><polyline points="0,12 20,11 40,13 60,12 80,14 100,12 120,13" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat">
+                <div class="lab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 10v4"/></svg>Battery</div>
+                <div class="big">94<span class="u">%</span></div>
+                <div class="bar-meter"><i style="width:94%"></i></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 04 Scenes -->
+  <div class="cap"><span class="n">04</span><h2>Scenes</h2><span class="d">Run with one click · 3 / 2 / 1 columns by width</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected · 4 scenes</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Scenes</h3><div class="sub">Created in the SwitchBot app</div></div></div>
+        <div class="grid-cards">
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div class="body"><div class="nm">Good Night</div><div class="ds">Lights off · curtains closed · humidifier on</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><div class="body"><div class="nm">Arriving Home</div><div class="ds">Entrance & living room lights on · AC on</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span><div class="body"><div class="nm">Good Morning</div><div class="ds">Curtains open · lights fade on</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">Movie Mode</div><div class="ds">Dim lights · curtains closed</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 05 Settings -->
+  <div class="cap"><span class="n">05</span><h2>Settings</h2><span class="d">Theme · credentials · secure storage</span></div>
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app tall">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Settings</h3><div class="sub">Display theme and SwitchBot API authentication</div></div></div>
+
+        <div class="settings-sec">
+          <p class="sec-title">Display</p>
+          <div class="field" style="margin-bottom:0">
+            <span class="flab">Theme</span>
+            <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+              <button type="button" data-mode="system" class="on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>System</button>
+              <button type="button" data-mode="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Light</button>
+              <button type="button" data-mode="dark" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Dark</button>
+            </div>
+            <p class="seg-help">System follows the OS appearance setting.</p>
+          </div>
+        </div>
+
+        <div class="settings-sec" style="margin-bottom:0">
+          <p class="sec-title">SwitchBot API Authentication</p>
+          <div class="banner"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><div class="tt">Connected</div><div class="ss">Last checked 21:04</div></div></div>
+          <div class="field"><span class="flab">Token</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="Show"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div></div>
+          <div class="field"><span class="flab">Secret</span><div class="inp"><span class="val">••••••••••••••••••••••••</span><span class="eye" role="button" tabindex="0" aria-label="Show"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/></svg></span></div><p class="help">Issue it from the SwitchBot app → Profile → Preferences → Developer Options.</p></div>
+          <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>Stored in the OS secure storage (Keychain / Credential Manager / Secret Service).</div>
+          <div style="display:flex; gap:10px">
+            <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Test Connection</button>
+            <button class="btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Disconnect</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 06 Tray Menu -->
+  <div class="cap"><span class="n">06</span><h2>Tray Menu</h2><span class="d">Shows favorites only · scenes in a single column · empty state when none registered</span></div>
+  <div class="tray-stage">
+    <div class="tray-demo">
+      <div class="tray-cap">With favorites</div>
+      <div class="tray">
+        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>Connected</span></div>
+        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">Living Room Light</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="Living Room Light"><span class="knob"></span></div></div>
+        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">Entrance Light</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="Entrance Light"><span class="knob"></span></div></div>
+        <div class="sep"></div>
+        <p class="seclab">Favorite Scenes</p>
+        <div class="sc">
+          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="sn">Good Night</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
+          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><span class="sn">Arriving Home</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
+        </div>
+        <div class="sep"></div>
+        <div class="foot"><a>Open Window</a><a>Settings</a><a>Quit</a></div>
+      </div>
+    </div>
+
+    <div class="tray-demo">
+      <div class="tray-cap">Without favorites</div>
+      <div class="tray">
+        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>Connected</span></div>
+        <div class="empty">
+          <span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.4V4h6v6.4l2.2 3.6H6.8L9 10.4Z"/></svg></span>
+          <div class="et">No favorite devices</div>
+          <div class="eh">Pin devices on the Devices screen to show them here.</div>
+        </div>
+        <div class="sep"></div>
+        <div class="foot"><a>Open Window</a><a>Settings</a><a>Quit</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot-box">
+    <h3>Next Steps</h3>
+    <p>Once these 6 screens settle the direction, we'll implement them as React + Tailwind components (mapping the tokens from <code>MASTER.md</code> straight into the Tailwind theme). If there's anything to adjust per screen (spacing, information density, icons, ordering, etc.), we'll fix it screen by screen.</p>
+  </div>
+</div>
+
+<script>
+  // mockup preview light/dark toggle — stamps data-theme on <html> (the real app's theme is switched from the "Settings" screen)
+  (function () {
+    var root = document.documentElement;
+    var label = document.getElementById('previewLabel');
+    var seg = document.getElementById('themeSeg');
+    function effective() {
+      var attr = root.getAttribute('data-theme');
+      if (attr) return attr;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function syncSeg() {
+      if (!seg) return;
+      var mode = root.getAttribute('data-theme') || 'system';
+      seg.querySelectorAll('button').forEach(function (b) {
+        var on = b.dataset.mode === mode;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    function sync() {
+      if (label) label.textContent = 'Preview: ' + (effective() === 'dark' ? 'Dark' : 'Light');
+      syncSeg();
+    }
+    document.getElementById('previewBtn').addEventListener('click', function () {
+      root.setAttribute('data-theme', effective() === 'dark' ? 'light' : 'dark');
+      sync();
+    });
+    // settings screen theme control (the real app's location for theme)
+    if (seg) {
+      seg.querySelectorAll('button').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var m = b.dataset.mode;
+          if (m === 'system') root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', m);
+          sync();
+        });
+      });
+    }
+    sync();
+  })();
+
+  // toggles (switches)
+  document.querySelectorAll('.tgl').forEach(function (t) {
+    function flip() { var on = t.classList.toggle('on'); t.setAttribute('aria-checked', on ? 'true' : 'false'); }
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  });
+
+  // color swatch demo
+  document.querySelectorAll('.swrow').forEach(function (row) {
+    row.querySelectorAll('.sw').forEach(function (s) {
+      s.addEventListener('click', function () {
+        row.querySelectorAll('.sw').forEach(function (x) { x.classList.remove('on'); });
+        s.classList.add('on');
+      });
+    });
+  });
+
+  // sensor sections — drag to reorder
+  (function () {
+    var list = document.getElementById('sensorList');
+    if (!list) return;
+    var dragEl = null;
+    list.querySelectorAll('.sensor-sec').forEach(function (sec) {
+      sec.addEventListener('dragstart', function (e) { dragEl = sec; sec.classList.add('dragging'); if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; });
+      sec.addEventListener('dragend', function () {
+        sec.classList.remove('dragging');
+        list.querySelectorAll('.sensor-sec').forEach(function (s) { s.classList.remove('dragover'); });
+        dragEl = null;
+      });
+      sec.addEventListener('dragover', function (e) { e.preventDefault(); if (sec !== dragEl) sec.classList.add('dragover'); });
+      sec.addEventListener('dragleave', function () { sec.classList.remove('dragover'); });
+      sec.addEventListener('drop', function (e) {
+        e.preventDefault();
+        sec.classList.remove('dragover');
+        if (dragEl && sec !== dragEl) {
+          var rect = sec.getBoundingClientRect();
+          var after = e.clientY > rect.top + rect.height / 2;
+          list.insertBefore(dragEl, after ? sec.nextSibling : sec);
+        }
+      });
+    });
+  })();
+</script>
