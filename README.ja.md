@@ -44,8 +44,6 @@
   <sub>トレイメニュー（お気に入り）</sub>
 </p>
 
-> 全 6 画面のモックアップは [`docs/mockup/index.en.html`](docs/mockup/index.en.html)（英語）/ [`docs/mockup/index.html`](docs/mockup/index.html)（日本語）をブラウザで開くと確認できます。
-
 ## 技術構成
 
 Tauri v2 + Rust（バックエンド） / React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand（フロントエンド）。
