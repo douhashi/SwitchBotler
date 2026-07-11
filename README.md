@@ -44,8 +44,6 @@
   <sub>Tray menu (favorites)</sub>
 </p>
 
-> You can view mockups of all 6 screens by opening [`docs/mockup/index.en.html`](docs/mockup/index.en.html) (English) / [`docs/mockup/index.html`](docs/mockup/index.html) (Japanese) in your browser.
-
 ## Tech Stack
 
 Tauri v2 + Rust (backend) / React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand (frontend).

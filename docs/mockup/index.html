@@ -220,47 +220,6 @@
   .scene .ds { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .scene .btn { width: 100%; }
 
-  /* tray popover */
-  .tray-stage { display: flex; justify-content: center; align-items: flex-start; gap: 28px; flex-wrap: wrap; padding: 30px; background: var(--page-bg); border-radius: 18px; box-shadow: var(--inset-sm); }
-  .tray-demo { display: flex; flex-direction: column; align-items: center; gap: 11px; }
-  .tray-cap { font-size: 12px; font-weight: 600; color: var(--page-muted); }
-  .tray { width: 306px; background: var(--bg); border-radius: 18px; padding: 14px 14px 7px; box-shadow: 0 1px 2px rgba(20,22,30,.1), 0 24px 48px -20px rgba(20,22,30,.55); }
-  .tray .th { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
-  .tray .th .b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
-  .tray .th .b .mk { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: var(--raise-sm); }
-  .tray .th .b .mk svg { width: 15px; height: 15px; }
-  .tray .th .cn { font-size: 10.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
-  .tray .th .cn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
-  .tray .qrow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; }
-  .tray .qrow:hover { box-shadow: var(--inset-sm); }
-  .tray .qrow .qi { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
-  .tray .qrow.off .qi { color: var(--muted); box-shadow: var(--inset-sm); }
-  .tray .qrow .qi svg { width: 16px; height: 16px; }
-  .tray .qrow .qn { flex: 1; font-size: 13px; font-weight: 550; }
-  .tray .tgl.sm { width: 38px; height: 22px; }
-  .tray .tgl.sm .knob { width: 16px; height: 16px; left: 3px; }
-  .tray .tgl.sm.on .knob { left: 19px; }
-  .tray .sep { height: 1px; background: var(--hair); margin: 8px 6px; }
-  /* section label + お気に入りシーン（縦に 1 列ずつ） */
-  .tray .seclab { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 2px 8px 6px; }
-  .tray .sc { display: flex; flex-direction: column; gap: 3px; padding: 0 0 4px; }
-  .tray .srow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 11px; cursor: pointer; }
-  .tray .srow:hover { box-shadow: var(--inset-sm); }
-  .tray .srow .si { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--accent); box-shadow: var(--raise-sm); flex: none; }
-  .tray .srow .si svg { width: 15px; height: 15px; }
-  .tray .srow .sn { flex: 1; font-size: 13px; font-weight: 550; }
-  .tray .srow .go { color: var(--muted); display: grid; place-items: center; flex: none; }
-  .tray .srow .go svg { width: 15px; height: 15px; }
-  /* お気に入りデバイスが無いときの空表示 */
-  .tray .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px; padding: 20px 14px 22px; }
-  .tray .empty .ei { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); box-shadow: var(--inset-sm); }
-  .tray .empty .ei svg { width: 19px; height: 19px; }
-  .tray .empty .et { font-size: 12.5px; font-weight: 600; color: var(--ink); }
-  .tray .empty .eh { font-size: 11px; color: var(--muted); max-width: 22ch; line-height: 1.5; }
-  .tray .foot { display: flex; gap: 8px; padding: 4px; }
-  .tray .foot a { flex: 1; text-align: center; font-size: 11.5px; color: var(--muted); padding: 8px; border-radius: 9px; cursor: pointer; text-decoration: none; }
-  .tray .foot a:hover { box-shadow: var(--inset-sm); color: var(--ink); }
-
   .themehint { font-size: 12.5px; color: var(--page-muted); margin-top: 16px; display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px 9px 14px; border-radius: 12px; box-shadow: var(--inset-sm); flex-wrap: wrap; }
   .themehint svg.tip { width: 15px; height: 15px; color: var(--accent); flex: none; }
   .preview-btn { display: inline-flex; align-items: center; gap: 7px; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--page-ink); background: var(--surface); border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer; box-shadow: var(--raise-sm); }
@@ -284,8 +243,8 @@
 <div class="wrap">
   <header>
     <p class="eyebrow">SwitchBotler · Mockups</p>
-    <h1>Soft Depth で組んだ 6 画面</h1>
-    <p class="lede">確定した Soft Depth のデザインシステム（<code>design-system/MASTER.md</code>）で、主要 6 画面を組みました。トグル・チップは押して手触りを確認できます。</p>
+    <h1>Soft Depth で組んだ 5 画面</h1>
+    <p class="lede">確定した Soft Depth のデザインシステム（<code>design-system/MASTER.md</code>）で、主要 5 画面を組みました。トグル・チップは押して手触りを確認できます。</p>
     <div class="themehint">
       <svg class="tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c-5 0-9-4-9-9Z"/></svg>
       アプリ本体ではテーマ切替は「設定」画面（画面 05）にあります。下のボタンはこのモックアップの表示プレビュー用です。
@@ -528,44 +487,9 @@
     </div>
   </div></div>
 
-  <!-- 06 トレイメニュー -->
-  <div class="cap"><span class="n">06</span><h2>トレイメニュー</h2><span class="d">お気に入りのみ表示 · シーンは縦 1 列 · 未登録時は空表示</span></div>
-  <div class="tray-stage">
-    <div class="tray-demo">
-      <div class="tray-cap">お気に入りがあるとき</div>
-      <div class="tray">
-        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
-        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">リビングの照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></div>
-        <div class="qrow"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/></svg></span><span class="qn">玄関の照明</span><div class="tgl sm on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></div>
-        <div class="sep"></div>
-        <p class="seclab">お気に入りシーン</p>
-        <div class="sc">
-          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="sn">おやすみ</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
-          <div class="srow"><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span><span class="sn">帰宅</span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg></span></div>
-        </div>
-        <div class="sep"></div>
-        <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
-      </div>
-    </div>
-
-    <div class="tray-demo">
-      <div class="tray-cap">お気に入りが無いとき</div>
-      <div class="tray">
-        <div class="th"><span class="b"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></span><span class="cn"><span class="dot"></span>接続済み</span></div>
-        <div class="empty">
-          <span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.4V4h6v6.4l2.2 3.6H6.8L9 10.4Z"/></svg></span>
-          <div class="et">お気に入りデバイスがありません</div>
-          <div class="eh">デバイス画面でピン留めすると、ここに表示されます。</div>
-        </div>
-        <div class="sep"></div>
-        <div class="foot"><a>ウィンドウを開く</a><a>設定</a><a>終了</a></div>
-      </div>
-    </div>
-  </div>
-
   <div class="foot-box">
     <h3>この後の進め方</h3>
-    <p>この 6 画面で方向性が固まれば、React + Tailwind のコンポーネントとして実装に落とします（トークンは <code>MASTER.md</code> をそのまま Tailwind theme に展開）。各画面で調整したい点（余白・情報量・アイコン・並び順など）があれば、画面単位で直します。</p>
+    <p>この 5 画面で方向性が固まれば、React + Tailwind のコンポーネントとして実装に落とします（トークンは <code>MASTER.md</code> をそのまま Tailwind theme に展開）。各画面で調整したい点（余白・情報量・アイコン・並び順など）があれば、画面単位で直します。</p>
   </div>
 </div>
 
