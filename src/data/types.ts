@@ -113,15 +113,24 @@ export type SensorReadings = {
 
 export type ConnectionStatus = "connected" | "disconnected" | "testing";
 
+/**
+ * 接続状態の view-model。
+ *
+ * 秘匿値（Token / Secret / 署名）は一切持たない。保存済みかどうかは真偽フラグ
+ * `saved` のみで表し、UI は保存済みなら固定マスク + バッジで表示する。
+ */
 export type ConnectionState = {
   status: ConnectionStatus;
   /** 最終確認時刻の表示文字列。未確認なら null。 */
   lastCheckedAt: string | null;
-  /** レート残と上限。 */
-  rateRemaining: number;
+  /** keyring に Token / Secret が保存されているか。 */
+  saved: boolean;
+  /**
+   * 1 日あたりのリクエスト上限（静的補足表示用）。
+   * 公式 v1.1 に「残数」フィールドは存在しないため残数は扱わない。
+   */
   rateLimit: number;
-  /** マスク済み Token 表示値（平文は保持しない）。 */
-  tokenMasked: string;
-  /** マスク済み Secret 表示値（平文は保持しない）。 */
-  secretMasked: string;
 };
+
+/** SwitchBot API v1.1 の 1 日あたりリクエスト上限（静的表示用）。 */
+export const RATE_LIMIT = 10000;

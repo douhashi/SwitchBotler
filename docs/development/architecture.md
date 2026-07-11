@@ -45,6 +45,36 @@
 
 フロントエンドは Tauri IPC（`invoke`）経由で Rust 側のコマンドを呼び出すのみとし、認証情報・署名・生の API 通信には一切触れない。詳細な API 仕様は [`switchbot-api.md`](./switchbot-api.md)、秘匿情報の取り扱いは [`security.md`](./security.md) を参照。
 
+## M1: 認証フロー（署名・セキュアストレージ・接続テスト）
+
+認証まわりは Rust 側 `src-tauri/src/switchbot/` に集約する。
+
+- **`signature.rs`**: `HMAC-SHA256(token + t + nonce, secret)` → Base64 → 大文字化の純関数。`t`（13 桁ミリ秒）・`nonce`（UUID v4）は呼び出し側で生成する。
+- **`client.rs`**: reqwest `Client`（`rustls-tls`）を再利用し、リクエストごとに `t`/`nonce`/署名ヘッダを付与。接続判定は **HTTP 200 かつ封筒 `statusCode === 100`**。401 は `Unauthorized`、`statusCode != 100` は `ApiStatus`。
+- **`credentials.rs`**: OS keyring（macOS Keychain / Windows Credential Manager / Linux は pure-Rust zbus secret-service）に save/load/delete。
+- **`error.rs`**: 秘匿値・署名を含まない安全なエラー型（`{ code, message }`）。
+
+### コマンドと画面フロー
+
+| コマンド | 役割 |
+|---|---|
+| `save_credentials(token, secret)` | keyring に保存（疎通確認なし） |
+| `test_connection()` | 保存済み認証情報で `GET /v1.1/devices` を叩き疎通確認 |
+| `disconnect()` | keyring エントリを削除 |
+| `get_connection_state()` | 保存済みか否か（`{ saved }`）を返す。秘匿値を含まない |
+
+設定画面は「保存して接続」→ 保存成功後に自動で `test_connection`、および「接続をテスト」「接続を解除」を実コマンドへ結線する。保存済みの Token / Secret は**固定ドット + 「保存済み」バッジ**で表示し、秘匿値（末尾等を含む）は WebView に一切返さない。
+
+> レート「残数」表示は扱わない。公式 v1.1 に残数フィールド・rate-limit ヘッダは存在しないため、上限（10,000 / 日）の静的補足表示のみとする。
+
+### 接続を DataSource から分離
+
+接続（認証）は device/scene/sensor を扱う `SwitchBotlerDataSource` から切り離し、専用の **`ConnectionGateway`**（`src/data/connection.ts`）に分ける。実体は Tauri IPC 実装 `tauri-connection.ts`。`src/data/index.ts` が `connectionGateway` を単一の差し替え点として公開する。#9 は device/scene/sensor のみを Tauri 実装へ差し替える。
+
+### env フォールバックは release で無効化
+
+`credentials::load` は **keyring 優先**で、取得不可のときのみ **debug ビルドに限り** 環境変数（Infisical 注入の `SWITCHBOT_TOKEN` / `SWITCHBOT_SECRET`）へフォールバックする。この経路は `#[cfg(debug_assertions)]` でガードし、`release` ではコンパイル時に除去する（本番で env を拾う事故を防ぐ）。「保存済み」の判定（`has_credentials`）は keyring のみを見る。
+
 ## フロントエンド構成
 
 ### ディレクトリ構成

@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { ArrowRight, ShieldCheck, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Save, ShieldCheck, TriangleAlert, X } from "lucide-react";
 
 import { ConnectionBanner } from "@/components/connection/connection-banner";
 import { SecretField } from "@/components/connection/secret-field";
@@ -20,15 +20,29 @@ import { useConnectionStore } from "@/stores/connection-store";
 
 export function SettingsView() {
   const connection = useConnectionStore((s) => s.connection);
+  const error = useConnectionStore((s) => s.error);
   const load = useConnectionStore((s) => s.load);
+  const saveCredentials = useConnectionStore((s) => s.saveCredentials);
   const testConnection = useConnectionStore((s) => s.testConnection);
   const disconnect = useConnectionStore((s) => s.disconnect);
+
+  // 平文の Token / Secret はこの view のローカル state にのみ一時保持し、保存後にクリアする。
+  const [token, setToken] = useState("");
+  const [secret, setSecret] = useState("");
 
   useEffect(() => {
     load();
   }, [load]);
 
   const testing = connection.status === "testing";
+  const canSave = token.length > 0 && secret.length > 0 && !testing;
+
+  const handleSave = async () => {
+    await saveCredentials(token, secret);
+    // 保存に成功したら平文を破棄する（失敗時も残さない）。
+    setToken("");
+    setSecret("");
+  };
 
   return (
     <div>
@@ -36,11 +50,26 @@ export function SettingsView() {
 
       <ConnectionBanner connection={connection} />
 
-      <SecretField id="token" label="トークン" value={connection.tokenMasked} />
+      {error && (
+        <div className="mb-5 flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-xs text-destructive shadow-inset-sm">
+          <TriangleAlert size={15} strokeWidth={1.9} className="shrink-0" />
+          {error}
+        </div>
+      )}
+
+      <SecretField
+        id="token"
+        label="トークン"
+        value={token}
+        onChange={setToken}
+        saved={connection.saved}
+      />
       <SecretField
         id="secret"
         label="シークレット"
-        value={connection.secretMasked}
+        value={secret}
+        onChange={setSecret}
+        saved={connection.saved}
         help="SwitchBot アプリ → プロフィール → 設定 → 開発者向けオプション で発行できます。"
       />
 
@@ -49,15 +78,20 @@ export function SettingsView() {
         OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。
       </div>
 
-      <div className="flex gap-2.5">
-        <Button onClick={testConnection} disabled={testing}>
+      <div className="flex flex-wrap gap-2.5">
+        <Button onClick={handleSave} disabled={!canSave}>
+          <Save strokeWidth={2} />
+          保存して接続
+        </Button>
+
+        <Button variant="secondary" onClick={testConnection} disabled={testing || !connection.saved}>
           <ArrowRight strokeWidth={2} />
           {testing ? "確認中…" : "接続をテスト"}
         </Button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive">
+            <Button variant="destructive" disabled={!connection.saved}>
               <X strokeWidth={2} />
               接続を解除
             </Button>

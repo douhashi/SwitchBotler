@@ -1,12 +1,6 @@
 import type { SwitchBotlerDataSource } from "@/data/source";
-import type {
-  ConnectionState,
-  Device,
-  DeviceControls,
-  Scene,
-  SensorReadings,
-} from "@/data/types";
-import { CONNECTION, DEVICES, SCENES, SENSORS } from "./fixtures";
+import type { Device, DeviceControls, Scene, SensorReadings } from "@/data/types";
+import { DEVICES, SCENES, SENSORS } from "./fixtures";
 
 /** 擬似ネットワークレイテンシ（ms）。 */
 const LATENCY = 240;
@@ -28,7 +22,6 @@ class MockDataSource implements SwitchBotlerDataSource {
   private devices: Device[] = clone(DEVICES);
   private scenes: Scene[] = clone(SCENES);
   private sensors: SensorReadings = clone(SENSORS);
-  private connection: ConnectionState = clone(CONNECTION);
 
   private find(id: string): Device {
     const device = this.devices.find((d) => d.id === id);
@@ -70,28 +63,6 @@ class MockDataSource implements SwitchBotlerDataSource {
 
   getSensors(): Promise<SensorReadings> {
     return delay(clone(this.sensors));
-  }
-
-  getConnection(): Promise<ConnectionState> {
-    return delay(clone(this.connection));
-  }
-
-  testConnection(): Promise<ConnectionState> {
-    this.connection = {
-      ...this.connection,
-      status: "connected",
-      lastCheckedAt: "21:04",
-    };
-    return delay(clone(this.connection));
-  }
-
-  disconnect(): Promise<ConnectionState> {
-    this.connection = {
-      ...this.connection,
-      status: "disconnected",
-      lastCheckedAt: null,
-    };
-    return delay(clone(this.connection));
   }
 }
 
