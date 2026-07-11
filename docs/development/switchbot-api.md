@@ -109,6 +109,39 @@ SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**この
   アプリは preset id を送り、Rust `mapping.rs` が `"R:G:B"` へ変換する。
 - Curtain `setPosition`("0-100")、Smart Lock `lock`/`unlock`("default") は README 準拠（未検証）。
 
+### Bot（動作モードに応じた操作）
+
+Bot は物理ボタンを押すデバイスで、SwitchBot アプリ側の設定により **動作モード（`deviceMode`）**
+が変わる。status body は `power`("on"/"off") / `battery` / `deviceMode` を返す。
+
+| deviceMode（status 値） | 正規化（`botMode`） | UI | 送信コマンド |
+|---|---|---|---|
+| `pressMode` | `press` | 「押す」ボタン（momentary） | `press` |
+| `switchMode` | `switch` | ON/OFF トグル | `turnOn` / `turnOff` |
+| `customizeMode` | `customize` | ON/OFF トグル（**公式準拠・ハードウェア未検証**） | `turnOn` / `turnOff` |
+| 欠損 / 未知値 | （なし・None） | ON/OFF トグル（フォールバック） | `turnOn` / `turnOff` |
+
+- コマンドはいずれも `parameter: "default"` / `commandType: "command"`。
+
+| command | parameter | commandType |
+|---|---|---|
+| `turnOn` / `turnOff` | `default` | `command` |
+| `press` | `default` | `command` |
+
+- `deviceMode` の正規化（`pressMode`→`press` 等）は Rust `mapping.rs`（`bot_mode`）が所有し、
+  `ControlsDto.botMode`（camelCase シリアライズ）でフロントに渡す。未知値・欠損は `None` にして
+  フロントは従来のトグル扱いにフォールバックする（PO 論点4）。
+- `press` は既存の汎用 `send_command` 経路（`{command:"press", parameter:"default", commandType:"command"}`）で送る。
+  press 専用の IPC は設けない。
+- **customizeMode**: 既存 ON/OFF トグル（turnOn/turnOff）を流用する。`botMode="customize"` として
+  3 値正規化で保持（"customize" を捨てない）するが、実機での動作は未検証（公式 README 準拠）。
+  customize 専用コマンド経路は作らない（YAGNI・実機検証不能のため。PO 論点1）。
+- 実疎通は `src-tauri/src/switchbot/mod.rs` の #[ignore] テスト `send_bot_press_succeeds` で
+  `infisical run --env=dev -- cargo test -- --ignored` により確認できる（一覧から `category=="bot"` を
+  取得し `botMode` を出力、pressMode の Bot に `press` を 1 回送って `statusCode 100` を確認）。
+  **press は実機を物理的に 1 回動作させる副作用がある**（不可逆・原状復帰しない）。本サンドボックスでは
+  Infisical 非対話ログイン不可のため未実行（QA/実行者が実施）。
+
 ### 赤外線（仮想）デバイス — エアコン（Air Conditioner）
 
 赤外線リモコンは `body.infraredRemoteList[]` に載り、**status エンドポイントを持たない**

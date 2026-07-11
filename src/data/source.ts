@@ -34,6 +34,11 @@ export interface SwitchBotlerDataSource {
    * Light は状態も絶対的な明るさも持たないため、action（on/off/brighter/dimmer）のみ渡す。
    */
   sendIrLight(id: string, action: IrLightAction): Promise<void>;
+  /**
+   * Bot を 1 回押す（pressMode）。press は ON/OFF 状態を持たない momentary 操作で、
+   * 汎用 send_command（press/default/command）で送る。
+   */
+  pressBot(id: string): Promise<void>;
   getScenes(): Promise<Scene[]>;
   executeScene(id: string): Promise<void>;
   /** すべての Meter 系センサーをセンサーごとに返す。 */

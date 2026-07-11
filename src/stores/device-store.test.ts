@@ -185,3 +185,79 @@ describe("device-store ir_light", () => {
     );
   });
 });
+
+/** switchMode の Bot（deviceMode 由来。ON/OFF トグルで操作）。 */
+const switchBot: Device = {
+  id: "b-switch",
+  name: "スイッチ Bot",
+  model: "Bot",
+  category: "bot",
+  supported: true,
+  controls: { power: false, botMode: "switch" },
+};
+
+/** pressMode の Bot（deviceMode 由来。「押す」momentary 操作）。 */
+const pressBot: Device = {
+  id: "b-press",
+  name: "プッシュ Bot",
+  model: "Bot",
+  category: "bot",
+  supported: true,
+  controls: { power: false, botMode: "press" },
+};
+
+describe("device-store bot", () => {
+  beforeEach(() => {
+    invoke.mockReset();
+    prefs.clear();
+    useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
+  });
+
+  it("switchMode の Bot は toggle で turnOn/turnOff を送り楽観更新する", async () => {
+    useDeviceStore.setState({ devices: [switchBot], loaded: true });
+    invoke.mockResolvedValue(null);
+
+    await useDeviceStore.getState().toggle("b-switch");
+
+    expect(invoke).toHaveBeenCalledWith("send_command", {
+      id: "b-switch",
+      command: "turnOn",
+      parameter: "default",
+      commandType: "command",
+    });
+    expect(
+      useDeviceStore.getState().devices.find((d) => d.id === "b-switch")?.controls.power,
+    ).toBe(true);
+  });
+
+  it("pressMode の Bot は press で send_command(press/default) を送り状態を変えない", async () => {
+    useDeviceStore.setState({ devices: [pressBot], loaded: true });
+    invoke.mockResolvedValue(null);
+
+    await useDeviceStore.getState().press("b-press");
+
+    expect(invoke).toHaveBeenCalledWith("send_command", {
+      id: "b-press",
+      command: "press",
+      parameter: "default",
+      commandType: "command",
+    });
+    // press は momentary 操作。楽観更新せず power は変わらない。
+    expect(
+      useDeviceStore.getState().devices.find((d) => d.id === "b-press")?.controls.power,
+    ).toBe(false);
+  });
+
+  it("press の送信失敗時はエラーを保持しトースト通知する", async () => {
+    useDeviceStore.setState({ devices: [pressBot], loaded: true });
+    useNoticeStore.setState({ notices: [] });
+    invoke.mockRejectedValue({ code: "rateLimited", message: "リクエストが多すぎます。" });
+
+    await useDeviceStore.getState().press("b-press");
+
+    expect(useDeviceStore.getState().error).toBe("リクエストが多すぎます。");
+    expect(useNoticeStore.getState().notices.map((n) => n.message)).toContain(
+      "リクエストが多すぎます。",
+    );
+  });
+});

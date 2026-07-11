@@ -160,6 +160,45 @@ mod integration_tests {
     }
 
     #[tokio::test]
+    #[ignore = "実 Bot を物理的に 1 回動作させる副作用あり。press は不可逆。--ignored 指定時のみ実行"]
+    async fn send_bot_press_succeeds() {
+        // 実在の Bot（category=="bot"）を一覧から取得し、controls（botMode）を出力してから、
+        // pressMode の Bot に汎用 send_command で press を 1 回送る（V1/V2）。
+        // 【副作用】press は実機を物理的に 1 回動作させる（不可逆・原状復帰しない）。
+        // switchMode / customizeMode の Bot は press で意図せぬ物理動作を招くため送信しない。
+        // 秘匿値・deviceId・deviceName は一切出力しない。
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client.list_devices(&creds).await.expect("一覧取得");
+        let bots: Vec<_> = devices.iter().filter(|d| d.category == "bot").collect();
+        assert!(
+            !bots.is_empty(),
+            "Bot が存在すること（V1: deviceType Bot が bot にマップ）"
+        );
+        // controls（botMode 正規化結果）のみ出力。deviceId・名称は伏せる（V1）。
+        for bot in &bots {
+            println!("bot controls = {:?}", bot.controls);
+        }
+        let press_bot = bots
+            .iter()
+            .find(|d| d.controls.bot_mode.as_deref() == Some("press"));
+        match press_bot {
+            Some(bot) => {
+                // press は press/default/command の汎用 send_command 経路で送る（V1）。
+                client
+                    .send_command(&creds, &bot.id, "press", "default", "command")
+                    .await
+                    .expect("press が statusCode 100 で受理されること（V2）");
+                println!("send_bot_press ok (実機を 1 回動作させた)");
+            }
+            None => {
+                // pressMode の Bot が無い場合は物理動作を伴う press を送らない。
+                println!("pressMode の Bot が無いため press 送信をスキップ");
+            }
+        }
+    }
+
+    #[tokio::test]
     #[ignore = "実 API に副作用（コマンド送信）。安全な冪等操作のみ。--ignored 指定時のみ実行"]
     async fn send_command_idempotent_succeeds() {
         // 実在の Plug に現在の電源状態と同じコマンドを送る（状態を変えない冪等操作）。

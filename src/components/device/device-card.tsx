@@ -1,5 +1,6 @@
-import { ChevronRight, Pin } from "lucide-react";
+import { ChevronRight, Hand, Pin } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { type Device, deviceInteraction, deviceStatusLabel } from "@/data";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { DeviceIcon } from "./device-icon";
 /** デバイス 1 台のカード（mockup .device）。toggle 型は Switch、detail 型は chevron。 */
 export function DeviceCard({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
+  const press = useDeviceStore((s) => s.press);
   const navigate = useNavigationStore((s) => s.navigate);
   const favorite = useFavoritesStore((s) => s.deviceIds.has(device.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleDeviceFavorite);
@@ -78,6 +80,19 @@ export function DeviceCard({ device }: { device: Device }) {
           onCheckedChange={() => toggle(device.id)}
           aria-label={device.name}
         />
+      )}
+      {interaction === "press" && (
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-label={`${device.name} を押す`}
+          onClick={() => press(device.id)}
+          className="text-foreground"
+        >
+          <Hand size={15} strokeWidth={2} />
+          押す
+        </Button>
       )}
     </div>
   );

@@ -90,6 +90,11 @@ export const tauriDataSource: SwitchBotlerDataSource = {
     }
   },
 
+  async pressBot(id: string) {
+    // press は汎用 send_command 経路（press/default/command）で送る。
+    await sendCommand(id, "press", "default");
+  },
+
   async getScenes() {
     try {
       return await invoke<Scene[]>("list_scenes");
