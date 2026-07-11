@@ -31,6 +31,10 @@ pub struct ControlsDto {
     /// 風量（"auto"/"low"/"medium"/"high"。エアコンのみ）。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fan_speed: Option<String>,
+    /// Bot の動作モード（"press"/"switch"/"customize"。Bot のみ）。
+    /// status の `deviceMode` を正規化したもの。未知値・欠損は None。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bot_mode: Option<String>,
 }
 
 /// エアコンのデフォルト初期値（赤外線は status を返さないため送信前の初期表示に使う）。
@@ -49,6 +53,7 @@ impl ControlsDto {
             temperature: None,
             mode: None,
             fan_speed: None,
+            bot_mode: None,
         }
     }
 
@@ -62,6 +67,7 @@ impl ControlsDto {
             temperature: Some(AIRCON_DEFAULT_TEMP),
             mode: Some(AIRCON_DEFAULT_MODE.to_string()),
             fan_speed: Some(AIRCON_DEFAULT_FAN.to_string()),
+            bot_mode: None,
         }
     }
 }
@@ -302,6 +308,7 @@ fn controls_from_status(category: &str, device_type: &str, body: &Value) -> Cont
             temperature: None,
             mode: None,
             fan_speed: None,
+            bot_mode: None,
         },
         "curtain" => {
             let position = u8_field(body, "slidePosition");
@@ -314,14 +321,38 @@ fn controls_from_status(category: &str, device_type: &str, body: &Value) -> Cont
                 temperature: None,
                 mode: None,
                 fan_speed: None,
+                bot_mode: None,
             }
         }
         "lock" => ControlsDto::power_only(matches!(
             body.get("lockState").and_then(Value::as_str),
             Some("locked") | Some("lock") | Some("latchBoltLocked")
         )),
-        // plug / bot / humidifier など power のみ。
+        "bot" => ControlsDto {
+            power: power_on(body),
+            brightness: None,
+            color_id: None,
+            position: None,
+            temperature: None,
+            mode: None,
+            fan_speed: None,
+            // deviceMode（pressMode/switchMode/customizeMode）を UI 契約値に正規化する。
+            // 未知値・欠損は None（フロントは従来のトグル扱いへフォールバック）。
+            bot_mode: bot_mode(body),
+        },
+        // plug / humidifier など power のみ。
         _ => ControlsDto::power_only(power_on(body)),
+    }
+}
+
+/// Bot status の `deviceMode` を UI 契約値に正規化する。
+/// 公式 README: `pressMode` / `switchMode` / `customizeMode`。未知値・欠損は None。
+fn bot_mode(body: &Value) -> Option<String> {
+    match body.get("deviceMode").and_then(Value::as_str) {
+        Some("pressMode") => Some("press".to_string()),
+        Some("switchMode") => Some("switch".to_string()),
+        Some("customizeMode") => Some("customize".to_string()),
+        _ => None,
     }
 }
 
@@ -947,15 +978,64 @@ mod tests {
             temperature: None,
             mode: None,
             fan_speed: None,
+            bot_mode: None,
         };
         let json = serde_json::to_value(&dto).unwrap();
         assert_eq!(json["power"], true);
         assert_eq!(json["brightness"], 50);
         assert_eq!(json["colorId"], "warm");
-        // None は省略される（position/temperature/mode/fanSpeed キーが無い）。
+        // None は省略される（position/temperature/mode/fanSpeed/botMode キーが無い）。
         assert!(json.get("position").is_none());
         assert!(json.get("temperature").is_none());
         assert!(json.get("mode").is_none());
+        assert!(json.get("fanSpeed").is_none());
+        assert!(json.get("botMode").is_none());
+    }
+
+    #[test]
+    fn bot_press_mode_normalizes_to_press() {
+        // V1 公式仕様: Bot status は power / battery / deviceMode を返す。
+        let status = json!({ "power": "on", "battery": 90, "deviceMode": "pressMode" });
+        let controls = controls_from_status("bot", "Bot", &status);
+        assert!(controls.power);
+        assert_eq!(controls.bot_mode.as_deref(), Some("press"));
+    }
+
+    #[test]
+    fn bot_switch_mode_normalizes_to_switch() {
+        let status = json!({ "power": "off", "battery": 90, "deviceMode": "switchMode" });
+        let controls = controls_from_status("bot", "Bot", &status);
+        assert!(!controls.power);
+        assert_eq!(controls.bot_mode.as_deref(), Some("switch"));
+    }
+
+    #[test]
+    fn bot_customize_mode_is_preserved_not_dropped() {
+        // PO 論点1: customizeMode は 3 値正規化で保持する（"customize" を捨てない）。
+        let status = json!({ "power": "on", "battery": 90, "deviceMode": "customizeMode" });
+        let controls = controls_from_status("bot", "Bot", &status);
+        assert_eq!(controls.bot_mode.as_deref(), Some("customize"));
+    }
+
+    #[test]
+    fn bot_missing_or_unknown_device_mode_is_none() {
+        // PO 論点4: deviceMode 欠損/未知値は None（フロントは従来トグル扱いへフォールバック）。
+        let missing = json!({ "power": "on", "battery": 90 });
+        assert_eq!(controls_from_status("bot", "Bot", &missing).bot_mode, None);
+        let unknown = json!({ "power": "on", "deviceMode": "unknownMode" });
+        assert_eq!(controls_from_status("bot", "Bot", &unknown).bot_mode, None);
+    }
+
+    #[test]
+    fn serializes_bot_mode_as_camel_case() {
+        // V5: Rust の bot_mode が camelCase "botMode" でシリアライズされること。
+        let status = json!({ "power": "on", "deviceMode": "pressMode" });
+        let controls = controls_from_status("bot", "Bot", &status);
+        let json = serde_json::to_value(&controls).unwrap();
+        assert_eq!(json["botMode"], "press");
+        // Bot は power / botMode のみ（ライト・エアコン系フィールドは省略）。
+        assert!(json.get("brightness").is_none());
+        assert!(json.get("temperature").is_none());
         assert!(json.get("fanSpeed").is_none());
     }
 

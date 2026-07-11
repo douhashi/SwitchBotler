@@ -27,6 +27,14 @@ export type DeviceCategory =
  */
 export type IrLightAction = "on" | "off" | "brighter" | "dimmer";
 
+/**
+ * Bot の動作モード（status の deviceMode 由来）。
+ * - press: 押すボタン（1 回押して離す momentary 操作）
+ * - switch: ON/OFF トグル（turnOn/turnOff）
+ * - customize: ユーザ定義。既存 ON/OFF トグルを流用（公式準拠・ハードウェア未検証）
+ */
+export type BotMode = "press" | "switch" | "customize";
+
 /** エアコンの運転モード（意味論。数値エンコードは Rust が所有・決定1）。 */
 export type AirconMode = "auto" | "cool" | "dry" | "fan" | "heat";
 /** エアコンの風量（意味論。数値エンコードは Rust が所有・決定1）。 */
@@ -52,6 +60,8 @@ export type DeviceControls = {
   mode?: AirconMode;
   /** 風量（エアコンのみ）。 */
   fanSpeed?: AirconFanSpeed;
+  /** Bot の動作モード（Bot のみ。status の deviceMode 由来）。 */
+  botMode?: BotMode;
 };
 
 /**
@@ -96,19 +106,25 @@ export type Device = {
 /**
  * カード上の主操作。
  * - toggle: Switch を直接表示
+ * - press: 「押す」ボタンを表示（Bot の pressMode。momentary 操作）
  * - detail: 詳細画面へ遷移
  * - none: 未対応（操作なし・読み取り表示）
  */
-export type DeviceInteraction = "toggle" | "detail" | "none";
+export type DeviceInteraction = "toggle" | "press" | "detail" | "none";
 
 /**
  * デバイスの主操作を導出する。
  * 未対応種別は操作なし。明るさ・開度などの追加制御を持つデバイスと鍵は詳細画面へ、
- * 電源のみのデバイスはカード上の Switch で操作する。
+ * pressMode の Bot は「押す」ボタン、それ以外の電源のみのデバイスはカード上の Switch で操作する。
  */
 export function deviceInteraction(device: Device): DeviceInteraction {
   if (!device.supported) return "none";
-  const { brightness, position } = device.controls;
+  const { brightness, position, botMode } = device.controls;
+  // pressMode の Bot は状態を持たない momentary 操作なので「押す」ボタン。
+  // switch/customize/未定義の Bot は従来どおり電源トグル。
+  if (device.category === "bot" && botMode === "press") {
+    return "press";
+  }
   if (
     device.category === "lock" ||
     device.category === "aircon" ||
@@ -160,8 +176,12 @@ export function airconFanLabel(fan: AirconFanSpeed): string {
 /** カード・ヘッダのサブに出す状態ラベルを導出する。 */
 export function deviceStatusLabel(device: Device): string {
   if (!device.supported) return "未対応";
-  const { power, position, temperature, mode } = device.controls;
+  const { power, position, temperature, mode, botMode } = device.controls;
   switch (device.category) {
+    case "bot":
+      // pressMode は ON/OFF 状態を持たないため中立ラベル。switch/customize は従来の「オン/オフ」。
+      if (botMode === "press") return "押して操作";
+      return power ? "オン" : "オフ";
     case "lock":
       return power ? "施錠" : "解錠";
     case "curtain":
@@ -185,15 +205,16 @@ export function deviceStatusLabel(device: Device): string {
 /**
  * 電源トグル（turnOn/turnOff・鍵は lock/unlock）で操作できるカテゴリか。
  * カーテンは開度操作（setPosition）のみ、エアコンは詳細内で電源を含む全状態を
- * setAll 送信、赤外線ライトは詳細内で電源・明暗を個別 action 送信するため、
- * いずれもカード/ヘッダの電源トグルを持たない。
+ * setAll 送信、赤外線ライトは詳細内で電源・明暗を個別 action 送信、pressMode の Bot は
+ * ON/OFF 状態を持たず「押す」momentary 操作のため、いずれもカード/ヘッダの電源トグルを持たない。
  */
 export function hasPowerToggle(device: Device): boolean {
   return (
     device.supported &&
     device.category !== "curtain" &&
     device.category !== "aircon" &&
-    device.category !== "ir_light"
+    device.category !== "ir_light" &&
+    !(device.category === "bot" && device.controls.botMode === "press")
   );
 }
 

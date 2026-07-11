@@ -36,6 +36,12 @@ type DeviceState = {
    * 明暗（brighter/dimmer）は状態を持たず送信のみ（失敗時トースト）。
    */
   operateIrLight: (id: string, action: IrLightAction) => Promise<void>;
+  /**
+   * Bot を 1 回押す（pressMode）。press は状態を持たない momentary 操作のため、
+   * 楽観更新はせず送信のみ行い、失敗時のみ error セット + トースト通知する
+   * （ir_light の brighter/dimmer と同型）。
+   */
+  press: (id: string) => Promise<void>;
 };
 
 /** 該当デバイスの controls を差し替えた配列を返す。 */
@@ -200,6 +206,19 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     set({ error: null });
     try {
       await dataSource.sendIrLight(id, action);
+    } catch (error) {
+      const message = messageOf(error);
+      set({ error: message });
+      notify(message);
+    }
+  },
+  press: async (id) => {
+    const device = get().devices.find((d) => d.id === id);
+    if (!device) return;
+    // press は状態を持たない momentary 操作。楽観更新なし、送信のみ（失敗時トースト）。
+    set({ error: null });
+    try {
+      await dataSource.pressBot(id);
     } catch (error) {
       const message = messageOf(error);
       set({ error: message });

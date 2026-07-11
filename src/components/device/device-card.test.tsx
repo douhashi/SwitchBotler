@@ -49,6 +49,24 @@ const irLight: Device = {
   controls: { power: true },
 };
 
+const switchBot: Device = {
+  id: "coffee-bot",
+  name: "コーヒーメーカーの Bot",
+  model: "Bot",
+  category: "bot",
+  supported: true,
+  controls: { power: false, botMode: "switch" },
+};
+
+const pressBot: Device = {
+  id: "curtain-bot",
+  name: "カーテンの Bot",
+  model: "Bot",
+  category: "bot",
+  supported: true,
+  controls: { power: false, botMode: "press" },
+};
+
 describe("DeviceCard", () => {
   beforeEach(() => {
     invoke.mockReset();
@@ -124,6 +142,42 @@ describe("DeviceCard", () => {
     // chevron で詳細へ遷移する。
     await userEvent.click(screen.getByRole("button", { name: "リビングの間接照明 の詳細" }));
     expect(useNavigationStore.getState().selectedDeviceId).toBe("living-light");
+  });
+
+  it("switchMode の Bot カードは電源トグル（Switch）を出し「押す」ボタンは出さない", async () => {
+    useDeviceStore.setState({ devices: [switchBot] });
+    render(<DeviceCard device={switchBot} />);
+
+    // switchMode は従来どおり ON/OFF トグル。
+    expect(
+      screen.getByRole("switch", { name: "コーヒーメーカーの Bot" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /を押す$/ })).toBeNull();
+
+    await userEvent.click(screen.getByRole("switch", { name: "コーヒーメーカーの Bot" }));
+    expect(invoke).toHaveBeenCalledWith("send_command", {
+      id: "coffee-bot",
+      command: "turnOn",
+      parameter: "default",
+      commandType: "command",
+    });
+  });
+
+  it("pressMode の Bot カードは「押す」ボタンを出し press コマンドを送る", async () => {
+    useDeviceStore.setState({ devices: [pressBot] });
+    render(<DeviceCard device={pressBot} />);
+
+    // pressMode は電源トグルを出さず「押す」ボタン。中立ラベルも出す。
+    expect(screen.queryByRole("switch")).toBeNull();
+    expect(screen.getByText(/押して操作/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "カーテンの Bot を押す" }));
+    expect(invoke).toHaveBeenCalledWith("send_command", {
+      id: "curtain-bot",
+      command: "press",
+      parameter: "default",
+      commandType: "command",
+    });
   });
 
   it("ピン留めボタンでお気に入りを追加・解除する", async () => {

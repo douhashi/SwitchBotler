@@ -84,6 +84,18 @@ describe("tauriDataSource", () => {
     });
   });
 
+  it("pressBot は send_command に press/default を渡す", async () => {
+    invoke.mockResolvedValue(null);
+
+    await tauriDataSource.pressBot("bot1");
+    expect(invoke).toHaveBeenLastCalledWith("send_command", {
+      id: "bot1",
+      command: "press",
+      parameter: "default",
+      commandType: "command",
+    });
+  });
+
   it("invoke の reject を Rust の安全メッセージ付き Error へ変換する", async () => {
     invoke.mockRejectedValue({ code: "unauthorized", message: "認証情報またはリクエスト上限を確認してください。" });
 
