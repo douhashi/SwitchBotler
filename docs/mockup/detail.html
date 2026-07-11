@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SwitchBotler — エアコン操作UIモックアップ</title>
+<style>
+  :root {
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --bg: #E6E9F1; --surface: #EDEFF6; --ink: #2C3444; --muted: #7B8497;
+    --accent: #6366F1; --accent-strong: #4F46E5; --on-accent: #FFFFFF;
+    --ok: #0E9E76; --warn: #C77700; --danger: #DC2626;
+    --raise: 4px 4px 10px #D4D8E2, -4px -4px 10px #F6F8FC;
+    --raise-sm: 3px 3px 7px #D6DAE3, -3px -3px 7px #F6F8FC;
+    --inset: inset 2px 2px 5px #D6DAE3, inset -2px -2px 5px #F7F9FD;
+    --inset-sm: inset 1px 1px 3px #D6DAE3, inset -1px -1px 3px #F7F9FD;
+    --knob: #F7F8FC; --knob-shadow: 1px 1px 3px #CDD1DB, -1px -1px 2px #FBFCFE;
+    --hair: rgba(120,130,150,.14);
+    --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
+    /* 運転モード色（両テーマ共通の視認色） */
+    --m-cool: #2E9BE6; --m-heat: #F0872E; --m-dry: #14A8A0; --m-fan: #7C8798; --m-auto: #6366F1;
+  }
+  :root[data-theme="dark"] {
+    --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+    --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+    --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+    --raise: 5px 5px 12px #191C23, -4px -4px 11px #2C303A;
+    --raise-sm: 3px 3px 8px #191C23, -3px -3px 7px #2C303A;
+    --inset: inset 2px 2px 6px #191C23, inset -2px -2px 6px #2C303A;
+    --inset-sm: inset 1px 1px 4px #191C23, inset -1px -1px 4px #2C303A;
+    --knob: #D6D9E3; --knob-shadow: 1px 1px 4px #16181E, -1px -1px 2px #30343E;
+    --hair: rgba(200,210,230,.08);
+    --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+    --m-cool: #56B6F5; --m-heat: #F79B4E; --m-dry: #34C7BE; --m-fan: #9AA5B4; --m-auto: #818CF8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --bg: #20232B; --surface: #262A33; --ink: #E7E9F0; --muted: #969CAB;
+      --accent: #818CF8; --accent-strong: #818CF8; --on-accent: #14162C;
+      --ok: #34D399; --warn: #F0B429; --danger: #F87171;
+      --raise: 5px 5px 12px #191C23, -4px -4px 11px #2C303A;
+      --raise-sm: 3px 3px 8px #191C23, -3px -3px 7px #2C303A;
+      --inset: inset 2px 2px 6px #191C23, inset -2px -2px 6px #2C303A;
+      --inset-sm: inset 1px 1px 4px #191C23, inset -1px -1px 4px #2C303A;
+      --knob: #D6D9E3; --knob-shadow: 1px 1px 4px #16181E, -1px -1px 2px #30343E;
+      --hair: rgba(200,210,230,.08);
+      --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
+      --m-cool: #56B6F5; --m-heat: #F79B4E; --m-dry: #34C7BE; --m-fan: #9AA5B4; --m-auto: #818CF8;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); color: var(--page-ink); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 46px 22px 100px; }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
+  h1 { font-size: clamp(23px, 4vw, 32px); margin: 0 0 12px; letter-spacing: -.02em; font-weight: 700; }
+  .lede { font-size: 15px; color: var(--page-muted); max-width: 66ch; margin: 0; }
+  .seg-t { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--page-bg); box-shadow: var(--inset-sm); }
+  .seg-t button { font: 600 12px var(--sans); color: var(--page-muted); border: 0; background: transparent; padding: 7px 12px; border-radius: 9px; cursor: pointer; }
+  .seg-t button[aria-pressed="true"] { color: var(--accent); background: var(--surface); box-shadow: var(--raise-sm); }
+  .cap { display: flex; align-items: baseline; gap: 10px; margin: 52px 0 18px; flex-wrap: wrap; }
+  .cap .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .cap h2 { font-size: 19px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  .cap .d { font-size: 13px; color: var(--page-muted); }
+  .rec { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); padding: 3px 8px; border-radius: 999px; box-shadow: var(--inset-sm); }
+
+  .stage { display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start; }
+  .lab { font-size: 12px; font-weight: 600; color: var(--page-muted); margin: 0 0 12px; }
+
+  /* window-ish detail panel */
+  .panel { width: 430px; background: var(--bg); border-radius: 22px; padding: 18px; box-shadow: 0 1px 2px rgba(20,22,30,.06), 0 30px 60px -34px rgba(20,22,30,.5); --m: var(--m-cool); }
+  .panel.heat { --m: var(--m-heat); } .panel.dry { --m: var(--m-dry); }
+  .phead { display: flex; align-items: center; gap: 12px; padding: 4px 4px 16px; }
+  .back { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; color: var(--muted); box-shadow: var(--raise-sm); cursor: pointer; flex: none; }
+  .ptitle { flex: 1; min-width: 0; }
+  .ptitle .nm { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .ptitle .sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .pw { display: inline-flex; align-items: center; gap: 8px; }
+  .pw span { font-size: 11px; color: var(--muted); }
+  .tgl { width: 46px; height: 26px; border-radius: 999px; box-shadow: var(--inset-sm); position: relative; flex: none; }
+  .tgl.on { background: var(--m); }
+  .tgl i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 999px; background: var(--knob); box-shadow: var(--knob-shadow); }
+  .tgl.on i { left: 23px; }
+
+  /* hero temperature */
+  .hero { text-align: center; padding: 10px 0 4px; }
+  .hero .modechip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--m); padding: 4px 12px; border-radius: 999px; box-shadow: var(--inset-sm); margin-bottom: 8px; }
+  .hero .val { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 74px; line-height: .96; letter-spacing: -.03em; color: var(--ink); }
+  .hero .val .u { font-size: 30px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+  .hero .val .n { color: var(--m); }
+
+  /* stepper + slider row */
+  .temprow { display: flex; align-items: center; gap: 14px; padding: 12px 4px 6px; }
+  .step { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px; color: var(--m); box-shadow: var(--raise); cursor: pointer; flex: none; }
+  .step:active { box-shadow: var(--inset); }
+  .sldwrap { flex: 1; }
+  .sld { position: relative; height: 14px; border-radius: 999px; box-shadow: var(--inset); }
+  .sld .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--m); box-shadow: 0 0 12px -2px var(--m); }
+  .sld .knob { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 26px; height: 26px; border-radius: 999px; background: var(--knob); box-shadow: var(--knob-shadow); border: 3px solid var(--bg); }
+  .scale { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10.5px; color: var(--muted); font-family: var(--mono); }
+
+  .grp { margin-top: 16px; }
+  .grp .gl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 0 2px 9px; }
+
+  /* mode pills */
+  .modes { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+  .mode { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 11px 4px; border-radius: 14px; box-shadow: var(--inset-sm); color: var(--muted); cursor: pointer; }
+  .mode span { font-size: 10.5px; font-weight: 600; }
+  .mode.on { box-shadow: var(--raise-sm); }
+  .mode[data-m="auto"].on { color: var(--m-auto); } .mode[data-m="cool"].on { color: var(--m-cool); }
+  .mode[data-m="dry"].on { color: var(--m-dry); } .mode[data-m="fan"].on { color: var(--m-fan); }
+  .mode[data-m="heat"].on { color: var(--m-heat); }
+  .mode.on::after { content: ""; }
+
+  /* fan segments */
+  .fans { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; padding: 5px; border-radius: 14px; box-shadow: var(--inset); }
+  .fan { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 4px; border-radius: 10px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .fan.on { color: var(--m); background: var(--bg); box-shadow: var(--raise-sm); }
+
+  /* compact card (section 02) */
+  .mini { width: 300px; background: var(--bg); border-radius: 20px; padding: 16px; box-shadow: 0 1px 2px rgba(20,22,30,.06), 0 24px 46px -28px rgba(20,22,30,.5); }
+  .mini.cool { --m: var(--m-cool); } .mini.heat { --m: var(--m-heat); } .mini.dry { --m: var(--m-dry); }
+
+  /* color swatches (照明) */
+  .sw-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { width: 40px; height: 40px; border-radius: 12px; box-shadow: var(--inset-sm); cursor: pointer; }
+  .sw.on { box-shadow: var(--raise-sm); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* mode color legend */
+  .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px,100%),1fr)); gap: 10px; max-width: 780px; }
+  .leg { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 13px; background: var(--bg); box-shadow: var(--raise-sm); }
+  .leg .sw2 { width: 26px; height: 26px; border-radius: 8px; box-shadow: var(--raise-sm); flex: none; }
+  .leg .lnm { font-size: 13px; font-weight: 700; width: 5.2em; display: inline-flex; align-items: center; gap: 6px; }
+  .leg .code { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+  .leg .code b { color: var(--ink); font-weight: 600; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px,100%),1fr)); gap: 12px; margin-top: 8px; }
+  .card { padding: 15px 16px; border-radius: 16px; background: var(--surface); box-shadow: var(--raise-sm); }
+  .card h4 { margin: 0 0 7px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card .tag { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; box-shadow: var(--inset-sm); }
+  .tag.easy { color: var(--ok); } .tag.mid { color: var(--warn); }
+  .card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .card code { font-family: var(--mono); font-size: 11px; background: var(--bg); padding: 1px 5px; border-radius: 5px; box-shadow: var(--inset-sm); color: var(--ink); }
+  .foot-note { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--page-line); font-size: 12px; color: var(--page-muted); line-height: 1.7; }
+  .foot-note code { font-family: var(--mono); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <p class="eyebrow">Design Mockup · デバイス詳細（エアコン）</p>
+      <h1>エアコン操作UI ― スライダー基調でカッコよく</h1>
+      <p class="lede">大きな温度表示＋太めの Soft Depth スライダー。運転モードで<b>アクセント色が連動</b>（冷房=ブルー / 暖房=オレンジ / 除湿=ティール）。−/＋ で微調整、モード・風量はアイコンで選択。円形ダイヤルは使わずスライダー主体。</p>
+    </div>
+    <div class="seg-t" role="group" aria-label="テーマ切替">
+      <button data-theme-btn="light" aria-pressed="false">Light</button>
+      <button data-theme-btn="dark" aria-pressed="false">Dark</button>
+      <button data-theme-btn="system" aria-pressed="true">System</button>
+    </div>
+  </div>
+
+  <!-- 01 -->
+  <div class="cap"><span class="n">01</span><h2>エアコン詳細（冷房 26℃）</h2><span class="rec">推奨</span><span class="d">ヒーロー温度＋モード連動スライダー＋−/＋＋モード＋風量。</span></div>
+
+  <div class="stage">
+    <div class="panel cool">
+      <div class="phead">
+        <span class="back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></span>
+        <div class="ptitle"><div class="nm">リビングのエアコン</div><div class="sub">Air Conditioner · リビング</div></div>
+        <span class="pw"><span>運転</span><span class="tgl on"><i></i></span></span>
+      </div>
+
+      <div class="hero">
+        <span class="modechip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg> 冷房</span>
+        <div class="val"><span class="n">26</span><span class="u">℃</span></div>
+      </div>
+
+      <div class="temprow">
+        <span class="step"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span>
+        <div class="sldwrap">
+          <div class="sld"><div class="fill" style="width:71.4%"></div><div class="knob" style="left:71.4%"></div></div>
+          <div class="scale"><span>16℃</span><span>30℃</span></div>
+        </div>
+        <span class="step"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+      </div>
+
+      <div class="grp">
+        <div class="gl">運転モード</div>
+        <div class="modes">
+          <div class="mode" data-m="auto"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 16 12 7l3.5 9M9.4 13.5h5.2"/></svg><span>自動</span></div>
+          <div class="mode on" data-m="cool"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg><span>冷房</span></div>
+          <div class="mode" data-m="dry"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg><span>除湿</span></div>
+          <div class="mode" data-m="fan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5M3 16h13a2.5 2.5 0 1 1-2.5 2.5M3 12h16a2.5 2.5 0 1 0-2.5-2.5"/></svg><span>送風</span></div>
+          <div class="mode" data-m="heat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg><span>暖房</span></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">風量</div>
+        <div class="fans">
+          <div class="fan"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 15 12 7l3.5 8M9.6 12.6h4.8"/></svg> 自動</div>
+          <div class="fan">弱</div>
+          <div class="fan on">中</div>
+          <div class="fan">強</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards" style="max-width:280px">
+      <div class="card"><h4><span class="tag easy">実装: 易</span> 既存スライダー流用</h4><p>温度は現行 <code>Slider</code> + <code>updateControl({temperature})</code> のまま。見た目（太さ・ヒーロー数値・−/＋）を Soft Depth で強化。</p></div>
+      <div class="card"><h4><span class="tag easy">実装: 易</span> モード色マップ</h4><p><code>mode → 色</code>（cool/heat/dry/fan/auto）の 1 テーブルで、スライダーfill・数値・モードチップを連動。</p></div>
+      <div class="card"><h4><span class="tag easy">実装: 易</span> アイコン選択</h4><p>モード/風量は Lucide アイコン付きセグメント（<code>snowflake</code>/<code>flame</code>/<code>droplet</code>/<code>wind</code> 等）。</p></div>
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="cap"><span class="n">02</span><h2>モード連動（色が切り替わる）</h2><span class="d">同じUIで暖房=オレンジ / 除湿=ティール。色だけに頼らずアイコン＋ラベルも併記。</span></div>
+  <div class="stage">
+    <div class="mini heat">
+      <div class="hero" style="padding-top:4px"><span class="modechip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg> 暖房</span><div class="val" style="font-size:60px"><span class="n">22</span><span class="u">℃</span></div></div>
+      <div class="temprow" style="padding-bottom:0">
+        <span class="step" style="width:40px;height:40px;border-radius:13px"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span>
+        <div class="sldwrap"><div class="sld"><div class="fill" style="width:42.9%"></div><div class="knob" style="left:42.9%"></div></div></div>
+        <span class="step" style="width:40px;height:40px;border-radius:13px"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+      </div>
+      <div class="grp"><div class="modes" style="grid-template-columns:repeat(5,1fr)">
+        <div class="mode" data-m="auto"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 16 12 7l3.5 9M9.4 13.5h5.2"/></svg><span>自動</span></div>
+        <div class="mode" data-m="cool"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg><span>冷房</span></div>
+        <div class="mode" data-m="dry"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg><span>除湿</span></div>
+        <div class="mode" data-m="fan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5M3 16h13a2.5 2.5 0 1 1-2.5 2.5M3 12h16a2.5 2.5 0 1 0-2.5-2.5"/></svg><span>送風</span></div>
+        <div class="mode on" data-m="heat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg><span>暖房</span></div>
+      </div></div>
+    </div>
+
+    <div class="mini dry">
+      <div class="hero" style="padding-top:4px"><span class="modechip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg> 除湿</span><div class="val" style="font-size:60px"><span class="n">24</span><span class="u">℃</span></div></div>
+      <div class="temprow" style="padding-bottom:0">
+        <span class="step" style="width:40px;height:40px;border-radius:13px"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span>
+        <div class="sldwrap"><div class="sld"><div class="fill" style="width:57.1%"></div><div class="knob" style="left:57.1%"></div></div></div>
+        <span class="step" style="width:40px;height:40px;border-radius:13px"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+      </div>
+      <div class="grp"><div class="modes" style="grid-template-columns:repeat(5,1fr)">
+        <div class="mode" data-m="auto"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 16 12 7l3.5 9M9.4 13.5h5.2"/></svg><span>自動</span></div>
+        <div class="mode" data-m="cool"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg><span>冷房</span></div>
+        <div class="mode on" data-m="dry"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg><span>除湿</span></div>
+        <div class="mode" data-m="fan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5M3 16h13a2.5 2.5 0 1 1-2.5 2.5M3 12h16a2.5 2.5 0 1 0-2.5-2.5"/></svg><span>送風</span></div>
+        <div class="mode" data-m="heat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg><span>暖房</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- 03 照明 -->
+  <div class="cap"><span class="n">03</span><h2>照明の詳細（明るさ・カラー）</h2><span class="d">同じ骨格でデバイス種別に対応。照明はアクセント（インディゴ）＋明るさスライダー＋カラー。</span></div>
+  <div class="stage">
+    <div class="panel bulb" style="--m: var(--accent)">
+      <div class="phead">
+        <span class="back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></span>
+        <div class="ptitle"><div class="nm">リビングの照明</div><div class="sub">Color Bulb · リビング</div></div>
+        <span class="pw"><span>点灯</span><span class="tgl on"><i></i></span></span>
+      </div>
+      <div class="hero">
+        <span class="modechip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5M10.5 21.5h3"/></svg> 点灯中</span>
+        <div class="val"><span class="n">72</span><span class="u">%</span></div>
+      </div>
+      <div class="temprow">
+        <span class="step"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span>
+        <div class="sldwrap">
+          <div class="sld"><div class="fill" style="width:72%"></div><div class="knob" style="left:72%"></div></div>
+          <div class="scale"><span>明るさ</span><span>100%</span></div>
+        </div>
+        <span class="step"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+      </div>
+      <div class="grp">
+        <div class="gl">カラー</div>
+        <div class="sw-row">
+          <span class="sw on" style="background:#F6D488" title="電球色"></span>
+          <span class="sw" style="background:#FDF6E3" title="昼白色"></span>
+          <span class="sw" style="background:#8FB7FF" title="昼光色"></span>
+          <span class="sw" style="background:#F58A8A" title="レッド"></span>
+          <span class="sw" style="background:#8CE0B0" title="グリーン"></span>
+          <span class="sw" style="background:#B79CF0" title="パープル"></span>
+        </div>
+      </div>
+    </div>
+    <div class="cards" style="max-width:280px">
+      <div class="card"><h4><span class="tag easy">実装: 易</span> 種別で骨格共通</h4><p>ヘッダ＋ヒーロー＋スライダー＋−/＋の骨格を共通化し、エアコン=温度＋モード、照明=明るさ＋カラー、と中身だけ差し替える。</p></div>
+    </div>
+  </div>
+
+  <!-- 04 モード色 -->
+  <div class="cap"><span class="n">04</span><h2>運転モード → アクセント色（凡例）</h2><span class="d">1 マップで管理。色だけに頼らずアイコン＋ラベルを常に併記する。</span></div>
+  <div class="legend">
+    <div class="leg"><span class="sw2" style="background:var(--m-auto)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 16 12 7l3.5 9M9.4 13.5h5.2"/></svg> 自動</span><span class="code"><b>--m-auto</b> #6366F1 / #818CF8</span></div>
+    <div class="leg"><span class="sw2" style="background:var(--m-cool)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg> 冷房</span><span class="code"><b>--m-cool</b> #2E9BE6 / #56B6F5</span></div>
+    <div class="leg"><span class="sw2" style="background:var(--m-dry)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg> 除湿</span><span class="code"><b>--m-dry</b> #14A8A0 / #34C7BE</span></div>
+    <div class="leg"><span class="sw2" style="background:var(--m-fan)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5M3 16h13a2.5 2.5 0 1 1-2.5 2.5M3 12h16a2.5 2.5 0 1 0-2.5-2.5"/></svg> 送風</span><span class="code"><b>--m-fan</b> #7C8798 / #9AA5B4</span></div>
+    <div class="leg"><span class="sw2" style="background:var(--m-heat)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg> 暖房</span><span class="code"><b>--m-heat</b> #F0872E / #F79B4E</span></div>
+    <div class="leg"><span class="sw2" style="background:var(--accent)"></span><span class="lnm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5M10.5 21.5h3"/></svg> 照明</span><span class="code"><b>--accent</b> インディゴ（既存）</span></div>
+  </div>
+  <p style="font-size:11.5px;color:var(--page-muted);margin:12px 2px 0;max-width:780px">各値は Light / Dark の順。冷房/暖房/除湿/送風はエアコン専用の 4 色、自動と照明は既存のインディゴ（<code style="font-family:var(--mono)">--accent</code>）を流用。色は fill・大数値・モードチップ・選択状態に一括適用する。</p>
+
+  <div class="foot-note">
+    <b>実装メモ（提案）</b><br>
+    ・ データは現行のまま（<code>temperature</code> 16–30 / <code>mode</code> auto·cool·dry·fan·heat / <code>fanSpeed</code> auto·low·medium·high / <code>power</code>）。UI 刷新のみで API 送信ロジックは不変。<br>
+    ・ 温度は既存 <code>Slider</code> を太く・モード色 fill に。−/＋ は <code>updateControl({ temperature: clamp(t±1,16,30) })</code>。<br>
+    ・ <code>mode → アクセント色</code> の 1 マップで、fill・大数値・モードチップ・選択モードを連動（色だけに頼らずアイコン＋ラベル併記＝アクセシビリティ確保）。<br>
+    ・ 送風モード時は温度を無効化（多くの機種で温度指定不可）。その場合スライダーを disabled 表示にする案。<br>
+    ・ 画面は device-detail（デバイス操作）。方向性OKなら <code>docs/mockup/detail.html</code>（＋en）として index の #02 から分離する。
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const btns = document.querySelectorAll('[data-theme-btn]');
+  function setTheme(m){ if(m==='system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', m); btns.forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.themeBtn===m))); }
+  btns.forEach(b=>b.addEventListener('click', ()=>setTheme(b.dataset.themeBtn)));
+</script>
+</body>
+</html>
