@@ -59,13 +59,36 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      # タグ（vX.Y.Z）を版の唯一のソースにする。tauri.conf.json / package.json へ
+      # 実行時に注入するため、事前の手動 bump は不要（＝忘れてもタグと必ず一致する）。
+      # ここでの変更は各ランナーのチェックアウト内のみで、コミットは発生しない。
+      - name: Set version from tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Releasing version: $VERSION (tag: $GITHUB_REF_NAME)"
+          node -e "const f='src-tauri/tauri.conf.json';const j=require('./'+f);j.version='$VERSION';require('fs').writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          echo "tauri.conf.json version -> $(node -e "console.log(require('./src-tauri/tauri.conf.json').version)")"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "SwitchBotler ${{ github.ref_name }}"
-          releaseBody: "各 OS のインストーラをダウンロードしてください。未署名のため、OS のセキュリティ警告が出る場合があります。"
+          releaseBody: |
+            Thank you for trying SwitchBotler! 🎩
+
+            Download the installer for your operating system from the **Assets** below and follow your platform's usual installation steps.
+
+            > ⚠️ **These builds are not code-signed yet**, so your OS may show a security warning the first time you open the app. This is expected — you can safely proceed:
+            >
+            > - **macOS** — Right-click the app and choose **Open**, then confirm in the dialog. (Or allow it under *System Settings → Privacy & Security*.)
+            > - **Windows** — On the SmartScreen prompt, click **More info → Run anyway**.
+            > - **Linux** — Make the AppImage executable (`chmod +x`) before running it.
+            >
+            > Code signing is planned for a future release.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
