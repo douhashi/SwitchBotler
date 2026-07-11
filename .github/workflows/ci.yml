@@ -11,16 +11,17 @@ concurrency:
 
 jobs:
   frontend:
-    name: Frontend (typecheck)
+    name: Frontend (typecheck + test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
       - run: npm ci
       - run: mise run typecheck
+      - run: mise run test-front
 
   rust:
-    name: Rust (fmt + clippy)
+    name: Rust (fmt + clippy + test)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,3 +46,4 @@ jobs:
 
       - run: mise run fmt-check
       - run: mise run clippy
+      - run: mise run test-rust

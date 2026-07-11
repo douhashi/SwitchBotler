@@ -36,3 +36,16 @@ run = "cargo clippy --all-targets -- -D warnings"
 [tasks.lint]
 description = "全 lint（typecheck + fmt-check + clippy）"
 depends = ["typecheck", "fmt-check", "clippy"]
+
+[tasks.test-front]
+description = "フロントエンドのテスト（Vitest）"
+run = "npx vitest run"
+
+[tasks.test-rust]
+description = "Rust のテスト（cargo test）"
+dir = "src-tauri"
+run = "cargo test"
+
+[tasks.test]
+description = "全テスト（フロント + Rust）"
+depends = ["test-front", "test-rust"]

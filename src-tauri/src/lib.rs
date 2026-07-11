@@ -12,3 +12,17 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // テスト基盤（cargo test）が機能することを確認するスモークテスト。
+    #[test]
+    fn greet_includes_name() {
+        assert_eq!(
+            greet("Botler"),
+            "Hello, Botler! You've been greeted from Rust!"
+        );
+    }
+}

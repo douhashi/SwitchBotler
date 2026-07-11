@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -28,5 +29,15 @@ export default defineConfig(async () => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+  },
+
+  // Vitest 設定。jsdom + Testing Library で React コンポーネントを検証する。
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+    css: true,
+    // Rust 側（src-tauri）は cargo test で検証するため除外する
+    exclude: ["**/node_modules/**", "**/dist/**", "**/src-tauri/**"],
   },
 }));
