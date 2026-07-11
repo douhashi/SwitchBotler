@@ -6,6 +6,11 @@ import { ChevronRight, Hand, Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { LogoMark, Wordmark } from "@/components/brand";
 import { DeviceIcon } from "@/components/device/device-icon";
+import {
+  DEVICE_MAX_HEIGHT,
+  SCENE_MAX_HEIGHT,
+} from "@/components/tray/layout";
+import { ScrollRegion } from "@/components/tray/scroll-region";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -273,9 +278,13 @@ export function TrayPopover() {
       )}
       {showEmptyFavorites && <EmptyFavorites />}
 
-      {favoriteDevices.map((device) => (
-        <QuickDevice key={device.id} device={device} />
-      ))}
+      {favoriteDevices.length > 0 && (
+        <ScrollRegion maxHeight={DEVICE_MAX_HEIGHT} data-testid="tray-device-scroll">
+          {favoriteDevices.map((device) => (
+            <QuickDevice key={device.id} device={device} />
+          ))}
+        </ScrollRegion>
+      )}
 
       {error && (
         <p className="px-2 pt-1 text-[11px] text-destructive">{te(error)}</p>
@@ -287,11 +296,13 @@ export function TrayPopover() {
           <p className="px-2 pb-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
             {t("favoriteScenes")}
           </p>
-          <div className="flex flex-col gap-0.5">
-            {favoriteScenes.map((scene) => (
-              <QuickScene key={scene.id} scene={scene} />
-            ))}
-          </div>
+          <ScrollRegion maxHeight={SCENE_MAX_HEIGHT} data-testid="tray-scene-scroll">
+            <div className="flex flex-col gap-0.5">
+              {favoriteScenes.map((scene) => (
+                <QuickScene key={scene.id} scene={scene} />
+              ))}
+            </div>
+          </ScrollRegion>
         </>
       )}
 

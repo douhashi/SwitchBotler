@@ -49,6 +49,7 @@
   --knob-shadow: 1px 1px 3px #cdd1db, -1px -1px 2px #fbfcfe;
   --tgl-on-shadow: 2px 2px 6px #c9ccea, -2px -2px 6px #f6f8fc;
   --hair: rgba(120, 130, 150, 0.14);
+  --scroll: rgba(120, 130, 150, 0.34); /* スクロールバーのつまみ（Light） */
 }
 
 .dark {
@@ -90,6 +91,7 @@
   --knob-shadow: 1px 1px 4px #16181e, -1px -1px 2px #30343e;
   --tgl-on-shadow: 2px 2px 8px #191c23, -2px -2px 7px #2c303a;
   --hair: rgba(200, 210, 230, 0.08);
+  --scroll: rgba(200, 210, 230, 0.22); /* スクロールバーのつまみ（Dark） */
 }
 
 /* Tailwind ユーティリティへトークンを公開する（bg-background / text-foreground / ring-ring 等）。 */
@@ -145,6 +147,25 @@
 }
 @utility shadow-inset-sm {
   box-shadow: var(--inset-sm);
+}
+
+/* Soft Depth に馴染む細いスクロールバー装飾（トレイの内側スクロール領域で使用）。
+   トラックは透明・つまみは `--scroll`（両テーマ）。geometry は tray.html モックに合わせる。 */
+@utility scrollbar-soft {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll) transparent;
+  &::-webkit-scrollbar {
+    width: 7px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--scroll);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 @layer base {

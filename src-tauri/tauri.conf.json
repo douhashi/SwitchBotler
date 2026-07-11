@@ -20,7 +20,7 @@
       {
         "label": "tray",
         "url": "index.html",
-        "width": 306,
+        "width": 360,
         "height": 440,
         "decorations": false,
         "skipTaskbar": true,

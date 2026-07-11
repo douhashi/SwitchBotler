@@ -12,7 +12,7 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 | [`index.en.html`](./index.en.html) | `index.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`detail.html`](./detail.html) | デバイス詳細（操作UI）。エアコン=スライダー基調＋運転モードで色連動、照明=明るさ＋カラー、モード色の凡例つき。右上で Light/Dark/System 切替 |
 | [`detail.en.html`](./detail.en.html) | `detail.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
-| [`tray.html`](./tray.html) | トレイポップアップの操作性拡張案（全デバイス操作＝エアコン等は「>」で詳細へ / 幅拡大 / 可変高＋各リスト独立スクロール）。右上で Light/Dark/System 切替 |
+| [`tray.html`](./tray.html) | トレイポップアップの操作性拡張案（全デバイス操作＝エアコン等は「>」で詳細へ / 幅拡大 / 可変高＋各リスト独立スクロール）。右上で Light/Dark/System 切替。**実装反映済み**（幅 360px・可変高＋上限クランプ・各リスト独立スクロール／下端フェード。#61） |
 | [`tray.en.html`](./tray.en.html) | `tray.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`onboarding.html`](./onboarding.html) | 未接続（`saved:false`）時のメニューなしオンボーディング画面＋トレイの表記案（未設定 / 到達不能 / 接続済みの3状態）。右上で Light/Dark/System 切替 |
 | [`themes.html`](./themes.html) | Soft Depth のライト/ダークを同一UIで並べた比較＋セマンティックトークン表 |
@@ -46,6 +46,14 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 | 状態ラベル | `Badge` | — |
 | トレイのポップオーバー | `Popover` | — |
 | 破壊的操作の確認 | `AlertDialog` | — |
+
+### トレイポップアップのレイアウト（実装反映・#61）
+
+- **幅は固定 360px**（ウィンドウの 1 列カード相当）。`tauri.conf.json` の初期幅と `TRAY_WIDTH` を一致させる。
+- **高さは内容追従＋上限クランプ**。内側リストの px 上限が主機構で、`MAX_TRAY_HEIGHT = DEVICE_MAX(300) + SCENE_MAX(150) + CHROME(150)` は安全弁。
+- **各リストは独立スクロール**（デバイス 300px / シーン 150px 上限）。`overflow-y-auto` + `overscroll-contain` で親ウィンドウへスクロールを伝播させない。
+- **下端フェード**は続きがある時のみ表示し、最下端到達で消す（下端のみ）。フェード層はスクロールしないラッパーに絶対配置で固定する。
+- スクロールバーは `--scroll` トークン＋ `scrollbar-soft` ユーティリティで Soft Depth に馴染ませる。
 
 ## セットアップ（実装時の想定手順）
 
