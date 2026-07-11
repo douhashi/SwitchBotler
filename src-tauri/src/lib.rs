@@ -9,7 +9,7 @@ use tauri::{
 };
 use tauri_plugin_positioner::{Position, WindowExt};
 
-use commands::show_main;
+use commands::{show_main, TrayMenuItems};
 
 /// トレイアイコン（アプリ既定アイコン）とネイティブメニューを構築する。
 ///
@@ -17,10 +17,20 @@ use commands::show_main;
 /// 右クリック → ネイティブメニュー（ウィンドウを開く / 設定 / 終了）を表示。
 /// ポップアップが出せない詰みを避けるフェイルセーフとして「終了」をメニューにも置く。
 fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let open_i = MenuItem::with_id(app, "open", "ウィンドウを開く", true, None::<&str>)?;
-    let settings_i = MenuItem::with_id(app, "settings", "設定", true, None::<&str>)?;
-    let quit_i = MenuItem::with_id(app, "quit", "終了", true, None::<&str>)?;
+    // 初期ラベルはフォールバック言語（en）で構築する（`FALLBACK_LANGUAGE` と一貫）。
+    // メニューは右クリックまで不可視で、フロントが起動直後（main.tsx の描画前 applyLanguage）に
+    // `set_tray_menu_labels` で現在言語へ同期するため、初期フォールバックが露出する窓は不可視かつ極短。
+    let open_i = MenuItem::with_id(app, "open", "Open window", true, None::<&str>)?;
+    let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open_i, &settings_i, &quit_i])?;
+
+    // フロントからの実行時ラベル更新のため、MenuItem ハンドルを managed state に保持する。
+    app.manage(TrayMenuItems {
+        open: open_i.clone(),
+        settings: settings_i.clone(),
+        quit: quit_i.clone(),
+    });
 
     TrayIconBuilder::with_id("main-tray")
         .icon(app.default_window_icon().unwrap().clone())
@@ -105,6 +115,7 @@ pub fn run() {
             commands::quit,
             commands::show_main_window,
             commands::hide_tray_popup,
+            commands::set_tray_menu_labels,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

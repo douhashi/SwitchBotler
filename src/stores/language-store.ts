@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 import i18n from "@/i18n";
 import { type LanguagePreference, resolveLanguage } from "@/i18n/resolve";
+import { syncNativeTrayMenu } from "@/i18n/tray-native-menu";
 
 type LanguageState = {
   language: LanguagePreference;
@@ -17,6 +18,8 @@ const STORAGE_KEY = "switchbotler-language";
  */
 export function applyLanguage(language: LanguagePreference): void {
   void i18n.changeLanguage(resolveLanguage(language));
+  // native 右クリックトレイメニューも同言語へ追従させる（起動 / rehydrate / setLanguage の全経路）。
+  syncNativeTrayMenu();
 }
 
 export const useLanguageStore = create<LanguageState>()(
