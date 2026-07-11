@@ -110,4 +110,17 @@ cp design-system/assets/app-icon.svg public/switchbotler.svg
 
 ## 実装メモ（React）
 
-アプリUI のアイコンは **Lucide パックのみ**（MASTER.md）。ただし**ブランドロゴは UI アイコンではない**ため、この規則の対象外とし、専用のブランドアセット（本書の SVG）を用いる。ロゴを React に組み込む作業は別 Issue で行う。
+アプリUI のアイコンは **Lucide パックのみ**（MASTER.md）。ただし**ブランドロゴは UI アイコンではない**ため、この規則の対象外とし、専用のブランドアセット（本書の SVG）を用いる。
+
+ロゴは React コンポーネントとして組込み済み。所在は `src/components/brand/`。
+
+| コンポーネント | ファイル | 役割 |
+|---|---|---|
+| `LogoMark` | `src/components/brand/logo-mark.tsx` | 本書 `assets/logo-mark.svg` 準拠の単色グリフ。`fill/stroke = currentColor` で親の `color` に追従（面タイルは `text-sd-accent`）。props: `size?`（既定 18）/ `className?`。名前は隣接ワードマークが提供するため `aria-hidden` |
+| `Wordmark` | `src/components/brand/wordmark.tsx` | 2 色のアプリ名ラベル。`Switch` は前景継承、`Botler` は `text-sd-accent` |
+
+タイル枠（角丸サーフェス）は各利用側（sidebar / tray）が自前で組む。3 箇所目が出た時点でロックアップ（タイル込みの複合体）へ切り出す方針（Rule of Three）。
+
+### `--accent` と `--sd-accent` の対応
+
+本書は「Botler／マーク＝ `--accent`（インディゴ）」と規定するが、**実アプリの CSS（`src/index.css`）では `--accent` が shadcn の hover/active サーフェス色に再割当てされている**。そのため実装ではインディゴ色相を表す **`--sd-accent`（Tailwind: `text-sd-accent`）** を用いる。ライト `#6366f1` / ダーク `#818cf8` に自動追従し、本書の意図（常にインディゴ）と一致する。
