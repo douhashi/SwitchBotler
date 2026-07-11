@@ -55,15 +55,48 @@ src/
 ├── App.tsx                   # AppShell を描画するだけの薄いルート
 ├── index.css                 # Tailwind v4 + Soft Depth トークン（デザインの起点）
 ├── lib/utils.ts              # cn()（clsx + tailwind-merge）
+├── data/                     # データ層（ドメイン型 + DataSource + 単一差し替え点）
+│   ├── types.ts              # view-model 型 + 導出関数（Device / Scene / SensorReadings 等）
+│   ├── source.ts             # SwitchBotlerDataSource interface（唯一のデータ境界）
+│   ├── hooks.ts              # 読み取り主体の軽量フック（useScenes / useSensors）
+│   └── index.ts              # アクティブな dataSource を export する唯一の差し替え点
+├── mocks/                    # モック実装（データ層の背後。#9 で Tauri 実装に差し替え）
+│   ├── fixtures.ts           # モックデータ本体（mockup 準拠）
+│   └── mock-source.ts        # DataSource のモック実装（擬似レイテンシ + 可変 in-memory 状態）
 ├── stores/                   # Zustand ストア
 │   ├── theme-store.ts        # テーマ（light/dark/system）
-│   └── navigation-store.ts   # 画面遷移（activeView）
+│   ├── navigation-store.ts   # 画面遷移（activeView / selectedDeviceId）
+│   ├── device-store.ts       # デバイス一覧 + 電源/制御操作（dataSource 経由）
+│   └── connection-store.ts   # 接続状態・レート残・マスク済み認証表示値
 ├── components/
 │   ├── ui/                   # shadcn/ui コンポーネント（Soft Depth 適用済み）
 │   ├── app-shell/            # サイドバー + シェルレイアウト
+│   ├── device/ charts/ sensor/ scene/ connection/ tray/  # 画面部品
+│   ├── view-header.tsx       # 各画面共通ヘッダ（title/subtitle/戻る/右アクション）
 │   └── theme-toggle.tsx      # ライト/ダーク切替
 └── views/                    # 画面本体 + registry（画面メタの SSoT）
 ```
+
+### データ層方針（差し替えの単一境界）
+
+UI（view / component / store / hook）は SwitchBot API の生レスポンス形を一切知らない。
+参照するのは `src/data` が公開する **view-model 型** と **`dataSource`** のみとする。
+
+- **`src/data/types.ts`**: 画面が必要とする形のドメイン型（view-model）。API 生形の憶測ではなく、
+  「画面がどう使うか」から定義する。表示ラベルや操作アフォーダンスの導出関数（`deviceStatusLabel` /
+  `deviceInteraction`）もここに置く。
+- **`src/data/source.ts`**: `SwitchBotlerDataSource` interface。アプリが依存する唯一のデータ境界。
+- **`src/data/index.ts`**: アクティブな `dataSource` を export する **唯一の差し替え点**。
+- **`src/mocks/`**: 現状の実装（モック）。`view` / `store` / `hook` はここを **直 import してはならない**
+  （必ず `src/data` 経由）。可変な in-memory 状態を持ち、トグル・明るさ変更などが後続の取得に反映される。
+
+#### #9（Tauri 実装）への差し替え手順
+
+1. `src/data/` に Tauri IPC 実装（例: `tauri-source.ts`）を追加し、`SwitchBotlerDataSource` を実装する
+   （各メソッドで `@tauri-apps/api` の `invoke` を呼ぶ）。
+2. `src/data/index.ts` の `dataSource` の代入を mock 実装から Tauri 実装に **1 行差し替える**。
+3. UI・ストア・フックは view-model 型のみに依存しているため、原則として変更不要。
+   （API 生形 → view-model の変換は新しい DataSource 実装の内部責務とする。）
 
 ### デザイン / テーマ戦略
 
@@ -77,4 +110,9 @@ src/
 ### 状態管理方針
 
 - 軽量な **Zustand** を採用する。
-- **画面遷移は react-router を導入せず view-state で管理する**。`navigation-store` の `activeView`（`devices` / `sensors` / `scenes` / `settings`）で現在画面を保持し、サイドバーのナビが `navigate()` で切り替える。画面メタ（ラベル / アイコン / 説明 / 本体）は `src/views/registry.tsx` に集約し、サイドバーとヘッダが同一定義を参照する。
+- **画面遷移は react-router を導入せず view-state で管理する**。`navigation-store` の `activeView`（`devices` / `sensors` / `scenes` / `settings`）で現在画面を保持し、サイドバーのナビが `navigate()` で切り替える。デバイス詳細は同 store の `selectedDeviceId` で表す。画面メタ（ラベル / アイコン / 説明 / 本体）は `src/views/registry.tsx` に集約し、サイドバーとナビが同一定義を参照する。
+- **共有可変状態はストア、読み取り主体はフック**という使い分けにする。
+  - 複数画面から更新・参照される状態（`device` / `connection`）は Zustand ストア（`device-store` / `connection-store`）に置く。
+  - 単一画面の読み取り主体データ（`scenes` / `sensors`）は軽量フック（`useScenes` / `useSensors`）で mount 時に取得する。
+  - いずれも `src/data` の `dataSource` 経由でのみデータへアクセスする（境界の単一化）。
+- **ヘッダは各 view が持つ**。`app-shell` は generic header を持たず、画面横断のシェル機能（トレイプレビュー / テーマ切替）のみを担う。各 view は `ViewHeader` で自前のタイトル・サブタイトル・戻る・右アクションを描画する。

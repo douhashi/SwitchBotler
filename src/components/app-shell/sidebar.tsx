@@ -1,6 +1,9 @@
+import { useEffect } from "react";
 import { Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useConnectionStore } from "@/stores/connection-store";
+import { useDeviceStore } from "@/stores/device-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 import { VIEWS } from "@/views/registry";
 
@@ -8,6 +11,18 @@ import { VIEWS } from "@/views/registry";
 export function Sidebar() {
   const activeView = useNavigationStore((s) => s.activeView);
   const navigate = useNavigationStore((s) => s.navigate);
+
+  const connectionStatus = useConnectionStore((s) => s.connection.status);
+  const loadConnection = useConnectionStore((s) => s.load);
+  const deviceCount = useDeviceStore((s) => s.devices.length);
+  const loadDevices = useDeviceStore((s) => s.load);
+
+  useEffect(() => {
+    loadConnection();
+    loadDevices();
+  }, [loadConnection, loadDevices]);
+
+  const connected = connectionStatus === "connected";
 
   return (
     <aside className="flex flex-col gap-1.5 p-3 pb-3.5">
@@ -45,10 +60,13 @@ export function Sidebar() {
 
       <div className="flex items-center gap-2 rounded-[11px] px-3 py-2.5 text-xs text-muted-foreground shadow-inset-sm">
         <span
-          className="size-2 shrink-0 rounded-full bg-sd-ok"
-          style={{ boxShadow: "0 0 8px var(--sd-ok)" }}
+          className={cn(
+            "size-2 shrink-0 rounded-full",
+            connected ? "bg-sd-ok" : "bg-muted-foreground",
+          )}
+          style={connected ? { boxShadow: "0 0 8px var(--sd-ok)" } : undefined}
         />
-        接続待機中
+        {connected ? `接続済み · ${deviceCount}台` : "接続待機中"}
       </div>
     </aside>
   );
