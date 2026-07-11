@@ -109,6 +109,35 @@ SwitchBotler が利用する SwitchBot Cloud API v1.1 の仕様メモ。**この
   アプリは preset id を送り、Rust `mapping.rs` が `"R:G:B"` へ変換する。
 - Curtain `setPosition`("0-100")、Smart Lock `lock`/`unlock`("default") は README 準拠（未検証）。
 
+### デバイスオフライン検知（封筒 statusCode 161）
+
+デバイスがオフライン（クラウド未到達）の状態でコマンド/status を叩くと、封筒 `statusCode` が
+**161**（"device offline"）で返る。これを検知して該当デバイスの操作 UI をグレーアウト・無効化し、
+操作試行時にトーストで理由を示す。**Webhook 常時監視ではなく、コマンド送信の結果から検知する
+リアクティブ方式**（方針 A）を採る（常時ポーリング/購読はしない）。
+
+- **Rust（共通層）**: `client.rs` の `request_json` が封筒 `statusCode` を検査する。`100`=成功、
+  **`161`→`SwitchBotError::offline()`（`ErrorCode::Offline`）**、それ以外の非 100 は従来どおり
+  `api_status(code)`（`ErrorCode::ApiStatus`）にマップする。`ErrorCode::Offline` の serde camelCase
+  出力は `"offline"`。メッセージは「デバイスがオフラインのため操作できません。」で、**deviceId・
+  デバイス名・秘匿値は含めない**（他のエラーと同じ安全文言方針）。
+- **フロント（境界）**: `src/data/ipc.ts` の `toError` が Rust の `{ code, message }` を `code` 付きの
+  `AppError` に変換し、`isOfflineError(error)`（`error.code === "offline"`）で判定する。
+- **フロント（状態）**: `device-store` が一時フラグ `offlineIds: Set<string>` を持つ。操作失敗時の
+  共通ヘルパ `failOperation` が、`isOfflineError` なら該当 id を `offlineIds` に加える。`Device` 型
+  自体にはオフライン属性を**付与しない**（`devices`/`loading`/`error` と同じ横断的な一時状態）。
+- **クリア（方針 A）**: `refresh`（更新）の開始時・成功時に `offlineIds` を空へリセットする。オフライン
+  印は次回操作で 161 が再発すれば再度付く（リアクティブ）。
+- **UI**: 一覧カード・詳細・トレイの操作 UI を `disabled` + `aria-disabled` + `pointer-events-none` で
+  無効化し、`opacity` を下げてグレーアウトする。色だけに頼らず「オフライン」表記を必ず併記する
+  （一覧サブ行・右端ピル、詳細 hero のインライン表記、トレイの小ラベル。視覚仕様の正典は
+  `docs/mockup/index.html` 画面01 `.device.offline`）。ピン留めは操作可のまま。
+- 実疎通は `src-tauri/src/switchbot/mod.rs` の #[ignore] テスト `offline_device_maps_to_offline_error`
+  で確認できる（`infisical run --env=dev -- cargo test -- --ignored`。電源トグル可能な各機に
+  「現在の電源状態と同じ冪等コマンド」を送り、オフライン機があれば `ErrorCode::Offline` を検知して
+  `error code = Offline` のみ出力。deviceId・名称・封筒本文は伏せる）。**オフライン機が無い環境では
+  スキップされる**（161 は実機の状態依存で任意発生させられないため）。
+
 ### Bot（動作モードに応じた操作）
 
 Bot は物理ボタンを押すデバイスで、SwitchBot アプリ側の設定により **動作モード（`deviceMode`）**

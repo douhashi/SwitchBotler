@@ -19,6 +19,8 @@ pub enum ErrorCode {
     RateLimited,
     /// API 封筒の statusCode が 100 以外。
     ApiStatus,
+    /// デバイスがオフライン（API 封筒の statusCode 161）。操作を受け付けられない。
+    Offline,
     /// 通信・レスポンス解析の失敗。
     Network,
     /// セキュアストレージ（keyring）へのアクセス失敗。
@@ -66,6 +68,14 @@ impl SwitchBotError {
         )
     }
 
+    /// デバイスオフライン（封筒 statusCode 161）。deviceId・名称等の秘匿値は含めない。
+    pub fn offline() -> Self {
+        Self::new(
+            ErrorCode::Offline,
+            "デバイスがオフラインのため操作できません。",
+        )
+    }
+
     pub fn network() -> Self {
         Self::new(
             ErrorCode::Network,
@@ -96,3 +106,24 @@ impl fmt::Display for SwitchBotError {
 }
 
 impl std::error::Error for SwitchBotError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn offline_serializes_code_as_camel_case_offline() {
+        // フロント `isOfflineError` は `error.code === "offline"` で判定するため、
+        // serde camelCase 出力が正確に "offline" であることを固定する（V2）。
+        let err = SwitchBotError::offline();
+        let json = serde_json::to_value(&err).expect("シリアライズできること");
+        assert_eq!(json["code"], "offline");
+    }
+
+    #[test]
+    fn offline_message_contains_no_secret_or_device_identifier() {
+        // 追加メッセージに秘匿値・deviceId・デバイス名を含めない（V5）。
+        let err = SwitchBotError::offline();
+        assert_eq!(err.message, "デバイスがオフラインのため操作できません。");
+    }
+}

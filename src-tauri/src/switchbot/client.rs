@@ -20,6 +20,8 @@ use super::signature;
 const BASE_URL: &str = "https://api.switch-bot.com/v1.1";
 /// 封筒の成功コード（公式仕様）。
 const STATUS_OK: i64 = 100;
+/// 封筒のデバイスオフラインコード（公式仕様。"device offline"）。
+const STATUS_OFFLINE: i64 = 161;
 
 /// API レスポンスの共通封筒。
 #[derive(Debug, Deserialize)]
@@ -97,10 +99,12 @@ impl SwitchBotClient {
         }
 
         let envelope: Envelope = resp.json().await.map_err(|_| SwitchBotError::network())?;
-        if envelope.status_code != STATUS_OK {
-            return Err(SwitchBotError::api_status(envelope.status_code));
+        match envelope.status_code {
+            STATUS_OK => Ok(envelope.body),
+            // デバイスオフラインはフロントで専用の抑止/表示を行うため、専用コードにマップする。
+            STATUS_OFFLINE => Err(SwitchBotError::offline()),
+            code => Err(SwitchBotError::api_status(code)),
         }
-        Ok(envelope.body)
     }
 
     /// `GET /v1.1/devices` を叩きデバイス件数を返す。接続テストの疎通に使う。

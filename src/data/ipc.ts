@@ -12,6 +12,23 @@ type RustError = {
   message?: string;
 };
 
+/** SwitchBot 由来のオフラインエラーコード（Rust `ErrorCode::Offline` の serde 出力）。 */
+const OFFLINE_CODE = "offline";
+
+/**
+ * Rust の安定コード（`code`）を保持したままフロントで扱えるアプリケーションエラー。
+ * `message` は Rust 側で秘匿値を除去済みの安全な日本語をそのまま利用者向け表示に使う。
+ */
+export class AppError extends Error {
+  readonly code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    this.name = "AppError";
+    this.code = code;
+  }
+}
+
 /**
  * invoke の reject 値から利用者向けの安全な日本語メッセージを取り出す。
  * 秘匿値は Rust 側で除去済みのメッセージをそのまま使う。
@@ -25,7 +42,27 @@ export function toMessage(error: unknown): string {
   return fallback;
 }
 
-/** invoke の reject 値を Error（安全なメッセージ）へ変換して投げ直す。 */
-export function toError(error: unknown): Error {
-  return new Error(toMessage(error));
+/** invoke の reject 値から Rust の安定コード（`code`）を取り出す。 */
+function codeOf(error: unknown): string | undefined {
+  if (error && typeof error === "object" && "code" in error) {
+    const code = (error as RustError).code;
+    if (typeof code === "string" && code.length > 0) return code;
+  }
+  return undefined;
+}
+
+/**
+ * invoke の reject 値を {@link AppError}（安全なメッセージ + 安定コード）へ変換して投げ直す。
+ * `code` を保持することで、フロントは `isOfflineError` 等でエラー種別により分岐できる。
+ */
+export function toError(error: unknown): AppError {
+  return new AppError(toMessage(error), codeOf(error));
+}
+
+/**
+ * デバイスオフライン（Rust `ErrorCode::Offline` / 封筒 statusCode 161）由来のエラーか。
+ * device-store がこの判定でオフライン印（`offlineIds`）を付け、UI の操作抑止に使う。
+ */
+export function isOfflineError(error: unknown): boolean {
+  return error instanceof AppError && error.code === OFFLINE_CODE;
 }

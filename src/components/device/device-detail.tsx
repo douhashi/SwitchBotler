@@ -49,12 +49,14 @@ function Segmented<T extends string>({
   value,
   labelOf,
   onSelect,
+  disabled = false,
 }: {
   label: string;
   options: readonly T[];
   value: T | undefined;
   labelOf: (v: T) => string;
   onSelect: (v: T) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
@@ -68,12 +70,15 @@ function Segmented<T extends string>({
               type="button"
               role="radio"
               aria-checked={selected}
+              disabled={disabled}
+              aria-disabled={disabled || undefined}
               onClick={() => onSelect(option)}
               className={cn(
                 "rounded-[10px] px-3.5 py-2 text-xs font-semibold transition-colors",
                 selected
                   ? "bg-background text-sd-accent shadow-raise-sm"
                   : "text-muted-foreground shadow-inset-sm hover:text-foreground",
+                disabled && "pointer-events-none opacity-50",
               )}
             >
               {labelOf(option)}
@@ -91,6 +96,7 @@ export function DeviceDetail({ device }: { device: Device }) {
   const toggle = useDeviceStore((s) => s.toggle);
   const updateControl = useDeviceStore((s) => s.updateControl);
   const operateIrLight = useDeviceStore((s) => s.operateIrLight);
+  const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
 
   const { power, brightness, position, colorId, temperature, mode, fanSpeed } =
     device.controls;
@@ -107,8 +113,11 @@ export function DeviceDetail({ device }: { device: Device }) {
           hasPowerToggle(device) ? (
             <Switch
               checked={power}
+              disabled={offline}
+              aria-disabled={offline || undefined}
               onCheckedChange={() => toggle(device.id)}
               aria-label="電源"
+              className={cn(offline && "pointer-events-none")}
             />
           ) : undefined
         }
@@ -127,6 +136,8 @@ export function DeviceDetail({ device }: { device: Device }) {
           <div className="text-[17px] font-bold">{deviceStatusLabel(device)}</div>
           <div className="mt-0.5 text-[12.5px] text-muted-foreground">
             {heroDetail(device)}
+            {/* 一覧と同じく理由を色だけに頼らず常時可読にする（インライン併記）。 */}
+            {offline && <span className="text-sd-warn"> · オフライン</span>}
           </div>
         </div>
       </div>
@@ -143,6 +154,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             value={[brightness]}
             min={0}
             max={100}
+            disabled={offline}
             aria-label="明るさ"
             onValueChange={([v]) => updateControl(device.id, { brightness: v })}
           />
@@ -162,12 +174,15 @@ export function DeviceDetail({ device }: { device: Device }) {
                   role="radio"
                   aria-checked={selected}
                   aria-label={color.label}
+                  disabled={offline}
+                  aria-disabled={offline || undefined}
                   onClick={() => updateControl(device.id, { colorId: color.id })}
                   style={{ background: color.swatch }}
                   className={cn(
                     "size-[30px] rounded-full shadow-raise-sm",
                     selected &&
                       "ring-2 ring-sd-accent ring-offset-2 ring-offset-background",
+                    offline && "pointer-events-none opacity-50",
                   )}
                 />
               );
@@ -186,6 +201,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             value={[position]}
             min={0}
             max={100}
+            disabled={offline}
             aria-label="開度"
             onValueChange={([v]) => updateControl(device.id, { position: v })}
           />
@@ -198,8 +214,11 @@ export function DeviceDetail({ device }: { device: Device }) {
             <span className="text-[12.5px] text-muted-foreground">電源</span>
             <Switch
               checked={power}
+              disabled={offline}
+              aria-disabled={offline || undefined}
               onCheckedChange={() => updateControl(device.id, { power: !power })}
               aria-label="電源"
+              className={cn(offline && "pointer-events-none")}
             />
           </div>
 
@@ -213,6 +232,7 @@ export function DeviceDetail({ device }: { device: Device }) {
                 value={[temperature]}
                 min={AIRCON_TEMP_MIN}
                 max={AIRCON_TEMP_MAX}
+                disabled={offline}
                 aria-label="温度"
                 onValueChange={([v]) => updateControl(device.id, { temperature: v })}
               />
@@ -224,6 +244,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             options={AIRCON_MODES}
             value={mode}
             labelOf={airconModeLabel}
+            disabled={offline}
             onSelect={(v) => updateControl(device.id, { mode: v })}
           />
 
@@ -232,6 +253,7 @@ export function DeviceDetail({ device }: { device: Device }) {
             options={AIRCON_FANS}
             value={fanSpeed}
             labelOf={airconFanLabel}
+            disabled={offline}
             onSelect={(v) => updateControl(device.id, { fanSpeed: v })}
           />
         </>
@@ -243,8 +265,11 @@ export function DeviceDetail({ device }: { device: Device }) {
             <span className="text-[12.5px] text-muted-foreground">電源</span>
             <Switch
               checked={power}
+              disabled={offline}
+              aria-disabled={offline || undefined}
               onCheckedChange={() => operateIrLight(device.id, power ? "off" : "on")}
               aria-label="電源"
+              className={cn(offline && "pointer-events-none")}
             />
           </div>
 
@@ -256,8 +281,13 @@ export function DeviceDetail({ device }: { device: Device }) {
                 <button
                   key={action}
                   type="button"
+                  disabled={offline}
+                  aria-disabled={offline || undefined}
                   onClick={() => operateIrLight(device.id, action)}
-                  className="flex-1 rounded-[10px] px-3.5 py-2 text-xs font-semibold text-muted-foreground shadow-inset-sm transition-colors hover:text-foreground"
+                  className={cn(
+                    "flex-1 rounded-[10px] px-3.5 py-2 text-xs font-semibold text-muted-foreground shadow-inset-sm transition-colors hover:text-foreground",
+                    offline && "pointer-events-none opacity-50",
+                  )}
                 >
                   {label}
                 </button>
