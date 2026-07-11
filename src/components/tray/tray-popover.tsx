@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Zap } from "lucide-react";
+import { Layers, Zap } from "lucide-react";
 
 import { DeviceIcon } from "@/components/device/device-icon";
-import { SceneIcon } from "@/components/scene/scene-icon";
 import { Switch } from "@/components/ui/switch";
-import { useScenes } from "@/data";
+import { hasPowerToggle, useScenes } from "@/data";
 import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
@@ -38,7 +37,8 @@ export function TrayPopover({ onClose }: { onClose: () => void }) {
   const { data: scenes } = useScenes();
 
   const connected = connection.status === "connected";
-  const quickDevices = devices.slice(0, 3);
+  // クイックトグルは電源操作できるデバイスに限る（未対応・カーテンは除外）。
+  const quickDevices = devices.filter(hasPowerToggle).slice(0, 3);
   const quickScenes = (scenes ?? []).slice(0, 2);
 
   return (
@@ -100,12 +100,7 @@ export function TrayPopover({ onClose }: { onClose: () => void }) {
             onClick={() => navigate("scenes")}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] font-semibold shadow-raise-sm active:shadow-inset-sm"
           >
-            <SceneIcon
-              icon={scene.icon}
-              size={13}
-              strokeWidth={1.9}
-              className="text-sd-accent"
-            />
+            <Layers size={13} strokeWidth={1.9} className="text-sd-accent" />
             {scene.name}
           </button>
         ))}

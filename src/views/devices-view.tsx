@@ -5,6 +5,7 @@ import { DeviceCard } from "@/components/device/device-card";
 import { DeviceDetail } from "@/components/device/device-detail";
 import { Button } from "@/components/ui/button";
 import { ViewHeader } from "@/components/view-header";
+import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 import { useNavigationStore } from "@/stores/navigation-store";
@@ -12,6 +13,8 @@ import { useNavigationStore } from "@/stores/navigation-store";
 export function DevicesView() {
   const devices = useDeviceStore((s) => s.devices);
   const loading = useDeviceStore((s) => s.loading);
+  const loaded = useDeviceStore((s) => s.loaded);
+  const error = useDeviceStore((s) => s.error);
   const load = useDeviceStore((s) => s.load);
   const refresh = useDeviceStore((s) => s.refresh);
   const selectedDeviceId = useNavigationStore((s) => s.selectedDeviceId);
@@ -27,24 +30,28 @@ export function DevicesView() {
     <div>
       <ViewHeader
         title="デバイス"
-        subtitle="リビング・寝室ほか"
+        subtitle="SwitchBot アカウントのデバイス"
         actions={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={refresh}
-            disabled={loading}
-          >
+          <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
             <RefreshCw className={cn(loading && "animate-spin")} strokeWidth={2} />
             更新
           </Button>
         }
       />
-      <div className="grid grid-cols-2 gap-3">
-        {devices.map((device) => (
-          <DeviceCard key={device.id} device={device} />
-        ))}
-      </div>
+      {loading && devices.length === 0 && <LoadingState />}
+      {error && devices.length === 0 && (
+        <ErrorState message={error} onRetry={refresh} />
+      )}
+      {loaded && !error && devices.length === 0 && (
+        <EmptyState>デバイスが見つかりませんでした。</EmptyState>
+      )}
+      {devices.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {devices.map((device) => (
+            <DeviceCard key={device.id} device={device} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

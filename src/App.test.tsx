@@ -16,9 +16,11 @@ describe("App シェル", () => {
     });
   });
 
-  it("4つのナビ項目を描画する", () => {
+  it("4つのナビ項目を描画する", async () => {
     render(<App />);
-    const nav = screen.getByRole("navigation", { name: "メインナビゲーション" });
+    // 画面の初回データ取得（空データ）が落ち着くのを待ってから検証する。
+    const nav = await screen.findByRole("navigation", { name: "メインナビゲーション" });
+    await screen.findByText("デバイスが見つかりませんでした。");
     for (const label of NAV_LABELS) {
       expect(
         within(nav).getByRole("button", { name: label }),
@@ -26,8 +28,9 @@ describe("App シェル", () => {
     }
   });
 
-  it("初期表示はデバイス画面で、その項目に aria-current が付く", () => {
+  it("初期表示はデバイス画面で、その項目に aria-current が付く", async () => {
     render(<App />);
+    await screen.findByText("デバイスが見つかりませんでした。");
     const nav = screen.getByRole("navigation", { name: "メインナビゲーション" });
     expect(
       within(nav).getByRole("button", { name: "デバイス" }),
@@ -40,6 +43,7 @@ describe("App シェル", () => {
   it("ナビクリックで activeView が切り替わり対応画面を表示する", async () => {
     const user = userEvent.setup();
     render(<App />);
+    await screen.findByText("デバイスが見つかりませんでした。");
     const nav = screen.getByRole("navigation", { name: "メインナビゲーション" });
 
     await user.click(within(nav).getByRole("button", { name: "センサー" }));
@@ -51,8 +55,7 @@ describe("App シェル", () => {
     expect(
       within(nav).getByRole("button", { name: "デバイス" }),
     ).not.toHaveAttribute("aria-current");
-    expect(
-      screen.getByRole("heading", { name: "センサー" }),
-    ).toBeInTheDocument();
+    // センサー画面の空データ取得が落ち着くのを待つ。
+    await screen.findByRole("heading", { name: "センサー" });
   });
 });

@@ -1,7 +1,7 @@
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { ViewHeader } from "@/components/view-header";
-import { type Device, deviceStatusLabel } from "@/data";
+import { type Device, deviceStatusLabel, hasPowerToggle } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 import { useNavigationStore } from "@/stores/navigation-store";
@@ -30,14 +30,16 @@ export function DeviceDetail({ device }: { device: Device }) {
     <div>
       <ViewHeader
         title={device.name}
-        subtitle={`${device.model} · ${device.room}`}
+        subtitle={device.model}
         onBack={() => navigate("devices")}
         actions={
-          <Switch
-            checked={power}
-            onCheckedChange={() => toggle(device.id)}
-            aria-label="電源"
-          />
+          hasPowerToggle(device) ? (
+            <Switch
+              checked={power}
+              onCheckedChange={() => toggle(device.id)}
+              aria-label="電源"
+            />
+          ) : undefined
         }
       />
 

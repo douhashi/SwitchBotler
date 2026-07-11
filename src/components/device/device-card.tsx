@@ -42,7 +42,7 @@ export function DeviceCard({ device }: { device: Device }) {
         </div>
       </div>
 
-      {interaction === "detail" ? (
+      {interaction === "detail" && (
         <button
           type="button"
           aria-label={`${device.name} の詳細`}
@@ -51,12 +51,18 @@ export function DeviceCard({ device }: { device: Device }) {
         >
           <ChevronRight size={18} strokeWidth={2} />
         </button>
-      ) : (
+      )}
+      {interaction === "toggle" && (
         <Switch
           checked={on}
           onCheckedChange={() => toggle(device.id)}
           aria-label={device.name}
         />
+      )}
+      {interaction === "none" && (
+        <span className="shrink-0 rounded-md px-2 py-0.5 text-[11px] text-muted-foreground shadow-inset-sm">
+          未対応
+        </span>
       )}
     </div>
   );

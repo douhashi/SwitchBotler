@@ -1,13 +1,13 @@
-import { mockDataSource } from "@/mocks/mock-source";
 import type { ConnectionGateway } from "./connection";
 import type { SwitchBotlerDataSource } from "./source";
 import { tauriConnectionGateway } from "./tauri-connection";
+import { tauriDataSource } from "./tauri-source";
 
 /**
  * デバイス / シーン / センサーのデータソース。ここが実装差し替えの単一境界。
- * 現状はモック実装を指す。#9 で Tauri IPC 実装に差し替える（この 1 行のみ変更）。
+ * M2/M3 で Tauri IPC 実装（Rust バックエンド）に結線済み。
  */
-export const dataSource: SwitchBotlerDataSource = mockDataSource;
+export const dataSource: SwitchBotlerDataSource = tauriDataSource;
 
 /**
  * 接続（認証）まわりのゲートウェイ。M1 で Tauri IPC 実装に結線済み。

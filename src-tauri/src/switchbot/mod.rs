@@ -6,6 +6,7 @@
 pub mod client;
 pub mod credentials;
 pub mod error;
+pub mod mapping;
 pub mod signature;
 
 pub use client::SwitchBotClient;
@@ -50,5 +51,68 @@ mod integration_tests {
             .expect_err("誤認証情報では失敗すること");
         assert_eq!(err.code, ErrorCode::Unauthorized, "401 を検知すること");
         println!("error code = {:?}", err.code);
+    }
+
+    #[tokio::test]
+    #[ignore = "実 Token/Secret が必要。infisical 経由で --ignored 指定時のみ実行"]
+    async fn list_devices_returns_view_model_dtos() {
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client
+            .list_devices(&creds)
+            .await
+            .expect("list_devices が成功すること");
+        // 件数とカテゴリ内訳のみ出力（秘匿値・デバイス名は出さない）。
+        let supported = devices.iter().filter(|d| d.supported).count();
+        println!("device count = {}, supported = {supported}", devices.len());
+    }
+
+    #[tokio::test]
+    #[ignore = "実 Token/Secret が必要。infisical 経由で --ignored 指定時のみ実行"]
+    async fn list_scenes_returns_view_model_dtos() {
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let scenes = client
+            .list_scenes(&creds)
+            .await
+            .expect("list_scenes が成功すること");
+        println!("scene count = {}", scenes.len());
+    }
+
+    #[tokio::test]
+    #[ignore = "実 Token/Secret が必要。infisical 経由で --ignored 指定時のみ実行"]
+    async fn get_sensors_returns_readings() {
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let readings = client
+            .get_sensors(&creds)
+            .await
+            .expect("get_sensors が成功すること");
+        // メトリクス種別のみ出力（値・センサー名は出さない）。
+        let ids: Vec<&str> = readings.metrics.iter().map(|m| m.id.as_str()).collect();
+        println!("sensor metrics = {ids:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "実 API に副作用（コマンド送信）。安全な冪等操作のみ。--ignored 指定時のみ実行"]
+    async fn send_command_idempotent_succeeds() {
+        // 実在の Plug に現在の電源状態と同じコマンドを送る（状態を変えない冪等操作）。
+        let creds = credentials::load().expect("認証情報を取得できること（env/keyring）");
+        let client = SwitchBotClient::new().expect("クライアント生成に成功すること");
+        let devices = client.list_devices(&creds).await.expect("一覧取得");
+        let plug = devices
+            .iter()
+            .find(|d| d.category == "plug")
+            .expect("Plug が存在すること");
+        let command = if plug.controls.power {
+            "turnOn"
+        } else {
+            "turnOff"
+        };
+        client
+            .send_command(&creds, &plug.id, command, "default", "command")
+            .await
+            .expect("冪等コマンドが statusCode 100 で成功すること");
+        println!("idempotent command ok");
     }
 }

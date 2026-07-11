@@ -2,12 +2,22 @@
  * ビュー用ドメイン型（view-model）。
  *
  * SwitchBot API の生レスポンス形ではなく、画面が必要とする形として定義する。
- * API との対応付けは #8/#9 で追加する Tauri 実装（DataSource）側の責務とし、
- * ビュー・ストア・フックはこの view-model のみに依存する。
+ * API との対応付け（生 JSON → この view-model）は Rust 側 `mapping.rs` の責務とし、
+ * ビュー・ストア・フックはこの view-model のみに依存する（決定1）。
  */
 
-/** アイコンと操作アフォーダンスを決めるデバイス種別。 */
-export type DeviceCategory = "light" | "fan" | "curtain" | "humidifier" | "lock";
+/**
+ * アイコンと操作アフォーダンスを決めるデバイス種別。
+ * `other` は未対応種別（読み取り表示のみ。決定4）。
+ */
+export type DeviceCategory =
+  | "light"
+  | "plug"
+  | "curtain"
+  | "humidifier"
+  | "lock"
+  | "bot"
+  | "other";
 
 /** デバイスの可変状態。持つ制御は種別により異なる（任意プロパティ）。 */
 export type DeviceControls = {
@@ -31,25 +41,31 @@ export type DeviceColorOption = {
 export type Device = {
   id: string;
   name: string;
-  /** 製品モデル名（サブテキスト表示用。例: "Color Bulb"）。 */
+  /** 製品モデル名（= deviceType。サブテキスト表示用。例: "Color Bulb"）。 */
   model: string;
-  /** 設置場所（詳細ヘッダ用。例: "リビング"）。 */
-  room: string;
   category: DeviceCategory;
+  /** 操作対応済みの既知種別か。false なら「未対応」読み取り表示にする（決定4）。 */
+  supported: boolean;
   controls: DeviceControls;
   /** カラー電球のカラー候補。 */
   colorOptions?: DeviceColorOption[];
 };
 
-/** カード上の主操作。toggle=Switch を直接表示 / detail=詳細画面へ遷移。 */
-export type DeviceInteraction = "toggle" | "detail";
+/**
+ * カード上の主操作。
+ * - toggle: Switch を直接表示
+ * - detail: 詳細画面へ遷移
+ * - none: 未対応（操作なし・読み取り表示）
+ */
+export type DeviceInteraction = "toggle" | "detail" | "none";
 
 /**
  * デバイスの主操作を導出する。
- * 明るさ・開度などの追加制御を持つデバイスと鍵は詳細画面（detail）へ、
- * 電源のみのデバイスはカード上の Switch（toggle）で操作する。
+ * 未対応種別は操作なし。明るさ・開度などの追加制御を持つデバイスと鍵は詳細画面へ、
+ * 電源のみのデバイスはカード上の Switch で操作する。
  */
 export function deviceInteraction(device: Device): DeviceInteraction {
+  if (!device.supported) return "none";
   const { brightness, position } = device.controls;
   if (device.category === "lock" || brightness !== undefined || position !== undefined) {
     return "detail";
@@ -59,6 +75,7 @@ export function deviceInteraction(device: Device): DeviceInteraction {
 
 /** カード・ヘッダのサブに出す状態ラベルを導出する。 */
 export function deviceStatusLabel(device: Device): string {
+  if (!device.supported) return "未対応";
   const { power, position } = device.controls;
   switch (device.category) {
     case "lock":
@@ -72,39 +89,40 @@ export function deviceStatusLabel(device: Device): string {
   }
 }
 
-/** シーンのアイコン種別。scene-row が lucide にマップする。 */
-export type SceneIcon = "sleep" | "home" | "morning" | "movie";
+/**
+ * 電源トグル（turnOn/turnOff・鍵は lock/unlock）で操作できるカテゴリか。
+ * カーテンは開度操作（setPosition）のみで電源トグルを持たない。
+ */
+export function hasPowerToggle(device: Device): boolean {
+  return device.supported && device.category !== "curtain";
+}
 
+/**
+ * シーン。SwitchBot API は sceneId/sceneName のみを返す（説明・アイコンは無い）ため、
+ * view-model も id と name のみを持つ。
+ */
 export type Scene = {
   id: string;
   name: string;
-  description: string;
-  icon: SceneIcon;
 };
 
-/** センサー計測値の表示方式。 */
-export type SensorDisplay = "sparkline" | "meter";
-
-/** スパークライン／ラベルの配色トーン。 */
-export type SensorTone = "accent" | "muted" | "ok";
-
 /** ラベルアイコン種別。stat-card が lucide にマップする。 */
-export type SensorIcon = "temperature" | "humidity" | "co2" | "battery";
+export type SensorIcon = "temperature" | "humidity" | "battery";
 
+/**
+ * センサー計測値 1 項目。
+ * API は単一時点値のみを返すため履歴は持たず、全項目をメーター表示する（決定3）。
+ */
 export type SensorMetric = {
   id: string;
   label: string;
   icon: SensorIcon;
   value: number;
   unit: string;
-  display: SensorDisplay;
-  tone: SensorTone;
-  /** 履歴系列（display=sparkline のみ）。 */
-  history?: number[];
 };
 
 export type SensorReadings = {
-  /** センサー名（例: "リビングの温湿度計"）。 */
+  /** センサー名（例: "リビングの温湿度計"）。センサー無しなら空文字。 */
   source: string;
   /** 最終更新の表示文字列（例: "21:04"）。 */
   updatedAt: string;

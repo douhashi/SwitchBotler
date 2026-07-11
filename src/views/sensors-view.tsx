@@ -1,20 +1,21 @@
 import { StatCard } from "@/components/sensor/stat-card";
 import { ViewHeader } from "@/components/view-header";
+import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
 import { useSensors } from "@/data";
 
 export function SensorsView() {
-  const { data, loading, error } = useSensors();
+  const { data, loading, error, refetch } = useSensors();
+  const hasMetrics = !!data && data.metrics.length > 0;
 
   return (
     <div>
-      <ViewHeader title="センサー" subtitle={data?.source} />
-      {loading && (
-        <p className="text-sm text-muted-foreground">読み込み中…</p>
+      <ViewHeader title="センサー" subtitle={hasMetrics ? data.source : undefined} />
+      {loading && !data && <LoadingState />}
+      {error && !data && <ErrorState message={error.message} onRetry={refetch} />}
+      {data && !hasMetrics && (
+        <EmptyState>センサー（温湿度計）が見つかりませんでした。</EmptyState>
       )}
-      {error && (
-        <p className="text-sm text-destructive">センサー情報の取得に失敗しました。</p>
-      )}
-      {data && (
+      {hasMetrics && (
         <>
           <div className="grid grid-cols-2 gap-3">
             {data.metrics.map((metric) => (
