@@ -30,6 +30,46 @@ if (!tauriWindow.__TAURI_INTERNALS__) {
   };
 }
 
+// Tauri のウィンドウ API は外部境界。jsdom には無いため、既定の no-op を 1 か所で用意する。
+// window ラベルは "main" 固定。listen/onFocusChanged/onCloseRequested は unlisten を返す。
+vi.mock("@tauri-apps/api/window", () => {
+  const noopUnlisten = () => {};
+  const currentWindow = {
+    label: "main",
+    listen: async () => noopUnlisten,
+    onFocusChanged: async () => noopUnlisten,
+    onCloseRequested: async () => noopUnlisten,
+    show: async () => {},
+    hide: async () => {},
+    setFocus: async () => {},
+    unminimize: async () => {},
+  };
+  return { getCurrentWindow: () => currentWindow };
+});
+
+// tauri-plugin-store も外部境界。テスト用にプロセス内メモリで永続を模す
+// （path ごとに同一 Store を再利用し、実 plugin の挙動に合わせる）。
+vi.mock("@tauri-apps/plugin-store", () => {
+  const stores = new Map<string, Map<string, unknown>>();
+  const makeStore = (path: string) => {
+    let data = stores.get(path);
+    if (!data) {
+      data = new Map();
+      stores.set(path, data);
+    }
+    const bucket = data;
+    return {
+      get: async <T>(key: string) => bucket.get(key) as T | undefined,
+      set: async (key: string, value: unknown) => {
+        bucket.set(key, value);
+      },
+      save: async () => {},
+      delete: async (key: string) => bucket.delete(key),
+    };
+  };
+  return { load: async (path: string) => makeStore(path) };
+});
+
 // jsdom は matchMedia を実装しないため、テーマ解決（prefers-color-scheme）用にスタブする。
 if (!window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({

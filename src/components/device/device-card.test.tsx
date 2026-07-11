@@ -9,6 +9,7 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
 import type { Device } from "@/data";
 import { useDeviceStore } from "@/stores/device-store";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 import { DeviceCard } from "./device-card";
 
@@ -45,6 +46,7 @@ describe("DeviceCard", () => {
     invoke.mockResolvedValue(null);
     useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
     useNavigationStore.setState({ activeView: "devices", selectedDeviceId: null });
+    useFavoritesStore.setState({ deviceIds: new Set(), sceneIds: new Set(), loaded: true });
   });
 
   it("toggle 型カードのスイッチ操作で電源が反転し turnOn コマンドを送る", async () => {
@@ -89,10 +91,28 @@ describe("DeviceCard", () => {
     expect(nav.selectedDeviceId).toBe("bedroom-curtain");
   });
 
-  it("未対応デバイスは操作要素を出さず「未対応」表示にする", () => {
+  it("未対応デバイスは操作要素（スイッチ・詳細）を出さず「未対応」表示にする", () => {
     render(<DeviceCard device={meter} />);
     expect(screen.getByText("未対応")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).toBeNull();
-    expect(screen.queryByRole("button")).toBeNull();
+    // 詳細への chevron は無い（お気に入りのピン留めは全カード共通で残る）。
+    expect(
+      screen.queryByRole("button", { name: /の詳細$/ }),
+    ).toBeNull();
+  });
+
+  it("ピン留めボタンでお気に入りを追加・解除する", async () => {
+    useDeviceStore.setState({ devices: [plug] });
+    render(<DeviceCard device={plug} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "サーキュレーター をお気に入り" }),
+    );
+    expect(useFavoritesStore.getState().deviceIds.has("circulator")).toBe(true);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "サーキュレーター のお気に入りを解除" }),
+    );
+    expect(useFavoritesStore.getState().deviceIds.has("circulator")).toBe(false);
   });
 });

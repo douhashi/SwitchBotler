@@ -6,6 +6,7 @@ import {
   type DeviceControls,
   hasPowerToggle,
 } from "@/data";
+import { notify } from "@/stores/notice-store";
 
 type DeviceState = {
   devices: Device[];
@@ -62,7 +63,10 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     try {
       await dataSource.setPower(id, device.category, next.power);
     } catch (error) {
-      set((s) => ({ devices: withControls(s.devices, id, previous), error: messageOf(error) }));
+      const message = messageOf(error);
+      // 楽観更新をロールバックし、全画面横断で気付けるようトーストでも通知する。
+      set((s) => ({ devices: withControls(s.devices, id, previous), error: message }));
+      notify(message);
     }
   },
   updateControl: async (id, patch) => {
@@ -74,7 +78,9 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     try {
       await dataSource.updateControl(id, patch);
     } catch (error) {
-      set((s) => ({ devices: withControls(s.devices, id, previous), error: messageOf(error) }));
+      const message = messageOf(error);
+      set((s) => ({ devices: withControls(s.devices, id, previous), error: message }));
+      notify(message);
     }
   },
 }));
