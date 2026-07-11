@@ -59,7 +59,7 @@ export function useScenes(): AsyncResult<Scene[]> {
   return useAsync(loader);
 }
 
-export function useSensors(): AsyncResult<SensorReadings> {
+export function useSensors(): AsyncResult<SensorReadings[]> {
   const loader = useCallback(() => dataSource.getSensors(), []);
   const result = useAsync(loader);
   const { refetch } = result;

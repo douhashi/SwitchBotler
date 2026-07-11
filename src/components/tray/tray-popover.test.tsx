@@ -49,14 +49,27 @@ describe("TrayPopover", () => {
     });
   });
 
-  it("お気に入りを先頭に寄せ、上限 4 件で先頭補完する", async () => {
+  it("お気に入りデバイスのみを表示する（補完しない）", async () => {
     render(<TrayPopover />);
 
     const switches = await screen.findAllByRole("switch");
-    expect(switches).toHaveLength(4);
-    // お気に入り plug-5 が先頭、次に先頭から plug-1..plug-3（plug-4 は上限で除外）。
-    const names = switches.map((s) => s.getAttribute("aria-label"));
-    expect(names).toEqual(["プラグ5", "プラグ1", "プラグ2", "プラグ3"]);
+    expect(switches).toHaveLength(1);
+    expect(switches[0].getAttribute("aria-label")).toBe("プラグ5");
+  });
+
+  it("接続済みでもお気に入りが無ければ空表示を出す", async () => {
+    useFavoritesStore.setState({
+      deviceIds: new Set(),
+      sceneIds: new Set(),
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    expect(
+      await screen.findByText("お気に入りデバイスがありません"),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryAllByRole("switch")).toHaveLength(0));
   });
 
   it("フッタがトレイの Tauri コマンドへ結線されている", async () => {

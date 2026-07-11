@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Layers, RefreshCw } from "lucide-react";
+import { Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { LogoMark, Wordmark } from "@/components/brand";
 import { DeviceIcon } from "@/components/device/device-icon";
@@ -11,24 +11,6 @@ import { cn } from "@/lib/utils";
 import { useConnectionStore } from "@/stores/connection-store";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
-
-/** トレイに出す件数の上限（お気に入り優先 + 先頭で補完。決定5）。 */
-const MAX_DEVICES = 4;
-const MAX_SCENES = 3;
-
-/**
- * お気に入りを先頭に寄せ、残り枠を先頭から補完して上限で切る。
- * 未設定でも先頭 N 件が出るため、初回体験でも即操作できる（決定5）。
- */
-function favoritesFirst<T extends { id: string }>(
-  items: T[],
-  isFavorite: (id: string) => boolean,
-  limit: number,
-): T[] {
-  const favorites = items.filter((i) => isFavorite(i.id));
-  const rest = items.filter((i) => !isFavorite(i.id));
-  return [...favorites, ...rest].slice(0, limit);
-}
 
 /** フッタのテキストリンク（ウィンドウ / 設定 / 終了 で共通）。 */
 function FootLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
@@ -68,7 +50,7 @@ function QuickDevice({ device }: { device: Device }) {
   );
 }
 
-/** トレイのクイックシーンボタン（タップで実行 = クイックアクション）。 */
+/** トレイのクイックシーン行（縦 1 列ずつ）。タップで実行 = クイックアクション。 */
 function QuickScene({ scene }: { scene: Scene }) {
   const [running, setRunning] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -91,23 +73,47 @@ function QuickScene({ scene }: { scene: Scene }) {
       onClick={run}
       disabled={running}
       aria-label={`${scene.name} を実行`}
-      className={cn(
-        "flex flex-1 items-center justify-center gap-1.5 rounded-[10px] py-2 text-[11.5px] font-semibold shadow-raise-sm active:shadow-inset-sm disabled:opacity-70",
-        failed && "text-destructive",
-      )}
+      className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left transition-shadow hover:shadow-inset-sm active:shadow-inset-sm disabled:opacity-70"
     >
-      {running ? (
-        <RefreshCw size={13} strokeWidth={2} className="animate-spin" />
+      <span className="grid size-[30px] shrink-0 place-items-center rounded-[9px] text-sd-accent shadow-raise-sm">
+        {running ? (
+          <RefreshCw size={15} strokeWidth={2} className="animate-spin" />
+        ) : (
+          <Layers size={15} strokeWidth={1.9} />
+        )}
+      </span>
+      <span className="flex-1 text-[13px] font-medium">{scene.name}</span>
+      {failed ? (
+        <span className="text-[11px] text-destructive">失敗</span>
       ) : (
-        <Layers size={13} strokeWidth={1.9} className="text-sd-accent" />
+        <Play size={15} strokeWidth={2} className="shrink-0 text-muted-foreground" />
       )}
-      {failed ? "失敗" : scene.name}
     </button>
+  );
+}
+
+/** お気に入りデバイスが未登録のときの空表示。 */
+function EmptyFavorites() {
+  return (
+    <div className="flex flex-col items-center gap-1.5 px-3.5 pt-5 pb-5 text-center">
+      <span className="grid size-10 place-items-center rounded-xl text-muted-foreground shadow-inset-sm">
+        <Pin size={19} strokeWidth={1.75} />
+      </span>
+      <div className="text-[12.5px] font-semibold text-foreground">
+        お気に入りデバイスがありません
+      </div>
+      <div className="max-w-[22ch] text-[11px] text-muted-foreground">
+        デバイス画面でピン留めすると、ここに表示されます。
+      </div>
+    </div>
   );
 }
 
 /**
  * トレイのポップオーバー本体（mockup 06）。実データ結線済み（#10）。
+ *
+ * お気に入りに登録したデバイス / シーンのみを表示する（決定変更: 補完はしない）。
+ * お気に入りデバイスが無ければ空表示、お気に入りシーンが無ければシーンセクションごと省く。
  * フッタは Tauri コマンド（show_main_window / quit / hide_tray_popup）へ結線する。
  */
 export function TrayPopover() {
@@ -121,13 +127,11 @@ export function TrayPopover() {
   const { data: scenes } = useScenes();
 
   const connected = connection.status === "connected";
-  const togglable = devices.filter(hasPowerToggle);
-  const quickDevices = favoritesFirst(togglable, (id) => favoriteDeviceIds.has(id), MAX_DEVICES);
-  const quickScenes = favoritesFirst(
-    scenes ?? [],
-    (id) => favoriteSceneIds.has(id),
-    MAX_SCENES,
-  );
+  // お気に入りのみ表示。デバイスは電源トグル可能なもの（カーテン等は詳細操作のため除外）。
+  const favoriteDevices = devices
+    .filter(hasPowerToggle)
+    .filter((d) => favoriteDeviceIds.has(d.id));
+  const favoriteScenes = (scenes ?? []).filter((s) => favoriteSceneIds.has(s.id));
 
   const openMain = () => {
     void invoke("show_main_window", { view: null });
@@ -138,6 +142,11 @@ export function TrayPopover() {
     void invoke("hide_tray_popup");
   };
   const quit = () => void invoke("quit");
+
+  const showLoading = loading && devices.length === 0;
+  const showDisconnected = loaded && !connected && favoriteDevices.length === 0;
+  const showEmptyFavorites =
+    loaded && connected && favoriteDevices.length === 0;
 
   return (
     <div className="w-full">
@@ -160,31 +169,30 @@ export function TrayPopover() {
         </span>
       </div>
 
-      {loading && devices.length === 0 && (
+      {showLoading && (
         <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">読み込み中…</p>
       )}
-      {loaded && !connected && quickDevices.length === 0 && (
+      {showDisconnected && (
         <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
           未接続です。設定から接続してください。
         </p>
       )}
-      {loaded && connected && quickDevices.length === 0 && (
-        <p className="px-2 py-6 text-center text-[12px] text-muted-foreground">
-          操作できるデバイスがありません。
-        </p>
-      )}
+      {showEmptyFavorites && <EmptyFavorites />}
 
-      {quickDevices.map((device) => (
+      {favoriteDevices.map((device) => (
         <QuickDevice key={device.id} device={device} />
       ))}
 
       {error && <p className="px-2 pt-1 text-[11px] text-destructive">{error}</p>}
 
-      {quickScenes.length > 0 && (
+      {favoriteScenes.length > 0 && (
         <>
           <div className="my-2 h-px bg-border" />
-          <div className="flex flex-wrap gap-2 px-1 pb-2">
-            {quickScenes.map((scene) => (
+          <p className="px-2 pb-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+            お気に入りシーン
+          </p>
+          <div className="flex flex-col gap-0.5">
+            {favoriteScenes.map((scene) => (
               <QuickScene key={scene.id} scene={scene} />
             ))}
           </div>

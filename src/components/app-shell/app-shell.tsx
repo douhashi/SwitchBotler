@@ -3,7 +3,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MinusCircle } from "lucide-react";
 
 import { ToastViewport } from "@/components/notice/toast";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,8 +24,8 @@ import { Sidebar } from "./sidebar";
 /**
  * アプリ全体のレイアウト: サイドバー + メイン。
  *
- * ヘッダは各 view（ViewHeader）に委譲する。シェルはテーマ切替・全画面トースト・
- * close-to-tray の初回案内を担う（アプリ内トレイプレビューは実トレイへ移行し撤去。決定6）。
+ * ヘッダは各 view（ViewHeader）に委譲する。シェルは全画面トースト・close-to-tray の
+ * 初回案内を担う（テーマ切替は設定画面へ移動。アプリ内トレイプレビューは撤去。決定6）。
  */
 export function AppShell() {
   const activeView = useNavigationStore((s) => s.activeView);
@@ -81,13 +80,7 @@ export function AppShell() {
     <div className="grid min-h-screen grid-cols-[194px_1fr] bg-background text-foreground">
       <Sidebar />
 
-      <main className="overflow-hidden px-6 py-5">
-        <div className="mb-3 flex items-center justify-end gap-2">
-          <ThemeToggle />
-        </div>
-
-        {view.render()}
-      </main>
+      <main className="@container overflow-hidden px-6 py-5">{view.render()}</main>
 
       <ToastViewport />
 

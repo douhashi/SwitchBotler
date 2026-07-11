@@ -13,6 +13,7 @@ const STORE_PATH = "preferences.json";
 const KEY_FAVORITE_DEVICES = "favoriteDevices";
 const KEY_FAVORITE_SCENES = "favoriteScenes";
 const KEY_CLOSE_TO_TRAY_NOTICE_SEEN = "closeToTrayNoticeSeen";
+const KEY_SENSOR_ORDER = "sensorOrder";
 
 /** お気に入り（デバイス / シーンの id 集合）の永続 schema。 */
 export type FavoritesSnapshot = {
@@ -41,6 +42,19 @@ export async function saveFavorites(snapshot: FavoritesSnapshot): Promise<void> 
   const store = await getStore();
   await store.set(KEY_FAVORITE_DEVICES, snapshot.deviceIds);
   await store.set(KEY_FAVORITE_SCENES, snapshot.sceneIds);
+  await store.save();
+}
+
+/** センサーセクションの並べ替え順（センサー id の配列）。未設定なら空配列。 */
+export async function loadSensorOrder(): Promise<string[]> {
+  const store = await getStore();
+  return (await store.get<string[]>(KEY_SENSOR_ORDER)) ?? [];
+}
+
+/** センサーセクションの並べ替え順を保存する。 */
+export async function saveSensorOrder(order: string[]): Promise<void> {
+  const store = await getStore();
+  await store.set(KEY_SENSOR_ORDER, order);
   await store.save();
 }
 

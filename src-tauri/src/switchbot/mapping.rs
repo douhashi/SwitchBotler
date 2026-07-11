@@ -79,11 +79,13 @@ pub struct SensorMetricDto {
     pub unit: String,
 }
 
-/// センサー読み取り（単一 Meter・履歴なし。決定3）。
+/// センサー 1 台分の読み取り（履歴なし。決定3）。センサーごとに 1 件返す。
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SensorReadingsDto {
-    /// センサー名。センサーが無ければ空文字（フロントは空状態表示）。
+    /// センサーの deviceId。フロントでの並べ替え順の永続化キーに使う。
+    pub id: String,
+    /// センサー名（例: "リビングの温湿度計"）。
     pub source: String,
     pub metrics: Vec<SensorMetricDto>,
 }
@@ -224,7 +226,7 @@ pub fn map_scenes(body: &Value) -> Vec<SceneDto> {
 }
 
 /// Meter 系 status body → センサー読み取り（温度・湿度・バッテリー）。
-pub fn build_sensor_readings(source: &str, body: &Value) -> SensorReadingsDto {
+pub fn build_sensor_readings(id: &str, source: &str, body: &Value) -> SensorReadingsDto {
     let mut metrics = Vec::new();
     if let Some(v) = body.get("temperature").and_then(Value::as_f64) {
         metrics.push(SensorMetricDto {
@@ -254,6 +256,7 @@ pub fn build_sensor_readings(source: &str, body: &Value) -> SensorReadingsDto {
         });
     }
     SensorReadingsDto {
+        id: id.to_string(),
         source: source.to_string(),
         metrics,
     }
@@ -505,7 +508,8 @@ mod tests {
     fn builds_sensor_readings_from_meter_status() {
         // V2 実 body（Meter）。
         let body = json!({ "temperature": 26.2, "battery": 100, "humidity": 44 });
-        let r = build_sensor_readings("meter-name", &body);
+        let r = build_sensor_readings("meter-id", "meter-name", &body);
+        assert_eq!(r.id, "meter-id");
         assert_eq!(r.source, "meter-name");
         let ids: Vec<&str> = r.metrics.iter().map(|m| m.id.as_str()).collect();
         assert_eq!(ids, vec!["temperature", "humidity", "battery"]);

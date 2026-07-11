@@ -213,27 +213,22 @@ impl SwitchBotClient {
         Ok(())
     }
 
-    /// 先頭の Meter 系デバイスの status を取得しセンサー読み取りを返す（決定3: 単一 Meter）。
-    /// Meter が無ければ source 空・metrics 空（フロントは空状態表示）。
+    /// すべての Meter 系デバイスの status を取得し、センサーごとに 1 件返す。
+    /// Meter が無ければ空 Vec（フロントは空状態表示）。
     pub async fn get_sensors(
         &self,
         creds: &Credentials,
-    ) -> Result<SensorReadingsDto, SwitchBotError> {
+    ) -> Result<Vec<SensorReadingsDto>, SwitchBotError> {
         let body = self
             .request_json(creds, Method::GET, "/devices", None)
             .await?;
         let metas = mapping::map_device_list(&body);
-        let meter = metas.iter().find(|m| mapping::is_meter(&m.device_type));
-        match meter {
-            Some(m) => {
-                let status = self.get_status_body(creds, &m.id).await?;
-                Ok(mapping::build_sensor_readings(&m.name, &status))
-            }
-            None => Ok(SensorReadingsDto {
-                source: String::new(),
-                metrics: Vec::new(),
-            }),
+        let mut readings = Vec::new();
+        for m in metas.iter().filter(|m| mapping::is_meter(&m.device_type)) {
+            let status = self.get_status_body(creds, &m.id).await?;
+            readings.push(mapping::build_sensor_readings(&m.id, &m.name, &status));
         }
+        Ok(readings)
     }
 }
 

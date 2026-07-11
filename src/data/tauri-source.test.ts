@@ -68,15 +68,22 @@ describe("tauriDataSource", () => {
     );
   });
 
-  it("getSensors は updatedAt を付与して返す", async () => {
-    invoke.mockResolvedValue({
-      source: "meter",
-      metrics: [{ id: "temperature", label: "温度", icon: "temperature", value: 26.2, unit: "°C" }],
-    });
+  it("getSensors はセンサーごとに updatedAt を付与して返す", async () => {
+    invoke.mockResolvedValue([
+      {
+        id: "s1",
+        source: "meter",
+        metrics: [
+          { id: "temperature", label: "温度", icon: "temperature", value: 26.2, unit: "°C" },
+        ],
+      },
+    ]);
 
     const readings = await tauriDataSource.getSensors();
-    expect(readings.source).toBe("meter");
-    expect(readings.metrics).toHaveLength(1);
-    expect(readings.updatedAt).toMatch(/^\d{2}:\d{2}$/);
+    expect(readings).toHaveLength(1);
+    expect(readings[0].id).toBe("s1");
+    expect(readings[0].source).toBe("meter");
+    expect(readings[0].metrics).toHaveLength(1);
+    expect(readings[0].updatedAt).toMatch(/^\d{2}:\d{2}$/);
   });
 });

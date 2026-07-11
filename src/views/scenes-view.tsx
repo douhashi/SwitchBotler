@@ -15,7 +15,7 @@ export function ScenesView() {
         <EmptyState>シーンがまだありません。</EmptyState>
       )}
       {data && data.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <div className="grid-cards">
           {data.map((scene) => (
             <SceneRow key={scene.id} scene={scene} />
           ))}
