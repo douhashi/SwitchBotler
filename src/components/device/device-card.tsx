@@ -1,37 +1,62 @@
+import type { ComponentPropsWithRef, HTMLAttributes, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Hand, Pin } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { type Device, deviceInteraction, deviceStatusLabel } from "@/data";
+import { type Device, deviceStatusLabel } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
-import { useFavoritesStore } from "@/stores/favorites-store";
-import { useNavigationStore } from "@/stores/navigation-store";
+import { DeviceAction } from "./device-action";
 import { DeviceIcon } from "./device-icon";
 
-/** デバイス 1 台のカード（mockup .device）。toggle 型は Switch、detail 型は chevron。 */
-export function DeviceCard({ device }: { device: Device }) {
+/**
+ * デバイス 1 台のカード（mockup .device）。お気に入り・その他の両セクションで使う。
+ *
+ * **ピン（お気に入りボタン）は持たない。** お気に入りは「セクション（ドロップ先）」であり、
+ * 登録はカードを**ドラッグして移す**ことで行う（非ドラッグ経路はコンテキストメニュー）。
+ * その結果、行の**コントロール枠には常にひとつ**——その機器の操作だけ——が入るので、
+ * 幅の違う操作系（Switch / 「>」/ 「押す」）が並んで横位置がズレる問題が起きない。
+ *
+ * `control` を渡すと操作系の代わりにそれを描く（並び替えモードで ↑↓ に差し替えるため）。
+ */
+export function DeviceCard({
+  device,
+  control,
+  dragProps,
+  dragging,
+  label,
+  ...rest
+}: {
+  device: Device;
+  /** 操作系の差し替え（並び替えモードの ↑↓ 等）。未指定なら {@link DeviceAction}。 */
+  control?: ReactNode;
+  /** ドラッグ用のハンドラ群（お気に入りの登録・並び替え・解除）。 */
+  dragProps?: HTMLAttributes<HTMLElement> & {
+    draggable?: boolean;
+    "data-fav-id"?: string;
+  };
+  dragging?: boolean;
+  /** 読み上げ用のラベル（お気に入りでは「N 件中 M 番目」を含める）。既定はデバイス名。 */
+  label?: string;
+} & ComponentPropsWithRef<"div">) {
   const { t } = useTranslation("devices");
-  const setPower = useDeviceStore((s) => s.setPower);
-  const press = useDeviceStore((s) => s.press);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
-  const navigate = useNavigationStore((s) => s.navigate);
-  const favorite = useFavoritesStore((s) => s.deviceIds.has(device.id));
-  const toggleFavorite = useFavoritesStore((s) => s.toggleDeviceFavorite);
 
-  const interaction = deviceInteraction(device);
   const on = device.controls.power;
   // オフライン時はアイコンを常に muted + inset にし、電源色を出さない。
   const iconActive = on && !offline;
 
   return (
     <div
+      role="listitem"
+      aria-label={label ?? device.name}
       aria-disabled={offline || undefined}
+      {...rest}
+      {...dragProps}
       className={cn(
-        "flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-raise",
+        "flex items-center gap-3 rounded-2xl bg-card p-3.5 shadow-raise transition-shadow",
         !on && "text-muted-foreground",
         offline && "cursor-not-allowed opacity-50",
+        dragProps?.draggable && !offline && "cursor-grab active:cursor-grabbing",
+        dragging && "opacity-45 shadow-inset-sm",
       )}
     >
       <span
@@ -50,8 +75,7 @@ export function DeviceCard({ device }: { device: Device }) {
           {device.name}
         </div>
         {/* オフライン時は状態ラベルを「オフライン」に差し替え（モック index 01 = model · オフライン）。
-            状態を積み増すと折り返してカードが間延びするため 1 行に収め、truncate でも保険をかける。
-            色だけに頼らないよう warn 色のテキスト＋off-tag バッジを併記する。 */}
+            状態を積み増すと折り返してカードが間延びするため 1 行に収め、truncate でも保険をかける。 */}
         <div
           className={cn(
             "mt-0.5 truncate text-[11.5px]",
@@ -62,70 +86,11 @@ export function DeviceCard({ device }: { device: Device }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        aria-label={
-          favorite
-            ? t("favoriteRemove", { name: device.name })
-            : t("favoriteAdd", { name: device.name })
-        }
-        aria-pressed={favorite}
-        onClick={() => toggleFavorite(device.id)}
-        className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
-          favorite
-            ? "text-sd-accent shadow-inset-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Pin size={15} strokeWidth={2} className={cn(favorite && "fill-current")} />
-      </button>
-
-      {offline && (
-        <span className="shrink-0 rounded-full px-[9px] py-[3px] text-[11px] font-semibold text-muted-foreground shadow-inset-sm">
-          {t("offline")}
-        </span>
-      )}
-
-      {interaction === "detail" && (
-        <button
-          type="button"
-          aria-label={t("detailAria", { name: device.name })}
-          aria-disabled={offline || undefined}
-          onClick={() => navigate("devices", device.id)}
-          className={cn(
-            "grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
-            offline && "pointer-events-none",
-          )}
-        >
-          <ChevronRight size={18} strokeWidth={2} />
-        </button>
-      )}
-      {interaction === "toggle" && (
-        <Switch
-          checked={on}
-          disabled={offline}
-          aria-disabled={offline || undefined}
-          onCheckedChange={(checked) => setPower(device.id, checked)}
-          aria-label={device.name}
-          className={cn(offline && "pointer-events-none")}
-        />
-      )}
-      {interaction === "press" && (
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          aria-label={t("pressAria", { name: device.name })}
-          disabled={offline}
-          aria-disabled={offline || undefined}
-          onClick={() => press(device.id)}
-          className={cn("text-foreground", offline && "pointer-events-none")}
-        >
-          <Hand size={15} strokeWidth={2} />
-          {t("press")}
-        </Button>
-      )}
+      {/* コントロール枠は常にひとつ。通常は操作系、並び替え中は ↑↓ に入れ替わる。
+          data-no-drag: この上からはドラッグを開始しない（押すつもりが掴む事故を防ぐ）。 */}
+      <div data-no-drag className="flex shrink-0 items-center gap-2">
+        {control ?? <DeviceAction device={device} />}
+      </div>
     </div>
   );
 }

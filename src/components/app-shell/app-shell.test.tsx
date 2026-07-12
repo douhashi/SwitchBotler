@@ -51,7 +51,7 @@ describe("AppShell close-to-tray", () => {
     useNavigationStore.setState({ activeView: "devices", selectedDeviceId: null });
     useDeviceStore.setState({ devices: [], loading: false, loaded: true, error: null });
     useConnectionStore.setState({ loaded: false });
-    useFavoritesStore.setState({ deviceIds: new Set(), sceneIds: new Set(), loaded: true });
+    useFavoritesStore.setState({ deviceIds: [], sceneIds: [], loaded: true });
   });
 
   it("初回のクローズ要求で終了せず、常駐案内ダイアログを表示してから隠す", async () => {

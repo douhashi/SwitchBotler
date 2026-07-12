@@ -11,7 +11,17 @@
     "retry": "Retry",
     "refresh": "Refresh",
     "close": "Close",
-    "back": "Back"
+    "back": "Back",
+    "reorder": "Reorder",
+    "done": "Done"
+  },
+  "favorites": {
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "positionAria": "{{name}}, {{position}} of {{total}}",
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "dropHint": "Drag the devices you use most here"
   },
   "states": {
     "loading": "Loading…",

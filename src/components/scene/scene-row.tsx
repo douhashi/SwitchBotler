@@ -22,7 +22,7 @@ export function SceneRow({ scene }: { scene: Scene }) {
   const { t: te } = useTranslation("errors");
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<SceneError | null>(null);
-  const favorite = useFavoritesStore((s) => s.sceneIds.has(scene.id));
+  const favorite = useFavoritesStore((s) => s.sceneIds.includes(scene.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleSceneFavorite);
 
   const run = async () => {

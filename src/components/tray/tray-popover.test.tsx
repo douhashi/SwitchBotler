@@ -70,8 +70,8 @@ describe("TrayPopover", () => {
       error: null,
     });
     useFavoritesStore.setState({
-      deviceIds: new Set(["plug-5"]),
-      sceneIds: new Set(),
+      deviceIds: ["plug-5"],
+      sceneIds: [],
       loaded: true,
     });
   });
@@ -84,10 +84,30 @@ describe("TrayPopover", () => {
     expect(switches[0].getAttribute("aria-label")).toBe("プラグ5");
   });
 
+  it("トレイの表示順がお気に入りの並び順に一致する（一覧で並び替えた順）", async () => {
+    const devices = [plug(1), plug(2), plug(3)];
+    useDeviceStore.setState({ devices, error: null });
+    // 一覧で並び替えた結果を想定（デバイス配列の順とは意図的にずらす）。
+    useFavoritesStore.setState({
+      deviceIds: ["plug-3", "plug-1", "plug-2"],
+      sceneIds: [],
+      loaded: true,
+    });
+
+    render(<TrayPopover />);
+
+    const switches = await screen.findAllByRole("switch");
+    expect(switches.map((s) => s.getAttribute("aria-label"))).toEqual([
+      "プラグ3",
+      "プラグ1",
+      "プラグ2",
+    ]);
+  });
+
   it("接続済みでもお気に入りが無ければ空表示を出す", async () => {
     useFavoritesStore.setState({
-      deviceIds: new Set(),
-      sceneIds: new Set(),
+      deviceIds: [],
+      sceneIds: [],
       loaded: true,
     });
 
@@ -151,8 +171,8 @@ describe("TrayPopover", () => {
   it("detail 型デバイス（カーテン）は電源トグルを出さず状態ラベルと「>」を出す", async () => {
     useDeviceStore.setState({ devices: [curtain], error: null });
     useFavoritesStore.setState({
-      deviceIds: new Set(["bedroom-curtain"]),
-      sceneIds: new Set(),
+      deviceIds: ["bedroom-curtain"],
+      sceneIds: [],
       loaded: true,
     });
 
@@ -172,8 +192,8 @@ describe("TrayPopover", () => {
     const user = userEvent.setup();
     useDeviceStore.setState({ devices: [aircon], error: null });
     useFavoritesStore.setState({
-      deviceIds: new Set(["living-aircon"]),
-      sceneIds: new Set(),
+      deviceIds: ["living-aircon"],
+      sceneIds: [],
       loaded: true,
     });
 
@@ -206,8 +226,8 @@ describe("TrayPopover", () => {
     const user = userEvent.setup();
     useDeviceStore.setState({ devices: [pressBot], error: null });
     useFavoritesStore.setState({
-      deviceIds: new Set(["curtain-bot"]),
-      sceneIds: new Set(),
+      deviceIds: ["curtain-bot"],
+      sceneIds: [],
       loaded: true,
     });
 
@@ -242,8 +262,8 @@ describe("TrayPopover", () => {
       error: null,
     });
     useFavoritesStore.setState({
-      deviceIds: new Set(devices.map((d) => d.id)),
-      sceneIds: new Set(scenes.map((s) => s.id)),
+      deviceIds: devices.map((d) => d.id),
+      sceneIds: scenes.map((s) => s.id),
       loaded: true,
     });
 
