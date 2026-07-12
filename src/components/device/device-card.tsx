@@ -13,7 +13,7 @@ import { DeviceIcon } from "./device-icon";
 /** デバイス 1 台のカード（mockup .device）。toggle 型は Switch、detail 型は chevron。 */
 export function DeviceCard({ device }: { device: Device }) {
   const { t } = useTranslation("devices");
-  const toggle = useDeviceStore((s) => s.toggle);
+  const setPower = useDeviceStore((s) => s.setPower);
   const press = useDeviceStore((s) => s.press);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
   const navigate = useNavigationStore((s) => s.navigate);
@@ -105,7 +105,7 @@ export function DeviceCard({ device }: { device: Device }) {
           checked={on}
           disabled={offline}
           aria-disabled={offline || undefined}
-          onCheckedChange={() => toggle(device.id)}
+          onCheckedChange={(checked) => setPower(device.id, checked)}
           aria-label={device.name}
           className={cn(offline && "pointer-events-none")}
         />

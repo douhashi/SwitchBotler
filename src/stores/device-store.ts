@@ -6,7 +6,6 @@ import {
   type Device,
   type DeviceControls,
   hasPowerToggle,
-  type IrLightAction,
   type IrLightState,
 } from "@/data";
 import { isOfflineError } from "@/data/ipc";
@@ -35,19 +34,32 @@ type DeviceState = {
   load: () => Promise<void>;
   /** 明示的に再取得する。 */
   refresh: () => Promise<void>;
-  /** 電源をトグルする（楽観更新・失敗時ロールバック）。 */
-  toggle: (id: string) => Promise<void>;
-  /** 制御値を部分更新する（楽観更新・失敗時ロールバック）。 */
-  updateControl: (id: string, patch: Partial<DeviceControls>) => Promise<void>;
   /**
-   * 赤外線ライトを操作する。電源（on/off）は楽観更新 + 永続化 + 失敗時ロールバック、
-   * 明暗（brighter/dimmer）は状態を持たず送信のみ（失敗時トースト）。
+   * 電源を設定する（capability: power）。送信方法（汎用 setPower / エアコン setAll /
+   * 赤外線 on-off）は category ごとに内部で振り分け、呼び出し側は on/off だけを渡す。
+   * 楽観更新・失敗時ロールバック。エアコン/赤外線は「最後に送信した値」を永続化する。
    */
-  operateIrLight: (id: string, action: IrLightAction) => Promise<void>;
+  setPower: (id: string, on: boolean) => Promise<void>;
+  /** 明るさを設定する（capability: brightness。調光ライト）。楽観更新・失敗時ロールバック。 */
+  setBrightness: (id: string, value: number) => Promise<void>;
+  /** カラーを設定する（capability: color。カラー電球）。楽観更新・失敗時ロールバック。 */
+  setColor: (id: string, colorId: string) => Promise<void>;
+  /** 開度を設定する（capability: position。カーテン）。楽観更新・失敗時ロールバック。 */
+  setPosition: (id: string, value: number) => Promise<void>;
+  /**
+   * エアコンの運転状態を部分更新する（capability: climate。温度/モード/風量）。
+   * 常に全状態を setAll 送信し、成功時に「最後に送信した値」を永続化する。
+   */
+  setClimate: (id: string, patch: Partial<DeviceControls>) => Promise<void>;
+  /**
+   * 赤外線ライトの相対明暗（capability: brightnessRelative）。絶対値・状態を持たない
+   * 送信専用アクションのため楽観更新も永続化もせず、失敗時のみ error + トースト。
+   */
+  nudgeBrightness: (id: string, direction: "brighter" | "dimmer") => Promise<void>;
   /**
    * Bot を 1 回押す（pressMode）。press は状態を持たない momentary 操作のため、
    * 楽観更新はせず送信のみ行い、失敗時のみ error セット + トースト通知する
-   * （ir_light の brighter/dimmer と同型）。
+   * （相対明暗と同型）。
    */
   press: (id: string) => Promise<void>;
 };
@@ -135,6 +147,59 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
     notify(code, statusCode);
   };
 
+  /** 楽観更新（先に反映し、失敗時に failOperation でロールバック）。 */
+  const optimistic = (id: string, next: DeviceControls): void => {
+    set((s) => ({ devices: withControls(s.devices, id, next), error: null }));
+  };
+
+  /**
+   * エアコン送信（capability: power/climate 共通）。温度・モード・風量・電源を常に一括
+   * 送信（setAll）し、成功時に「最後に送信した値」を永続化する（V4）。失敗はロールバック。
+   */
+  const commitAircon = async (
+    id: string,
+    previous: DeviceControls,
+    next: DeviceControls,
+  ): Promise<void> => {
+    optimistic(id, next);
+    const state = airconStateOf(next);
+    try {
+      await dataSource.setAircon(id, state);
+      await saveAirconState(id, state);
+    } catch (error) {
+      failOperation(id, previous, error);
+    }
+  };
+
+  /** 赤外線ライトの電源送信。on/off を送信し電源値を永続化する（赤外線は status を持たない）。 */
+  const commitIrPower = async (
+    id: string,
+    previous: DeviceControls,
+    on: boolean,
+  ): Promise<void> => {
+    optimistic(id, { ...previous, power: on });
+    try {
+      await dataSource.sendIrLight(id, on ? "on" : "off");
+      await saveIrLightState(id, { power: on });
+    } catch (error) {
+      failOperation(id, previous, error);
+    }
+  };
+
+  /** 汎用の制御値部分更新（brightness / color / position）。 */
+  const commitControl = async (
+    id: string,
+    previous: DeviceControls,
+    patch: Partial<DeviceControls>,
+  ): Promise<void> => {
+    optimistic(id, { ...previous, ...patch });
+    try {
+      await dataSource.updateControl(id, patch);
+    } catch (error) {
+      failOperation(id, previous, error);
+    }
+  };
+
   return {
     devices: [],
     loading: false,
@@ -166,68 +231,54 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
         set({ loading: false });
       }
     },
-    toggle: async (id) => {
-      const device = get().devices.find((d) => d.id === id);
-      if (!device || !hasPowerToggle(device)) return;
-      const previous = device.controls;
-      const next = { ...previous, power: !previous.power };
-      // 楽観更新: 先に反映し、失敗したら戻す（クラウド status の反映遅延を回避）。
-      set((s) => ({ devices: withControls(s.devices, id, next), error: null }));
-      try {
-        await dataSource.setPower(id, device.category, next.power);
-      } catch (error) {
-        failOperation(id, previous, error);
-      }
-    },
-    updateControl: async (id, patch) => {
+    setPower: async (id, on) => {
       const device = get().devices.find((d) => d.id === id);
       if (!device) return;
       const previous = device.controls;
-      const next = { ...previous, ...patch };
-      // 楽観更新（全カテゴリ共通）。
-      set((s) => ({ devices: withControls(s.devices, id, next), error: null }));
-
+      // 送信差は category ごとに吸収する（UI からは on/off を渡すだけ）。
       if (device.category === "aircon") {
-        // 赤外線エアコンは温度・モード・風量・電源を常に一括送信（setAll）する。
-        // 成功したら「最後に送信した値」を永続化する（V4）。失敗はロールバック + トースト。
-        const state = airconStateOf(next);
-        try {
-          await dataSource.setAircon(id, state);
-          await saveAirconState(id, state);
-        } catch (error) {
-          failOperation(id, previous, error);
-        }
+        await commitAircon(id, previous, { ...previous, power: on });
         return;
       }
-
+      if (device.category === "ir_light") {
+        await commitIrPower(id, previous, on);
+        return;
+      }
+      if (!hasPowerToggle(device)) return;
+      optimistic(id, { ...previous, power: on });
       try {
-        await dataSource.updateControl(id, patch);
+        await dataSource.setPower(id, device.category, on);
       } catch (error) {
         failOperation(id, previous, error);
       }
     },
-    operateIrLight: async (id, action) => {
+    setBrightness: async (id, value) => {
       const device = get().devices.find((d) => d.id === id);
       if (!device) return;
-
-      // 電源（on/off）は「最後に送信した値」を持つため楽観更新 + 永続化する。
-      if (action === "on" || action === "off") {
-        const previous = device.controls;
-        const next = { ...previous, power: action === "on" };
-        set((s) => ({ devices: withControls(s.devices, id, next), error: null }));
-        try {
-          await dataSource.sendIrLight(id, action);
-          await saveIrLightState(id, { power: next.power });
-        } catch (error) {
-          failOperation(id, previous, error);
-        }
-        return;
-      }
-
-      // 明暗（brighter/dimmer）は絶対値・状態を持たないため送信のみ（永続化しない）。
+      await commitControl(id, device.controls, { brightness: value });
+    },
+    setColor: async (id, colorId) => {
+      const device = get().devices.find((d) => d.id === id);
+      if (!device) return;
+      await commitControl(id, device.controls, { colorId });
+    },
+    setPosition: async (id, value) => {
+      const device = get().devices.find((d) => d.id === id);
+      if (!device) return;
+      await commitControl(id, device.controls, { position: value });
+    },
+    setClimate: async (id, patch) => {
+      const device = get().devices.find((d) => d.id === id);
+      if (!device) return;
+      await commitAircon(id, device.controls, { ...device.controls, ...patch });
+    },
+    nudgeBrightness: async (id, direction) => {
+      const device = get().devices.find((d) => d.id === id);
+      if (!device) return;
+      // 相対明暗は絶対値・状態を持たないため送信のみ（楽観更新・永続化しない）。
       set({ error: null });
       try {
-        await dataSource.sendIrLight(id, action);
+        await dataSource.sendIrLight(id, direction);
       } catch (error) {
         failOperation(id, undefined, error);
       }
