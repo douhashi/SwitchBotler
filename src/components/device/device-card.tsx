@@ -49,15 +49,16 @@ export function DeviceCard({ device }: { device: Device }) {
         <div className="truncate text-sm font-semibold text-foreground">
           {device.name}
         </div>
-        {/* オフライン時は理由を色だけに頼らず「· オフライン」を併記し、行を warn 色にする。 */}
+        {/* オフライン時は状態ラベルを「オフライン」に差し替え（モック index 01 = model · オフライン）。
+            状態を積み増すと折り返してカードが間延びするため 1 行に収め、truncate でも保険をかける。
+            色だけに頼らないよう warn 色のテキスト＋off-tag バッジを併記する。 */}
         <div
           className={cn(
-            "mt-0.5 text-[11.5px]",
+            "mt-0.5 truncate text-[11.5px]",
             offline ? "text-sd-warn" : "text-muted-foreground",
           )}
         >
-          {device.model} · {deviceStatusLabel(device, t)}
-          {offline && ` · ${t("offline")}`}
+          {device.model} · {offline ? t("offline") : deviceStatusLabel(device, t)}
         </div>
       </div>
 
