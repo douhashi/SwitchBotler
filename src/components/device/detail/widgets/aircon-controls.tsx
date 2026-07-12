@@ -124,37 +124,43 @@ export function AirconControls({ device }: { device: Device }) {
           </div>
         </div>
 
-        {/* 温度行：−/＋ ステッパー（Soft Depth）＋モード色 fill のスライダー＋スケール表記。 */}
-        <div className="mt-3 flex items-center gap-3.5">
-          <TempStepButton
-            label={t("tempDown")}
-            disabled={tempDisabled}
-            onClick={() => stepTemp(-1)}
-          >
-            <Minus size={22} strokeWidth={2.2} aria-hidden />
-          </TempStepButton>
-          <div className="flex-1">
-            <Slider
-              value={[currentTemp]}
-              min={AIRCON_TEMP_MIN}
-              max={AIRCON_TEMP_MAX}
+        {/* 温度行：−/＋ ステッパー（Soft Depth）＋モード色 fill のスライダー。
+            ボタンはスライダーと同じ行で縦中央に揃え（スケールに引っ張られてズレないよう分離）、
+            スケール表記はスライダー幅に合わせて別行に置く。 */}
+        <div className="mt-3">
+          <div className="flex items-center gap-3.5">
+            <TempStepButton
+              label={t("tempDown")}
               disabled={tempDisabled}
-              rangeClassName="bg-[var(--m)]"
-              aria-label={t("temperature")}
-              onValueChange={([v]) => setClimate(device.id, { temperature: v })}
-            />
-            <div className="mt-2 flex justify-between font-mono text-[10.5px] text-muted-foreground">
-              <span>{t("tempScaleMin")}</span>
-              <span>{t("tempScaleMax")}</span>
+              onClick={() => stepTemp(-1)}
+            >
+              <Minus size={22} strokeWidth={2.2} aria-hidden />
+            </TempStepButton>
+            <div className="flex-1">
+              <Slider
+                value={[currentTemp]}
+                min={AIRCON_TEMP_MIN}
+                max={AIRCON_TEMP_MAX}
+                disabled={tempDisabled}
+                rangeClassName="bg-[var(--m)]"
+                aria-label={t("temperature")}
+                onValueChange={([v]) => setClimate(device.id, { temperature: v })}
+              />
             </div>
+            <TempStepButton
+              label={t("tempUp")}
+              disabled={tempDisabled}
+              onClick={() => stepTemp(1)}
+            >
+              <Plus size={22} strokeWidth={2.2} aria-hidden />
+            </TempStepButton>
           </div>
-          <TempStepButton
-            label={t("tempUp")}
-            disabled={tempDisabled}
-            onClick={() => stepTemp(1)}
-          >
-            <Plus size={22} strokeWidth={2.2} aria-hidden />
-          </TempStepButton>
+          {/* スケールはスライダー幅に合わせて内側へ寄せる（ボタン size-11=44px + gap-3.5=14px）。
+              ℃ は mono だと潰れるため sans で描く（視認性重視）。 */}
+          <div className="mt-2.5 flex justify-between px-[58px] text-[11px] text-muted-foreground">
+            <span>{t("tempScaleMin")}</span>
+            <span>{t("tempScaleMax")}</span>
+          </div>
         </div>
 
         {/* 運転モード：5 列のアイコン＋ラベル。選択で凸＋アクセント色、非選択は凹。 */}
