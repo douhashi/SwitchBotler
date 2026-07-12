@@ -44,10 +44,6 @@ fn entry(account: &str) -> Result<Entry, SwitchBotError> {
     Entry::new(SERVICE, account).map_err(|_| SwitchBotError::storage())
 }
 
-fn cache_get() -> Option<Credentials> {
-    CACHE.lock().ok()?.clone()
-}
-
 fn cache_set(creds: Option<Credentials>) {
     if let Ok(mut guard) = CACHE.lock() {
         *guard = creds;
@@ -88,12 +84,18 @@ fn read_keyring() -> Option<Credentials> {
 }
 
 /// keychain 由来の認証情報をキャッシュ経由で取得する（初回のみ keychain へアクセス）。
+///
+/// ロックを keychain 読み取り全体で保持し、**同時起動する main / tray 両ウィンドウの
+/// 並行な初回読み取りを直列化**する。先行スレッドが読み取り＋キャッシュを終えるまで
+/// 後続はロック待ちになり、その後はキャッシュを返すため keychain プロンプトは 1 回で済む。
+/// keychain 呼び出し中はロックを保持するが、ここは起動時 1 回のみで再入もしないため許容する。
 fn cached_keyring_load() -> Option<Credentials> {
-    if let Some(creds) = cache_get() {
-        return Some(creds);
+    let mut guard = CACHE.lock().ok()?;
+    if let Some(creds) = guard.as_ref() {
+        return Some(creds.clone());
     }
     let creds = read_keyring()?;
-    cache_set(Some(creds.clone()));
+    *guard = Some(creds.clone());
     Some(creds)
 }
 
