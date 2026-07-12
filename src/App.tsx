@@ -19,7 +19,8 @@ import { useNavigationStore, type ViewId } from "@/stores/navigation-store";
  *
  * あわせてトレイ/single-instance から Rust が emit するイベントに反応する（決定4）:
  * - "navigate": 指定画面へ遷移する（`{ view }`。トレイフッタの「設定」等）。
- * - "main-shown": ウィンドウ表示時に device-store を再ロードする（最小限の同期）。
+ * - "main-shown": ウィンドウ表示時、鮮度が古ければ device-store を再ロードする
+ *   （TTL ガード。連続表示で SwitchBot API の 1+N 取得を繰り返さない）。
  */
 function App() {
   const loaded = useConnectionStore((s) => s.loaded);
@@ -42,7 +43,7 @@ function App() {
 
     void win
       .listen("main-shown", () => {
-        void useDeviceStore.getState().refresh();
+        void useDeviceStore.getState().refreshIfStale();
       })
       .then((fn) => unlisteners.push(fn))
       .catch(() => {});
