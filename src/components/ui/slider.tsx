@@ -7,12 +7,16 @@ import { cn } from "@/lib/utils"
 
 function Slider({
   className,
+  rangeClassName,
   defaultValue,
   value,
   min = 0,
   max = 100,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  /** Range(fill) の色を上書きする。未指定なら既定の `bg-primary`。 */
+  rangeClassName?: string
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -45,7 +49,8 @@ function Slider({
         <SliderPrimitive.Range
           data-slot="slider-range"
           className={cn(
-            "absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
+            "absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
+            rangeClassName
           )}
         />
       </SliderPrimitive.Track>

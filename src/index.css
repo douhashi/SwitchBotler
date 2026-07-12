@@ -50,6 +50,13 @@
   --tgl-on-shadow: 2px 2px 6px #c9ccea, -2px -2px 6px #f6f8fc;
   --hair: rgba(120, 130, 150, 0.14);
   --scroll: rgba(120, 130, 150, 0.34); /* スクロールバーのつまみ（Light） */
+
+  /* エアコン運転モード色（Light）。fill・大数値・チップ・選択状態を連動させる。 */
+  --m-cool: #2e9be6;
+  --m-heat: #f0872e;
+  --m-dry: #14a8a0;
+  --m-fan: #7c8798;
+  --m-auto: #6366f1;
 }
 
 .dark {
@@ -92,6 +99,13 @@
   --tgl-on-shadow: 2px 2px 8px #191c23, -2px -2px 7px #2c303a;
   --hair: rgba(200, 210, 230, 0.08);
   --scroll: rgba(200, 210, 230, 0.22); /* スクロールバーのつまみ（Dark） */
+
+  /* エアコン運転モード色（Dark）。色は反転せず視認しやすい明度へ差し替え。 */
+  --m-cool: #56b6f5;
+  --m-heat: #f79b4e;
+  --m-dry: #34c7be;
+  --m-fan: #9aa5b4;
+  --m-auto: #818cf8;
 }
 
 /* Tailwind ユーティリティへトークンを公開する（bg-background / text-foreground / ring-ring 等）。 */
@@ -123,6 +137,13 @@
   --color-sd-ok: var(--sd-ok);
   --color-sd-warn: var(--sd-warn);
   --color-sd-danger: var(--sd-danger);
+
+  /* エアコン運転モード色も Tailwind ユーティリティに公開（text-m-cool 等） */
+  --color-m-cool: var(--m-cool);
+  --color-m-heat: var(--m-heat);
+  --color-m-dry: var(--m-dry);
+  --color-m-fan: var(--m-fan);
+  --color-m-auto: var(--m-auto);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

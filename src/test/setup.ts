@@ -80,6 +80,15 @@ vi.mock("@tauri-apps/plugin-store", () => {
   return { load: async (path: string) => makeStore(path) };
 });
 
+// jsdom は ResizeObserver を実装しないため、Radix の Slider（つまみサイズ計測）用にスタブする。
+if (!window.ResizeObserver) {
+  window.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 // jsdom は matchMedia を実装しないため、テーマ解決（prefers-color-scheme）用にスタブする。
 if (!window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({

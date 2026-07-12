@@ -10,7 +10,7 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 |---|---|
 | [`index.html`](./index.html) | 主要4画面（デバイス一覧 / センサーステータス / シーン実行 / 設定）。右上の「テーマ」ボタンでライト/ダーク切替 |
 | [`index.en.html`](./index.en.html) | `index.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
-| [`detail.html`](./detail.html) | デバイス詳細（操作UI）。エアコン=スライダー基調＋運転モードで色連動、照明=明るさ＋カラー、モード色の凡例つき。右上で Light/Dark/System 切替 |
+| [`detail.html`](./detail.html) | デバイス詳細（操作UI）。エアコン=スライダー基調＋運転モードで色連動、照明=明るさ＋カラー、モード色の凡例つき。右上で Light/Dark/System 切替。**実装反映済み**（エアコン詳細をヒーロー温度＋−/＋ステッパー＋アイコン付きモード/風量へ刷新／運転モード色 `--m-*` を fill・大数値・チップ・選択に連動／送風は温度無効化。#65） |
 | [`detail.en.html`](./detail.en.html) | `detail.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
 | [`tray.html`](./tray.html) | トレイポップアップの操作性拡張案（全デバイス操作＝エアコン等は「>」で詳細へ / 幅拡大 / 可変高＋各リスト独立スクロール）。右上で Light/Dark/System 切替。**実装反映済み**（幅 360px・可変高＋上限クランプ・各リスト独立スクロール／下端フェード。#61） |
 | [`tray.en.html`](./tray.en.html) | `tray.html` の英語版（表示テキストのみ英訳・構造/CSS/トークンは同一） |
@@ -41,6 +41,7 @@ SwitchBotler の UI モックアップ（視覚リファレンス）。デザイ
 | Token / Secret 入力 | `Input` | `eye` / `eye-off` |
 | デバイス・スタットカード | `Card` | — |
 | 明るさ・カーテン開度 | `Slider` | `sun` |
+| エアコン運転モード | アイコン付き `radiogroup` | `snowflake`(冷房) / `flame`(暖房) / `droplet`(除湿) / `wind`(送風) / 自動は `createLucideIcon` で自作の A 字グリフ（相当アイコンが Lucide に無いため）。#65 |
 | ナビ | `Button`(ghost)＋選択状態 | `layout-grid` / `activity` / `layers` / `settings` |
 | 接続バナー | `Alert` | `check` / `shield-check` |
 | 状態ラベル | `Badge` | — |
