@@ -18,6 +18,16 @@ import {
 import { type AppErrorCode, errorCodeOf, statusCodeOf } from "@/i18n/error";
 import { notify } from "@/stores/notice-store";
 
+/**
+ * デバイス一覧の鮮度 TTL（ms）。**自動リフレッシュ経路（`refreshIfStale`）のみ**に適用する。
+ *
+ * 一覧取得は 1 + N リクエスト（GET /devices + 非赤外線デバイスごとの status）を消費するため、
+ * トレイ popup の連続開閉のようなバーストでレート（1 日 10,000）を浪費しないよう間引く。
+ * TTL が規定するのは「自アプリ以外の経路（物理スイッチ・SwitchBot アプリ）で変えられた
+ * 状態への追随遅延の上限」だけである（自アプリの操作は楽観更新 + 無効化で常に整合する）。
+ */
+export const DEVICE_TTL_MS = 30_000;
+
 type DeviceState = {
   devices: Device[];
   loading: boolean;
@@ -30,10 +40,21 @@ type DeviceState = {
    * 永続属性を付与しない。`refresh` でクリアする（方針 A・リアクティブ検知）。
    */
   offlineIds: Set<string>;
+  /**
+   * 最後に**取得へ成功した**時刻（epoch ms）。未取得、または制御コマンド成功でキャッシュを
+   * 無効化した場合は `null`（= 次の `refreshIfStale` が必ず取得する）。
+   */
+  lastFetchedAt: number | null;
   /** 初回のみ取得する（既に読み込み済みなら何もしない）。 */
   load: () => Promise<void>;
-  /** 明示的に再取得する。 */
+  /** 明示的に再取得する（TTL を無視して**常に**取得する。手動更新ボタン / エラー再試行）。 */
   refresh: () => Promise<void>;
+  /**
+   * 鮮度が古い場合のみ再取得する（自動リフレッシュ経路。トレイ popup の focus 取得 /
+   * メインウィンドウの `main-shown`）。{@link DEVICE_TTL_MS} 以内、または取得進行中なら
+   * 何もしない。
+   */
+  refreshIfStale: () => Promise<void>;
   /**
    * 電源を設定する（capability: power）。送信方法（汎用 setPower / エアコン setAll /
    * 赤外線 on-off）は category ごとに内部で振り分け、呼び出し側は on/off だけを渡す。
@@ -153,6 +174,16 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
   };
 
   /**
+   * キャッシュを無効化する（サーバ実状態が変わったので鮮度をリセットする）。
+   * 即時 refresh はせず（追加リクエスト 0・楽観更新値を古い status で上書きしない）、
+   * **次の自動リフレッシュが TTL に阻まれず最新化する**ようにするだけ。
+   * status を持つデバイスへのコマンド成功時にのみ呼ぶ（赤外線は status が無く情報利得ゼロ）。
+   */
+  const invalidate = (): void => {
+    set({ lastFetchedAt: null });
+  };
+
+  /**
    * エアコン送信（capability: power/climate 共通）。温度・モード・風量・電源を常に一括
    * 送信（setAll）し、成功時に「最後に送信した値」を永続化する（V4）。失敗はロールバック。
    */
@@ -186,7 +217,10 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
     }
   };
 
-  /** 汎用の制御値部分更新（brightness / color / position）。 */
+  /**
+   * 汎用の制御値部分更新（brightness / color / position）。対象はいずれも status を持つ
+   * デバイスのため、成功時にキャッシュを無効化する。
+   */
   const commitControl = async (
     id: string,
     previous: DeviceControls,
@@ -195,6 +229,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
     optimistic(id, { ...previous, ...patch });
     try {
       await dataSource.updateControl(id, patch);
+      invalidate();
     } catch (error) {
       failOperation(id, previous, error);
     }
@@ -206,6 +241,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
     loaded: false,
     error: null,
     offlineIds: new Set<string>(),
+    lastFetchedAt: null,
     load: async () => {
       if (get().loaded || get().loading) return;
       await get().refresh();
@@ -224,12 +260,24 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
           overlayAirconStates(devices, airconStates),
           irLightStates,
         );
-        set({ devices: overlaid, loaded: true, offlineIds: new Set<string>() });
+        // 鮮度は成功時のみ更新する（失敗をキャッシュしてエラー状態に閉じ込めない）。
+        set({
+          devices: overlaid,
+          loaded: true,
+          offlineIds: new Set<string>(),
+          lastFetchedAt: Date.now(),
+        });
       } catch (error) {
         set({ error: errorCodeOf(error), loaded: true });
       } finally {
         set({ loading: false });
       }
+    },
+    refreshIfStale: async () => {
+      const { loading, lastFetchedAt } = get();
+      if (loading) return; // 取得進行中（in-flight）の二重発火を抑止する。
+      if (lastFetchedAt !== null && Date.now() - lastFetchedAt < DEVICE_TTL_MS) return;
+      await get().refresh();
     },
     setPower: async (id, on) => {
       const device = get().devices.find((d) => d.id === id);
@@ -248,6 +296,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => {
       optimistic(id, { ...previous, power: on });
       try {
         await dataSource.setPower(id, device.category, on);
+        invalidate();
       } catch (error) {
         failOperation(id, previous, error);
       }

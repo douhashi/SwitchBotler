@@ -16,8 +16,9 @@ import { useFavoritesStore } from "@/stores/favorites-store";
  * トレイウィンドウ（label="tray"）のルート。
  *
  * device / お気に入りを自前でロードし、`TrayPopover` を全画面表示する
- * （各ウィンドウ独立ロード。決定4）。フォーカス取得時に再ロードし、フォーカスを失ったら
- * 隠す（クリック外し = 閉じる）。位置決めは Rust 側（positioner）が担う。
+ * （各ウィンドウ独立ロード。決定4）。フォーカス取得時に鮮度が古ければ再ロードし
+ * （TTL ガード。連続開閉で API を叩かない）、フォーカスを失ったら隠す
+ * （クリック外し = 閉じる）。位置決めは Rust 側（positioner）が担う。
  *
  * 幅は固定（{@link TRAY_WIDTH}）。高さは内容にフィットさせつつ {@link MAX_TRAY_HEIGHT} で
  * 上限クランプする（各リストは内側スクロールで px 上限に収まるため、これは安全弁）。
@@ -57,8 +58,10 @@ export function TrayApp() {
     void win
       .onFocusChanged(({ payload: focused }) => {
         if (focused) {
-          // 表示のたびに最新化する（ユーザー起動・低頻度でレートを踏まない）。
-          void useDeviceStore.getState().refresh();
+          // 表示のたびに最新化する。ただし一覧取得は 1+N リクエストを消費するため、
+          // TTL 内（DEVICE_TTL_MS）の連続開閉ではキャッシュを使い API を叩かない。
+          void useDeviceStore.getState().refreshIfStale();
+          // お気に入りはローカル永続層のみ（API コスト 0）なので毎回 reload する。
           void useFavoritesStore.getState().reload();
         } else {
           void win.hide();

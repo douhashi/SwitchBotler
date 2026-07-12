@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // 外部境界（Tauri IPC）は invoke のみモックする。カード〜ストア〜データ層は実物を通す。
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
@@ -19,7 +19,19 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 
 import type { AirconState, Device, IrLightState } from "@/data";
 import { useNoticeStore } from "@/stores/notice-store";
-import { useDeviceStore } from "./device-store";
+import { DEVICE_TTL_MS, useDeviceStore } from "./device-store";
+
+/** ストアのシングルトンをテスト間で初期化する（TTL タイムスタンプの持ち越しを防ぐ）。 */
+function resetStore(): void {
+  useDeviceStore.setState({
+    devices: [],
+    loading: false,
+    loaded: false,
+    error: null,
+    offlineIds: new Set(),
+    lastFetchedAt: null,
+  });
+}
 
 /** Rust が返すエアコン初期値（status なし・build_device デフォルト相当）。 */
 const airconDefault: Device = {
@@ -35,7 +47,7 @@ describe("device-store aircon", () => {
   beforeEach(() => {
     invoke.mockReset();
     prefs.clear();
-    useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
+    resetStore();
   });
 
   it("refresh は永続化した最終送信値をエアコンの controls に重畳する（V4）", async () => {
@@ -114,7 +126,7 @@ describe("device-store ir_light", () => {
   beforeEach(() => {
     invoke.mockReset();
     prefs.clear();
-    useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
+    resetStore();
   });
 
   it("refresh は永続化した最終電源値を赤外線ライトの controls に重畳する（V4）", async () => {
@@ -211,7 +223,7 @@ describe("device-store bot", () => {
   beforeEach(() => {
     invoke.mockReset();
     prefs.clear();
-    useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
+    resetStore();
   });
 
   it("switchMode の Bot は setPower で turnOn/turnOff を送り楽観更新する", async () => {
@@ -281,13 +293,7 @@ describe("device-store offline（statusCode 161 検知）", () => {
     invoke.mockReset();
     prefs.clear();
     useNoticeStore.setState({ notices: [] });
-    useDeviceStore.setState({
-      devices: [],
-      loading: false,
-      loaded: false,
-      error: null,
-      offlineIds: new Set(),
-    });
+    resetStore();
   });
 
   it("コマンドが offline で reject すると対象を offlineIds に入れロールバック + トーストする（V1）", async () => {
@@ -339,5 +345,141 @@ describe("device-store offline（statusCode 161 検知）", () => {
     await useDeviceStore.getState().refresh();
 
     expect(useDeviceStore.getState().offlineIds.size).toBe(0);
+  });
+});
+
+/** 調光ライト（brightness / color を持つ。commitControl 経路の検証用）。 */
+const bulb: Device = {
+  id: "bulb1",
+  name: "カラー電球",
+  model: "Color Bulb",
+  category: "light",
+  supported: true,
+  controls: { power: true, brightness: 50 },
+};
+
+/** `list_devices` の invoke 回数（= SwitchBot API の 1+N 取得が走った回数）。 */
+function listDeviceCalls(): number {
+  return invoke.mock.calls.filter(([cmd]) => cmd === "list_devices").length;
+}
+
+describe("device-store TTL ガード（V4）", () => {
+  beforeEach(() => {
+    invoke.mockReset();
+    prefs.clear();
+    useNoticeStore.setState({ notices: [] });
+    resetStore();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-07-12T10:00:00Z"));
+    invoke.mockImplementation(async (cmd: string) =>
+      cmd === "list_devices" ? [plug, bulb, airconDefault, irLightDefault] : null,
+    );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("refreshIfStale は未取得（lastFetchedAt=null）なら取得する", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(1);
+    expect(useDeviceStore.getState().lastFetchedAt).toBe(Date.now());
+  });
+
+  it("TTL 内の refreshIfStale は取得せず、devices もそのまま保持する（V5）", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+    const before = useDeviceStore.getState().devices;
+
+    vi.advanceTimersByTime(DEVICE_TTL_MS - 1_000);
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(1);
+    // スキップ時に devices が作り直されない（楽観更新済みの表示が巻き戻らない）。
+    expect(useDeviceStore.getState().devices).toBe(before);
+  });
+
+  it("TTL 経過後の refreshIfStale は取得する", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+
+    vi.advanceTimersByTime(DEVICE_TTL_MS + 1_000);
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(2);
+  });
+
+  it("refresh は TTL 内でも必ず取得する（手動更新 / 再試行が force で貫通する・V3）", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+
+    vi.advanceTimersByTime(1_000);
+    await useDeviceStore.getState().refresh();
+
+    expect(listDeviceCalls()).toBe(2);
+  });
+
+  it("取得に失敗したら lastFetchedAt を更新せず、直後の refreshIfStale が再試行する", async () => {
+    invoke.mockRejectedValueOnce({ code: "network", message: "接続できません。" });
+
+    await useDeviceStore.getState().refreshIfStale();
+    expect(useDeviceStore.getState().lastFetchedAt).toBeNull();
+
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(2);
+    expect(useDeviceStore.getState().error).toBeNull();
+  });
+
+  it("取得中（loading）の refreshIfStale は二重に取得しない", async () => {
+    useDeviceStore.setState({ loading: true });
+
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(0);
+  });
+
+  it("status を持つデバイスへのコマンド成功はキャッシュを無効化し、TTL 内でも次の refreshIfStale が取得する", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+
+    await useDeviceStore.getState().setPower("p1", true);
+    expect(useDeviceStore.getState().lastFetchedAt).toBeNull();
+
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(2);
+  });
+
+  it("commitControl 経路（明るさ）のコマンド成功もキャッシュを無効化する", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+
+    await useDeviceStore.getState().setBrightness("bulb1", 80);
+
+    expect(useDeviceStore.getState().lastFetchedAt).toBeNull();
+  });
+
+  it("コマンドが失敗したらキャッシュを無効化しない（サーバ状態は変わっていない）", async () => {
+    await useDeviceStore.getState().refreshIfStale();
+    const fetchedAt = useDeviceStore.getState().lastFetchedAt;
+    invoke.mockRejectedValueOnce({ code: "offline", message: OFFLINE_MESSAGE });
+
+    await useDeviceStore.getState().setPower("p1", true);
+
+    expect(useDeviceStore.getState().lastFetchedAt).toBe(fetchedAt);
+  });
+
+  it("赤外線デバイス（エアコン / 赤外線ライト）へのコマンドはキャッシュを無効化しない", async () => {
+    // 赤外線は status を持たないため、refresh しても新情報がゼロ（無駄な 1+N を誘発しない）。
+    await useDeviceStore.getState().refreshIfStale();
+    const fetchedAt = useDeviceStore.getState().lastFetchedAt;
+
+    await useDeviceStore.getState().setClimate("ac1", { mode: "heat" });
+    await useDeviceStore.getState().setPower("l1", true);
+    await useDeviceStore.getState().nudgeBrightness("l1", "brighter");
+
+    expect(useDeviceStore.getState().lastFetchedAt).toBe(fetchedAt);
+
+    vi.advanceTimersByTime(1_000);
+    await useDeviceStore.getState().refreshIfStale();
+
+    expect(listDeviceCalls()).toBe(1);
   });
 });

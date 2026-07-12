@@ -32,6 +32,7 @@ vi.mock("@tauri-apps/api/window", () => {
 
 import App from "./App";
 import { useConnectionStore } from "@/stores/connection-store";
+import { useDeviceStore } from "@/stores/device-store";
 import { useNavigationStore } from "@/stores/navigation-store";
 
 const NAV_LABELS = ["デバイス", "センサー", "シーン", "設定"];
@@ -55,6 +56,15 @@ beforeEach(() => {
   useNavigationStore.setState({
     activeView: "devices",
     selectedDeviceId: null,
+  });
+  // device-store も同様（TTL タイムスタンプ・取得済みフラグの持ち越しを防ぐ）。
+  useDeviceStore.setState({
+    devices: [],
+    loading: false,
+    loaded: false,
+    error: null,
+    offlineIds: new Set(),
+    lastFetchedAt: null,
   });
   eventListeners.clear();
   invoke.mockReset();
@@ -119,6 +129,23 @@ describe("App シェル（接続済み）", () => {
     ).not.toHaveAttribute("aria-current");
     // センサー画面の空データ取得が落ち着くのを待つ。
     await screen.findByRole("heading", { name: "センサー" });
+  });
+
+  it("main-shown を短時間に連続 emit しても TTL 内は list_devices を叩かない（V4）", async () => {
+    render(<App />);
+    // 初回マウントのデバイス取得（1 回）が完了するまで待つ。
+    await screen.findByText("デバイスが見つかりませんでした。");
+    await waitFor(() => expect(eventListeners.has("main-shown")).toBe(true));
+    const initialCalls = invoke.mock.calls.filter(([cmd]) => cmd === "list_devices").length;
+    expect(initialCalls).toBe(1);
+
+    await act(async () => {
+      eventListeners.get("main-shown")?.({ payload: null });
+      eventListeners.get("main-shown")?.({ payload: null });
+    });
+
+    // TTL（30 秒）内なのでキャッシュを使い、API 取得は増えない。
+    expect(invoke.mock.calls.filter(([cmd]) => cmd === "list_devices").length).toBe(1);
   });
 
   it("navigate イベントは画面遷移のみで selectedDeviceId を残さない（V1）", async () => {
