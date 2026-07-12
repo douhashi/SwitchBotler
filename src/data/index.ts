@@ -18,4 +18,5 @@ export const connectionGateway: ConnectionGateway = tauriConnectionGateway;
 export type { SwitchBotlerDataSource } from "./source";
 export type { ConnectionGateway } from "./connection";
 export * from "./types";
+export * from "./capability";
 export { useScenes, useSensors } from "./hooks";

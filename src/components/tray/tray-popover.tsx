@@ -52,7 +52,7 @@ function FootLink({ onClick, children }: { onClick: () => void; children: ReactN
  */
 function QuickDevice({ device }: { device: Device }) {
   const { t } = useTranslation("devices");
-  const toggle = useDeviceStore((s) => s.toggle);
+  const setPower = useDeviceStore((s) => s.setPower);
   const press = useDeviceStore((s) => s.press);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
   const interaction = deviceInteraction(device);
@@ -116,7 +116,7 @@ function QuickDevice({ device }: { device: Device }) {
           checked={on}
           disabled={offline}
           aria-disabled={offline || undefined}
-          onCheckedChange={() => toggle(device.id)}
+          onCheckedChange={(checked) => setPower(device.id, checked)}
           aria-label={device.name}
           className={cn(offline && "pointer-events-none")}
         />

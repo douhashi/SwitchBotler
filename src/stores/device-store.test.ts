@@ -60,12 +60,12 @@ describe("device-store aircon", () => {
     });
   });
 
-  it("updateControl（エアコン）は全状態を setAll 送信し成功時に永続化する", async () => {
+  it("setClimate（エアコン）は全状態を setAll 送信し成功時に永続化する", async () => {
     useDeviceStore.setState({ devices: [airconDefault], loaded: true });
     invoke.mockResolvedValue(null);
 
     // モードだけ変更 → マージ後の全状態で send_aircon を呼ぶ。
-    await useDeviceStore.getState().updateControl("ac1", { mode: "heat" });
+    await useDeviceStore.getState().setClimate("ac1", { mode: "heat" });
 
     expect(invoke).toHaveBeenCalledWith("send_aircon", {
       id: "ac1",
@@ -88,7 +88,7 @@ describe("device-store aircon", () => {
     useDeviceStore.setState({ devices: [airconDefault], loaded: true });
     invoke.mockRejectedValue({ code: "rateLimited", message: "リクエストが多すぎます。" });
 
-    await useDeviceStore.getState().updateControl("ac1", { temperature: 30 });
+    await useDeviceStore.getState().setClimate("ac1", { temperature: 30 });
 
     const state = useDeviceStore.getState();
     // controls は元の 26℃ に戻る。
@@ -129,11 +129,11 @@ describe("device-store ir_light", () => {
     expect(device?.controls.power).toBe(true);
   });
 
-  it("電源操作（on）は send_ir_light を呼び楽観更新 + 永続化する（V4）", async () => {
+  it("setPower（on）は send_ir_light を呼び楽観更新 + 永続化する（V4）", async () => {
     useDeviceStore.setState({ devices: [irLightDefault], loaded: true });
     invoke.mockResolvedValue(null);
 
-    await useDeviceStore.getState().operateIrLight("l1", "on");
+    await useDeviceStore.getState().setPower("l1", true);
 
     expect(invoke).toHaveBeenCalledWith("send_ir_light", { id: "l1", action: "on" });
     // 「最後に送信した電源値」が永続化される。
@@ -144,11 +144,11 @@ describe("device-store ir_light", () => {
     ).toBe(true);
   });
 
-  it("明暗操作（brighter）は送信のみで状態を持たず永続化しない（V4）", async () => {
+  it("nudgeBrightness（brighter）は送信のみで状態を持たず永続化しない（V4）", async () => {
     useDeviceStore.setState({ devices: [irLightDefault], loaded: true });
     invoke.mockResolvedValue(null);
 
-    await useDeviceStore.getState().operateIrLight("l1", "brighter");
+    await useDeviceStore.getState().nudgeBrightness("l1", "brighter");
 
     expect(invoke).toHaveBeenCalledWith("send_ir_light", { id: "l1", action: "brighter" });
     // 明暗は絶対値・状態を持たないため永続化されず、power も変わらない。
@@ -162,7 +162,7 @@ describe("device-store ir_light", () => {
     useDeviceStore.setState({ devices: [irLightDefault], loaded: true });
     invoke.mockRejectedValue({ code: "rateLimited", message: "リクエストが多すぎます。" });
 
-    await useDeviceStore.getState().operateIrLight("l1", "on");
+    await useDeviceStore.getState().setPower("l1", true);
 
     const state = useDeviceStore.getState();
     // power は元の off に戻る。
@@ -177,7 +177,7 @@ describe("device-store ir_light", () => {
     useNoticeStore.setState({ notices: [] });
     invoke.mockRejectedValue({ code: "rateLimited", message: "リクエストが多すぎます。" });
 
-    await useDeviceStore.getState().operateIrLight("l1", "dimmer");
+    await useDeviceStore.getState().nudgeBrightness("l1", "dimmer");
 
     expect(useDeviceStore.getState().error).toBe("rateLimited");
     // 全画面横断で気付けるようトースト通知も出す（コードで保持し表示端で翻訳）。
@@ -214,11 +214,11 @@ describe("device-store bot", () => {
     useDeviceStore.setState({ devices: [], loading: false, loaded: false, error: null });
   });
 
-  it("switchMode の Bot は toggle で turnOn/turnOff を送り楽観更新する", async () => {
+  it("switchMode の Bot は setPower で turnOn/turnOff を送り楽観更新する", async () => {
     useDeviceStore.setState({ devices: [switchBot], loaded: true });
     invoke.mockResolvedValue(null);
 
-    await useDeviceStore.getState().toggle("b-switch");
+    await useDeviceStore.getState().setPower("b-switch", true);
 
     expect(invoke).toHaveBeenCalledWith("send_command", {
       id: "b-switch",
@@ -294,7 +294,7 @@ describe("device-store offline（statusCode 161 検知）", () => {
     useDeviceStore.setState({ devices: [plug], loaded: true });
     invoke.mockRejectedValue({ code: "offline", message: OFFLINE_MESSAGE });
 
-    await useDeviceStore.getState().toggle("p1");
+    await useDeviceStore.getState().setPower("p1", true);
 
     const state = useDeviceStore.getState();
     // オフライン印が付く。
@@ -317,7 +317,7 @@ describe("device-store offline（statusCode 161 検知）", () => {
       statusCode: 190,
     });
 
-    await useDeviceStore.getState().toggle("p1");
+    await useDeviceStore.getState().setPower("p1", true);
 
     const state = useDeviceStore.getState();
     expect(state.offlineIds.has("p1")).toBe(false);
