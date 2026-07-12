@@ -6,6 +6,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
+// ドリルイン時の focus 監視で使う window API も外部境界。no-op で模す。
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: () => ({ onFocusChanged: async () => () => {} }),
+}));
+
 import type { Device, Scene } from "@/data";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -163,7 +168,7 @@ describe("TrayPopover", () => {
     ).toBeInTheDocument();
   });
 
-  it("detail 型の「>」でメイン前面化 + 該当デバイス詳細遷移を invoke する", async () => {
+  it("detail 型の「>」で popup 内のドリルイン詳細を開く（main は開かない）", async () => {
     const user = userEvent.setup();
     useDeviceStore.setState({ devices: [aircon], error: null });
     useFavoritesStore.setState({
@@ -179,11 +184,22 @@ describe("TrayPopover", () => {
 
     await user.click(screen.getByRole("button", { name: "リビングのエアコン の詳細" }));
 
-    expect(invoke).toHaveBeenCalledWith("show_main_window", {
+    // popup 内に詳細（温度・モード・風量）が出る。main は開かない。
+    expect(
+      await screen.findByRole("radiogroup", { name: "モード" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "風量" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "温度を上げる" })).toBeInTheDocument();
+    expect(invoke).not.toHaveBeenCalledWith("show_main_window", {
       view: "devices",
       deviceId: "living-aircon",
     });
-    expect(invoke).toHaveBeenCalledWith("hide_tray_popup");
+
+    // 「戻る」で一覧へ戻る（「>」が再び現れる）。
+    await user.click(screen.getByRole("button", { name: "戻る" }));
+    expect(
+      await screen.findByRole("button", { name: "リビングのエアコン の詳細" }),
+    ).toBeInTheDocument();
   });
 
   it("press 型デバイス（pressMode の Bot）は「押す」ボタンで press コマンドを送る", async () => {

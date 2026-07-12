@@ -16,11 +16,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 
-const AIRCON_MODES: AirconMode[] = ["auto", "cool", "dry", "fan", "heat"];
-const AIRCON_FANS: AirconFanSpeed[] = ["auto", "low", "medium", "high"];
+/** エアコンの運転モード / 風量の表示順（tray のコンパクト詳細と共有）。 */
+export const AIRCON_MODES: AirconMode[] = ["auto", "cool", "dry", "fan", "heat"];
+export const AIRCON_FANS: AirconFanSpeed[] = ["auto", "low", "medium", "high"];
 
 /** 運転モード → アクセント色 CSS 変数。fill・大数値・チップ・選択状態を 1 マップで連動させる。 */
-const MODE_ACCENT_VAR: Record<AirconMode, string> = {
+export const MODE_ACCENT_VAR: Record<AirconMode, string> = {
   auto: "var(--m-auto)",
   cool: "var(--m-cool)",
   dry: "var(--m-dry)",
