@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ChevronRight, Hand, Layers, Pin, Play, RefreshCw } from "lucide-react";
 
 import { LogoMark, Wordmark } from "@/components/brand";
@@ -11,6 +12,7 @@ import {
   SCENE_MAX_HEIGHT,
 } from "@/components/tray/layout";
 import { ScrollRegion } from "@/components/tray/scroll-region";
+import { TrayDeviceDetail } from "@/components/tray/tray-device-detail";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -44,13 +46,17 @@ function FootLink({ onClick, children }: { onClick: () => void; children: ReactN
  * ウィンドウの DeviceCard と同じく `deviceInteraction()` の 3 分岐で操作系を出す:
  * - toggle: Switch を直接表示（電源のみのデバイス）
  * - press: 「押す」ボタン（pressMode の Bot）
- * - detail: 右端の「>」でメインウィンドウを前面化しつつ該当デバイスの詳細を開く
+ * - detail: 右端の「>」で popup 内のドリルイン詳細へ（main は開かない。`onOpenDetail`）
  *
- * 詳細遷移だけはトレイが別ウィンドウのため、`navigation-store` を直接触らず
- * `show_main_window({ view, deviceId })` + `hide_tray_popup` を invoke する。
  * オフライン規則・状態ラベルの導出（`deviceStatusLabel`）は DeviceCard と共有する。
  */
-function QuickDevice({ device }: { device: Device }) {
+function QuickDevice({
+  device,
+  onOpenDetail,
+}: {
+  device: Device;
+  onOpenDetail: (id: string) => void;
+}) {
   const { t } = useTranslation("devices");
   const setPower = useDeviceStore((s) => s.setPower);
   const press = useDeviceStore((s) => s.press);
@@ -58,11 +64,6 @@ function QuickDevice({ device }: { device: Device }) {
   const interaction = deviceInteraction(device);
   const on = device.controls.power;
   const iconActive = on && !offline;
-
-  const openDetail = () => {
-    void invoke("show_main_window", { view: "devices", deviceId: device.id });
-    void invoke("hide_tray_popup");
-  };
 
   return (
     <div
@@ -101,7 +102,7 @@ function QuickDevice({ device }: { device: Device }) {
           type="button"
           aria-label={t("detailAria", { name: device.name })}
           aria-disabled={offline || undefined}
-          onClick={openDetail}
+          onClick={() => onOpenDetail(device.id)}
           className={cn(
             "grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
             offline && "pointer-events-none",
@@ -219,6 +220,25 @@ export function TrayPopover() {
   const favoriteDeviceIds = useFavoritesStore((s) => s.deviceIds);
   const favoriteSceneIds = useFavoritesStore((s) => s.sceneIds);
   const { data: scenes } = useScenes();
+  // ドリルイン: 「>」で選択したデバイスの詳細を popup 内に表示する（main は開かない）。
+  const [detailId, setDetailId] = useState<string | null>(null);
+
+  // popup を閉じる（focus 喪失）たびに一覧へ戻す。トレイはランチャーなので次回は一覧から始める。
+  useEffect(() => {
+    const win = getCurrentWindow();
+    let unlisten: (() => void) | undefined;
+    void win
+      .onFocusChanged(({ payload: focused }) => {
+        if (!focused) setDetailId(null);
+      })
+      .then((fn) => {
+        unlisten = fn;
+      })
+      .catch(() => {
+        // 非 Tauri 環境（テスト等）では何もしない。
+      });
+    return () => unlisten?.();
+  }, []);
 
   // 接続表示は「実際に API に到達できているか」= デバイス取得の成否で判定する。
   // トレイは別ウィンドウで connection ストアを focus 時に再取得しないため、
@@ -228,6 +248,17 @@ export function TrayPopover() {
   // お気に入りのみ表示。全種別を対象にし、操作系は QuickDevice が 3 分岐で出し分ける
   // （カーテン・エアコン等は詳細「>」、pressMode の Bot は「押す」、電源のみは Switch）。
   const favoriteDevices = devices.filter((d) => favoriteDeviceIds.has(d.id));
+
+  // 詳細対象があれば popup 内を詳細（ドリルイン）に切り替える。戻る/閉じるで一覧へ。
+  const detailDevice = detailId
+    ? devices.find((d) => d.id === detailId)
+    : undefined;
+  if (detailDevice) {
+    return (
+      <TrayDeviceDetail device={detailDevice} onBack={() => setDetailId(null)} />
+    );
+  }
+
   const favoriteScenes = (scenes ?? []).filter((s) => favoriteSceneIds.has(s.id));
 
   const openMain = () => {
@@ -281,7 +312,11 @@ export function TrayPopover() {
       {favoriteDevices.length > 0 && (
         <ScrollRegion maxHeight={DEVICE_MAX_HEIGHT} data-testid="tray-device-scroll">
           {favoriteDevices.map((device) => (
-            <QuickDevice key={device.id} device={device} />
+            <QuickDevice
+              key={device.id}
+              device={device}
+              onOpenDetail={setDetailId}
+            />
           ))}
         </ScrollRegion>
       )}
