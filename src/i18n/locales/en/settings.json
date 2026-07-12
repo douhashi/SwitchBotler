@@ -12,6 +12,13 @@
     "dark": "Dark",
     "label": "Theme"
   },
+  "launch": {
+    "heading": "Startup",
+    "launchAtLogin": {
+      "label": "Launch at login",
+      "hint": "Start SwitchBotler in the menu bar when you log in."
+    }
+  },
   "api": {
     "heading": "SwitchBot API credentials",
     "storageNote": "Stored in your OS secure storage (Keychain / Credential Manager / Secret Service).",

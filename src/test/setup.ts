@@ -80,6 +80,15 @@ vi.mock("@tauri-apps/plugin-store", () => {
   return { load: async (path: string) => makeStore(path) };
 });
 
+// tauri-plugin-autostart も外部境界。jsdom には無いため、既定のスタブを 1 か所で用意する。
+// enable/disable は no-op、isEnabled は false（既定は未登録）。挙動を差し替えたいテストは
+// `@tauri-apps/plugin-autostart` を個別に vi.mock する。
+vi.mock("@tauri-apps/plugin-autostart", () => ({
+  enable: async () => {},
+  disable: async () => {},
+  isEnabled: async () => false,
+}));
+
 // jsdom は ResizeObserver を実装しないため、Radix の Slider（つまみサイズ計測）用にスタブする。
 if (!window.ResizeObserver) {
   window.ResizeObserver = class {
