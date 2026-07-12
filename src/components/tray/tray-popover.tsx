@@ -247,7 +247,10 @@ export function TrayPopover() {
   const connected = loaded && !error;
   // お気に入りのみ表示。全種別を対象にし、操作系は QuickDevice が 3 分岐で出し分ける
   // （カーテン・エアコン等は詳細「>」、pressMode の Bot は「押す」、電源のみは Switch）。
-  const favoriteDevices = devices.filter((d) => favoriteDeviceIds.has(d.id));
+  // 並び順は **お気に入りの並び順**（一覧で並び替えた順）に一致させる。
+  const favoriteDevices = favoriteDeviceIds
+    .map((id) => devices.find((d) => d.id === id))
+    .filter((d): d is Device => d !== undefined);
 
   // 詳細対象があれば popup 内を詳細（ドリルイン）に切り替える。戻る/閉じるで一覧へ。
   const detailDevice = detailId
@@ -259,7 +262,10 @@ export function TrayPopover() {
     );
   }
 
-  const favoriteScenes = (scenes ?? []).filter((s) => favoriteSceneIds.has(s.id));
+  // シーンもお気に入りの並び順で描く（#80 で一覧側の並び替え UI を追加する）。
+  const favoriteScenes = favoriteSceneIds
+    .map((id) => (scenes ?? []).find((s) => s.id === id))
+    .filter((s): s is Scene => s !== undefined);
 
   const openMain = () => {
     void invoke("show_main_window", { view: null });

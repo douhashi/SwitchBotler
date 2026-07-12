@@ -79,7 +79,7 @@ describe("DeviceCard", () => {
       offlineIds: new Set(),
     });
     useNavigationStore.setState({ activeView: "devices", selectedDeviceId: null });
-    useFavoritesStore.setState({ deviceIds: new Set(), sceneIds: new Set(), loaded: true });
+    useFavoritesStore.setState({ deviceIds: [], sceneIds: [], loaded: true });
   });
 
   it("toggle 型カードのスイッチ操作で電源が反転し turnOn コマンドを送る", async () => {
@@ -212,11 +212,11 @@ describe("DeviceCard", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "サーキュレーター をお気に入り" }),
     );
-    expect(useFavoritesStore.getState().deviceIds.has("circulator")).toBe(true);
+    expect(useFavoritesStore.getState().deviceIds.includes("circulator")).toBe(true);
 
     await userEvent.click(
       screen.getByRole("button", { name: "サーキュレーター のお気に入りを解除" }),
     );
-    expect(useFavoritesStore.getState().deviceIds.has("circulator")).toBe(false);
+    expect(useFavoritesStore.getState().deviceIds.includes("circulator")).toBe(false);
   });
 });
