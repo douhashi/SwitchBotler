@@ -104,15 +104,23 @@ export function AirconControls({ device }: { device: Device }) {
             <ModeIcon size={20} strokeWidth={1.75} aria-hidden />
             {airconModeLabel(activeMode, t)}
           </span>
-          <div className="font-mono text-[74px] leading-[0.96] font-bold tracking-tight tabular-nums">
+          {/* 数値は mono + tabular、単位 ℃ は sans（mono だと ℃ グリフが横潰れする）。
+              ベースライン整列で ℃ を数値の足元に置く。送風時は単位を出さず「—」のみ。 */}
+          <div className="flex items-baseline justify-center">
             {activeMode === "fan" ? (
-              <span className="text-muted-foreground">—</span>
+              <span className="font-mono text-[74px] leading-[0.96] font-bold tracking-tight text-muted-foreground">
+                —
+              </span>
             ) : (
-              <span className="text-[var(--m)]">{currentTemp}</span>
+              <>
+                <span className="font-mono text-[74px] leading-[0.96] font-bold tracking-tight tabular-nums text-[var(--m)]">
+                  {currentTemp}
+                </span>
+                <span className="ml-1 text-[30px] font-semibold text-muted-foreground">
+                  ℃
+                </span>
+              </>
             )}
-            <span className="ml-0.5 text-[30px] font-semibold text-muted-foreground">
-              ℃
-            </span>
           </div>
         </div>
 
