@@ -17,6 +17,7 @@ export function PowerToggle({ device }: { device: Device }) {
 
   return (
     <Switch
+      size="lg"
       checked={device.controls.power}
       disabled={offline}
       aria-disabled={offline || undefined}

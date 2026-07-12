@@ -25,7 +25,7 @@ export function ViewHeader({
   const { t } = useTranslation("common");
   const backText = backLabel ?? t("actions.back");
   return (
-    <header className="mb-4 flex items-end justify-between gap-3">
+    <header className="mb-4 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
         {onBack && (
           <Button
