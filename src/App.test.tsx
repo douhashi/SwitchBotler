@@ -121,26 +121,7 @@ describe("App シェル（接続済み）", () => {
     await screen.findByRole("heading", { name: "センサー" });
   });
 
-  it("navigate イベント（{view, deviceId}）で該当デバイス詳細へ遷移する（V1）", async () => {
-    render(<App />);
-    await screen.findByText("デバイスが見つかりませんでした。");
-
-    // Rust emit の navigate リスナが登録されるのを待つ。
-    await waitFor(() => expect(eventListeners.has("navigate")).toBe(true));
-
-    // トレイの detail「>」相当: view + deviceId を伴う payload を受け取る。
-    act(() => {
-      eventListeners.get("navigate")?.({
-        payload: { view: "devices", deviceId: "living-aircon" },
-      });
-    });
-
-    const nav = useNavigationStore.getState();
-    expect(nav.activeView).toBe("devices");
-    expect(nav.selectedDeviceId).toBe("living-aircon");
-  });
-
-  it("navigate イベント（deviceId 無し）は画面遷移のみで selectedDeviceId を残さない（V1）", async () => {
+  it("navigate イベントは画面遷移のみで selectedDeviceId を残さない（V1）", async () => {
     // 直前に詳細を選択していても、view のみの navigate で選択は解除される。
     useNavigationStore.setState({ activeView: "devices", selectedDeviceId: "x" });
     render(<App />);

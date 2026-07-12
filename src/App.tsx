@@ -18,8 +18,7 @@ import { useNavigationStore, type ViewId } from "@/stores/navigation-store";
  * 接続成功で `connection.saved` が true になると自動でシェルへ遷移する（追加の遷移コード不要）。
  *
  * あわせてトレイ/single-instance から Rust が emit するイベントに反応する（決定4）:
- * - "navigate": 指定画面へ遷移する（`{ view, deviceId }`。トレイの「設定」や
- *   detail 型デバイスの「>」からのデバイス詳細遷移）。
+ * - "navigate": 指定画面へ遷移する（`{ view }`。トレイフッタの「設定」等）。
  * - "main-shown": ウィンドウ表示時に device-store を再ロードする（最小限の同期）。
  */
 function App() {
@@ -35,10 +34,8 @@ function App() {
     const unlisteners: Array<() => void> = [];
 
     void win
-      .listen<{ view: ViewId; deviceId?: string }>("navigate", (event) => {
-        useNavigationStore
-          .getState()
-          .navigate(event.payload.view, event.payload.deviceId);
+      .listen<{ view: ViewId }>("navigate", (event) => {
+        useNavigationStore.getState().navigate(event.payload.view);
       })
       .then((fn) => unlisteners.push(fn))
       .catch(() => {});
