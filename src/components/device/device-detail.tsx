@@ -102,7 +102,7 @@ function AirconControls({ device }: { device: Device }) {
   const { t } = useTranslation("devices");
   const updateControl = useDeviceStore((s) => s.updateControl);
   const offline = useDeviceStore((s) => s.offlineIds.has(device.id));
-  const { power, temperature, mode, fanSpeed } = device.controls;
+  const { temperature, mode, fanSpeed } = device.controls;
 
   // モード未確定時は cool を既定色にする（view-model 上は常に設定済み）。
   const activeMode = mode ?? "cool";
@@ -123,19 +123,9 @@ function AirconControls({ device }: { device: Device }) {
 
   return (
     <div style={{ "--m": accent } as CSSProperties}>
-      <div className="mb-3 flex items-center justify-between rounded-2xl bg-card p-4 shadow-raise">
-        <span className="text-[12.5px] text-muted-foreground">{t("power")}</span>
-        <Switch
-          checked={power}
-          disabled={offline}
-          aria-disabled={offline || undefined}
-          onCheckedChange={() => updateControl(device.id, { power: !power })}
-          aria-label={t("power")}
-          className={cn(offline && "pointer-events-none")}
-        />
-      </div>
-
-      <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
+      {/* mockup detail 01: ヒーロー温度＋温度操作＋モード＋風量を 1 枚のパネルに集約する
+          （電源はヘッダのトグルへ集約し、要約カードはエアコンでは描かない）。 */}
+      <div className="rounded-2xl bg-card p-4 shadow-raise">
         {/* ヒーロー温度：モードチップ＋大数値。送風時は数値・単位を muted の「—」にする。 */}
         <div className="pt-1.5 pb-1 text-center">
           <span
@@ -144,16 +134,16 @@ function AirconControls({ device }: { device: Device }) {
               tempDisabled ? "text-muted-foreground" : "text-[var(--m)]",
             )}
           >
-            <ModeIcon size={18} strokeWidth={1.75} aria-hidden />
+            <ModeIcon size={20} strokeWidth={1.75} aria-hidden />
             {airconModeLabel(activeMode, t)}
           </span>
-          <div className="font-mono text-[64px] leading-[0.96] font-bold tracking-tight tabular-nums">
+          <div className="font-mono text-[74px] leading-[0.96] font-bold tracking-tight tabular-nums">
             {activeMode === "fan" ? (
               <span className="text-muted-foreground">—</span>
             ) : (
               <span className="text-[var(--m)]">{currentTemp}</span>
             )}
-            <span className="ml-0.5 text-[28px] font-semibold text-muted-foreground">
+            <span className="ml-0.5 text-[30px] font-semibold text-muted-foreground">
               ℃
             </span>
           </div>
@@ -191,74 +181,78 @@ function AirconControls({ device }: { device: Device }) {
             <Plus size={22} strokeWidth={2.2} aria-hidden />
           </TempStepButton>
         </div>
-      </div>
 
-      {/* 運転モード：5 列のアイコン＋ラベル。選択で凸＋アクセント色、非選択は凹。 */}
-      <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
-        <div className="mb-3 text-[12.5px] text-muted-foreground">{t("mode")}</div>
-        <div role="radiogroup" aria-label={t("mode")} className="grid grid-cols-5 gap-2">
-          {AIRCON_MODES.map((m) => {
-            const Icon = AIRCON_MODE_ICON[m];
-            const selected = m === activeMode;
-            return (
-              <button
-                key={m}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                disabled={offline}
-                aria-disabled={offline || undefined}
-                onClick={() => updateControl(device.id, { mode: m })}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-[14px] px-1 py-2.5 transition-shadow",
-                  selected
-                    ? "text-[var(--m)] shadow-raise-sm"
-                    : "text-muted-foreground shadow-inset-sm hover:text-foreground",
-                  offline && "pointer-events-none opacity-50",
-                )}
-              >
-                <Icon size={20} strokeWidth={1.75} aria-hidden />
-                <span className="text-[10.5px] font-semibold">
-                  {airconModeLabel(m, t)}
-                </span>
-              </button>
-            );
-          })}
+        {/* 運転モード：5 列のアイコン＋ラベル。選択で凸＋アクセント色、非選択は凹。 */}
+        <div className="mt-5">
+          <div className="mb-2.5 px-0.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            {t("mode")}
+          </div>
+          <div role="radiogroup" aria-label={t("mode")} className="grid grid-cols-5 gap-2">
+            {AIRCON_MODES.map((m) => {
+              const Icon = AIRCON_MODE_ICON[m];
+              const selected = m === activeMode;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={offline}
+                  aria-disabled={offline || undefined}
+                  onClick={() => updateControl(device.id, { mode: m })}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 rounded-[14px] px-1 py-2.5 transition-shadow",
+                    selected
+                      ? "text-[var(--m)] shadow-raise-sm"
+                      : "text-muted-foreground shadow-inset-sm hover:text-foreground",
+                    offline && "pointer-events-none opacity-50",
+                  )}
+                >
+                  <Icon size={20} strokeWidth={1.75} aria-hidden />
+                  <span className="text-[10.5px] font-semibold">
+                    {airconModeLabel(m, t)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* 風量：セグメント。自動のみアイコン＋ラベル、弱/中/強はラベルのみ。 */}
-      <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
-        <div className="mb-3 text-[12.5px] text-muted-foreground">{t("fan")}</div>
-        <div
-          role="radiogroup"
-          aria-label={t("fan")}
-          className="grid grid-cols-4 gap-1.5 rounded-[14px] p-1.5 shadow-inset"
-        >
-          {AIRCON_FANS.map((f) => {
-            const selected = f === fanSpeed;
-            return (
-              <button
-                key={f}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                disabled={offline}
-                aria-disabled={offline || undefined}
-                onClick={() => updateControl(device.id, { fanSpeed: f })}
-                className={cn(
-                  "inline-flex items-center justify-center gap-1.5 rounded-[10px] px-1 py-2 text-xs font-semibold transition-colors",
-                  selected
-                    ? "bg-background text-[var(--m)] shadow-raise-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                  offline && "pointer-events-none opacity-50",
-                )}
-              >
-                {f === "auto" && <FanAutoIcon size={15} strokeWidth={2} aria-hidden />}
-                {airconFanLabel(f, t)}
-              </button>
-            );
-          })}
+        {/* 風量：セグメント。自動のみアイコン＋ラベル、弱/中/強はラベルのみ。 */}
+        <div className="mt-5">
+          <div className="mb-2.5 px-0.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            {t("fan")}
+          </div>
+          <div
+            role="radiogroup"
+            aria-label={t("fan")}
+            className="grid grid-cols-4 gap-1.5 rounded-[14px] p-1.5 shadow-inset"
+          >
+            {AIRCON_FANS.map((f) => {
+              const selected = f === fanSpeed;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={offline}
+                  aria-disabled={offline || undefined}
+                  onClick={() => updateControl(device.id, { fanSpeed: f })}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 rounded-[10px] px-1 py-2 text-xs font-semibold transition-colors",
+                    selected
+                      ? "bg-background text-[var(--m)] shadow-raise-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                    offline && "pointer-events-none opacity-50",
+                  )}
+                >
+                  {f === "auto" && <FanAutoIcon size={15} strokeWidth={2} aria-hidden />}
+                  {airconFanLabel(f, t)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -294,28 +288,43 @@ export function DeviceDetail({ device }: { device: Device }) {
               aria-label={t("power")}
               className={cn(offline && "pointer-events-none")}
             />
+          ) : isAircon ? (
+            // エアコンは hasPowerToggle=false（setAll 送信）のため toggle ではなく
+            // updateControl({ power }) で配線する。運転トグルはヘッダに集約する（mockup 01）。
+            <Switch
+              checked={power}
+              disabled={offline}
+              aria-disabled={offline || undefined}
+              onCheckedChange={() => updateControl(device.id, { power: !power })}
+              aria-label={t("power")}
+              className={cn(offline && "pointer-events-none")}
+            />
           ) : undefined
         }
       />
 
-      <div className="mb-4 flex items-center gap-4 rounded-[18px] bg-card p-[18px] shadow-raise">
-        <span
-          className={cn(
-            "grid size-14 shrink-0 place-items-center rounded-2xl shadow-raise-sm",
-            power ? "text-sd-accent" : "text-muted-foreground",
-          )}
-        >
-          <DeviceIcon category={device.category} size={28} strokeWidth={1.6} />
-        </span>
-        <div>
-          <div className="text-[17px] font-bold">{deviceStatusLabel(device, t)}</div>
-          <div className="mt-0.5 text-[12.5px] text-muted-foreground">
-            {heroDetail(device, t)}
-            {/* 一覧と同じく理由を色だけに頼らず常時可読にする（インライン併記）。 */}
-            {offline && <span className="text-sd-warn"> · {t("offline")}</span>}
+      {/* 要約カード（アイコン＋状態＋説明）。エアコンはヒーロー温度パネルが状態を兼ねるため
+          出さない（mockup 01 = ヘッダ→即ヒーロー）。他種別では状態の一覧性のため残す。 */}
+      {!isAircon && (
+        <div className="mb-4 flex items-center gap-4 rounded-[18px] bg-card p-[18px] shadow-raise">
+          <span
+            className={cn(
+              "grid size-14 shrink-0 place-items-center rounded-2xl shadow-raise-sm",
+              power ? "text-sd-accent" : "text-muted-foreground",
+            )}
+          >
+            <DeviceIcon category={device.category} size={28} strokeWidth={1.6} />
+          </span>
+          <div>
+            <div className="text-[17px] font-bold">{deviceStatusLabel(device, t)}</div>
+            <div className="mt-0.5 text-[12.5px] text-muted-foreground">
+              {heroDetail(device, t)}
+              {/* 一覧と同じく理由を色だけに頼らず常時可読にする（インライン併記）。 */}
+              {offline && <span className="text-sd-warn"> · {t("offline")}</span>}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {brightness !== undefined && (
         <div className="mb-3 rounded-2xl bg-card p-4 shadow-raise">
