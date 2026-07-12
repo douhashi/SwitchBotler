@@ -111,7 +111,7 @@ describe("DevicesView お気に入り（ドロップ先モデル）", () => {
 
     expect(screen.getByRole("list", { name: "お気に入り" })).toBeInTheDocument();
     expect(
-      screen.getByText("よく使うデバイスをここにドラッグして追加"),
+      screen.getByText("よく使うものをここにドラッグして追加"),
     ).toBeInTheDocument();
   });
 

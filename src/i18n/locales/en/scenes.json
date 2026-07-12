@@ -6,6 +6,6 @@
   "running": "Running",
   "runAria": "Run {{name}}",
   "failed": "Failed",
-  "favoriteAdd": "Add {{name}} to favorites",
-  "favoriteRemove": "Remove {{name}} from favorites"
+  "favorites": "Favorites",
+  "all": "Other scenes"
 }

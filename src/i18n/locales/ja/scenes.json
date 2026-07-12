@@ -6,6 +6,6 @@
   "running": "実行中",
   "runAria": "{{name}} を実行",
   "failed": "失敗",
-  "favoriteAdd": "{{name}} をお気に入り",
-  "favoriteRemove": "{{name}} のお気に入りを解除"
+  "favorites": "お気に入り",
+  "all": "その他のシーン"
 }
