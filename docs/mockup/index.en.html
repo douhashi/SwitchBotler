@@ -124,6 +124,33 @@
   .device.offline .ico { color: var(--muted); box-shadow: var(--inset-sm); }
   .device.offline .sub { color: var(--warn); }
   .device.offline .tgl, .device.offline .chev { pointer-events: none; }
+
+  /* ── Favorites: single column + reorder (05) ── */
+  /* Always one column. Rows reuse .device; we only add a grip and ↑↓ buttons. */
+  .fav-list { display: grid; gap: 10px; }
+  .fav-list .device { padding-left: 9px; }
+  /* Drag handle: an *assist* for pointer users. Keyboard users reorder with the ↑↓ buttons. */
+  .grip { display: grid; place-items: center; width: 24px; height: 32px; border-radius: 8px; color: var(--muted); cursor: grab; flex: none; }
+  .grip:hover { color: var(--ink); box-shadow: var(--inset-sm); }
+  .grip:active { cursor: grabbing; }
+  .grip svg { width: 16px; height: 16px; }
+  /* Up/Down buttons: the *primary* reorder control. Keyboard-operable, aria-labelled, disabled at the ends. */
+  .mv { display: flex; gap: 6px; flex: none; }
+  .mvb { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: var(--muted); background: transparent; border: 0; box-shadow: var(--raise-sm); cursor: pointer; }
+  .mvb:hover { color: var(--ink); }
+  .mvb:active { box-shadow: var(--inset-sm); }
+  .mvb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mvb:disabled { opacity: .35; cursor: not-allowed; box-shadow: var(--inset-sm); }
+  .mvb svg { width: 15px; height: 15px; }
+  /* Pin: remove from favorites (filled = pinned) */
+  .pin { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: var(--accent); background: transparent; border: 0; box-shadow: var(--inset-sm); cursor: pointer; flex: none; }
+  .pin:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pin svg { width: 15px; height: 15px; }
+  /* Reorder states (transform/opacity only, 150-300ms) */
+  .fav-list .device { transition: box-shadow .18s ease, opacity .18s ease; }
+  .fav-list .device.dragging { opacity: .5; box-shadow: var(--inset-sm); }
+  .fav-list .device.dragover { box-shadow: var(--raise), 0 0 0 2px var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .fav-list .device { transition: none; } }
   .device.offline .off-tag { font-size: 11px; font-weight: 600; color: var(--muted); flex: none; padding: 3px 9px; border-radius: 999px; box-shadow: var(--inset-sm); }
 
   .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--bg); position: relative; box-shadow: var(--inset-sm); transition: background .22s ease; }
@@ -446,6 +473,155 @@
     </div>
   </div></div>
 
+  <!-- 05 Favorites: single column + reorder -->
+  <div class="cap"><span class="n">05</span><h2>Favorites: single column + reorder (devices / scenes)</h2><span class="d">Favorites are always one column. Reorder by dragging, or with the ↑ ↓ buttons (keyboard-operable). <b>This order becomes the tray popup's display order.</b></span></div>
+
+  <!-- 05-a Devices -->
+  <div class="win-scroll"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected · 8 devices</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Devices</h3><div class="sub">Living room, bedroom and more</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Refresh</button></div>
+
+        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>This order becomes the <b>tray popup's display order</b>. Reorder by dragging, or with <b>↑ ↓</b> (keyboard-operable).</span></div>
+
+        <div class="sec-title">Favorites (reorderable)</div>
+        <div class="fav-list" id="favDevices" role="list" aria-label="Favorite devices (reorderable)">
+          <div class="device" draggable="true" role="listitem" aria-label="Living Room Light, 1 of 4">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
+            <div class="body"><div class="name">Living Room Light</div><div class="sub">Color Bulb · On</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Living Room Light up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Living Room Light down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Living Room Light from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="Living Room Light"><span class="knob"></span></div>
+          </div>
+          <div class="device" draggable="true" role="listitem" aria-label="Living Room AC, 2 of 4">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="9" rx="2"/><path d="M6 17a2 2 0 0 0 2-2M18 17a2 2 0 0 1-2-2M12 17v3"/><path d="M7 8h.01M11 8h.01"/></svg></span>
+            <div class="body"><div class="name">Living Room AC</div><div class="sub">Air Conditioner · Cool 26°C</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Living Room AC up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Living Room AC down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Living Room AC from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </div>
+          <div class="device" draggable="true" role="listitem" aria-label="Bedroom Curtain, 3 of 4">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18M12 3c3 4 3 14 0 18"/></svg></span>
+            <div class="body"><div class="name">Bedroom Curtain</div><div class="sub">Curtain 3 · 80% open</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Bedroom Curtain up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Bedroom Curtain down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Bedroom Curtain from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </div>
+          <div class="device" draggable="true" role="listitem" aria-label="Circulator, 4 of 4">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span>
+            <div class="body"><div class="name">Circulator</div><div class="sub">Plug Mini · Off</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Circulator up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Circulator down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Circulator from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="Circulator"><span class="knob"></span></div>
+          </div>
+        </div>
+
+        <div class="sec-title" style="margin-top:20px">All</div>
+        <div class="grid-cards">
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">Entrance Light</div><div class="sub">Bulb · On</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="Entrance Light"><span class="knob"></span></div></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">Humidifier</div><div class="sub">Humidifier · Off</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="Humidifier"><span class="knob"></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">Front Door Lock</div><div class="sub">Lock Pro · Locked</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
+  <!-- 05-b Scenes -->
+  <div class="win-scroll" style="margin-top:22px"><div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">Switch<span class="bot">Botler</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="mk"><svg viewBox="0 0 120 120" fill="currentColor" aria-hidden="true"><g stroke="currentColor" stroke-width="8" stroke-linejoin="round"><polygon points="27,43 27,77 53,60"/><polygon points="93,43 93,77 67,60"/></g><circle cx="60" cy="60" r="15.5"/></svg></span>Switch<span class="bot">Botler</span></div>
+        <nav class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Devices</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Sensors</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Scenes</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>Settings</a>
+        </nav>
+        <div class="sp"></div>
+        <div class="status"><span class="dot"></span>Connected · 4 scenes</div>
+      </aside>
+      <main class="main">
+        <div class="head"><div><h3>Scenes</h3><div class="sub">Created in the SwitchBot app</div></div></div>
+
+        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Same interaction as devices. <b>This order becomes the tray's favorite-scene order.</b></span></div>
+
+        <div class="sec-title">Favorites (reorderable)</div>
+        <div class="fav-list" id="favScenes" role="list" aria-label="Favorite scenes (reorderable)">
+          <div class="device" draggable="true" role="listitem" aria-label="Good Night, 1 of 3">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
+            <div class="body"><div class="name">Good Night</div><div class="sub">Lights off · curtains closed · humidifier on</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Good Night up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Good Night down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Good Night from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+          <div class="device" draggable="true" role="listitem" aria-label="Arriving Home, 2 of 3">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span>
+            <div class="body"><div class="name">Arriving Home</div><div class="sub">Entrance + living room on · AC on</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Arriving Home up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Arriving Home down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Arriving Home from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+          <div class="device" draggable="true" role="listitem" aria-label="Good Morning, 3 of 3">
+            <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span>
+            <div class="body"><div class="name">Good Morning</div><div class="sub">Curtains open · lights fade in</div></div>
+            <span class="mv">
+              <button class="mvb up" aria-label="Move Good Morning up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              <button class="mvb down" aria-label="Move Good Morning down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+            </span>
+            <button class="pin" aria-label="Remove Good Morning from favorites" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+        </div>
+
+        <div class="sec-title" style="margin-top:20px">All</div>
+        <div class="grid-cards">
+          <div class="scene">
+            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">Movie Mode</div><div class="ds">Dim the lights · close curtains</div></div></div>
+            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>Run</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div></div>
+
   <div class="foot-box">
     <h3>Next Steps</h3>
     <p>Once these 4 screens settle the direction, we'll implement them as React + Tailwind components (mapping the tokens from <code>MASTER.md</code> straight into the Tailwind theme). If there's anything to adjust per screen (spacing, information density, icons, ordering, etc.), we'll fix it screen by screen.</p>
@@ -509,6 +685,49 @@
         s.classList.add('on');
       });
     });
+  });
+
+  // favorites — 1 column reorder: ↑↓ buttons (primary, keyboard) + drag handle (assist)
+  document.querySelectorAll('.fav-list').forEach(function (list) {
+    function rows() { return Array.prototype.slice.call(list.children); }
+    // Disable the move buttons at the ends (never show a control that looks pressable but isn't).
+    function sync() {
+      var rs = rows();
+      rs.forEach(function (r, i) {
+        var up = r.querySelector('.mvb.up');
+        var down = r.querySelector('.mvb.down');
+        if (up) up.disabled = i === 0;
+        if (down) down.disabled = i === rs.length - 1;
+        r.setAttribute('aria-label', (r.querySelector('.name') || {}).textContent + ', ' + (i + 1) + ' of ' + rs.length);
+      });
+    }
+    list.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.mvb') : null;
+      if (!b || b.disabled) return;
+      var row = b.closest('.device');
+      if (b.classList.contains('up') && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
+      if (b.classList.contains('down') && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
+      sync();
+      b.focus(); // keep focus so the user can keep pressing
+    });
+    var dragEl = null;
+    rows().forEach(function (row) {
+      row.addEventListener('dragstart', function (e) { dragEl = row; row.classList.add('dragging'); if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; });
+      row.addEventListener('dragend', function () { row.classList.remove('dragging'); rows().forEach(function (r) { r.classList.remove('dragover'); }); dragEl = null; sync(); });
+      row.addEventListener('dragover', function (e) { e.preventDefault(); if (row !== dragEl) row.classList.add('dragover'); });
+      row.addEventListener('dragleave', function () { row.classList.remove('dragover'); });
+      row.addEventListener('drop', function (e) {
+        e.preventDefault();
+        row.classList.remove('dragover');
+        if (dragEl && row !== dragEl) {
+          var rect = row.getBoundingClientRect();
+          var after = e.clientY > rect.top + rect.height / 2;
+          list.insertBefore(dragEl, after ? row.nextSibling : row);
+        }
+        sync();
+      });
+    });
+    sync();
   });
 
   // sensor sections — drag to reorder
