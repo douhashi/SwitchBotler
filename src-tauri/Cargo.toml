@@ -24,6 +24,8 @@ tauri-plugin-opener = "2"
 tauri-plugin-store = "2"
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 tauri-plugin-single-instance = "2"
+# ログイン時に起動（OS のログイン項目登録）。--hidden で起動しトレイ常駐（M4）。
+tauri-plugin-autostart = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # SwitchBot API 通信。CI で openssl を避けるため rustls-tls を使う。

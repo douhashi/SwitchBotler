@@ -17,8 +17,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { ThemeSegment } from "@/components/theme-segment";
 import { ViewHeader } from "@/components/view-header";
+import { isAutostartEnabled, setAutostart } from "@/data/autostart";
 import { useConnectionStore } from "@/stores/connection-store";
 
 export function SettingsView() {
@@ -37,9 +39,27 @@ export function SettingsView() {
   const [token, setToken] = useState("");
   const [secret, setSecret] = useState("");
 
+  // ログイン時に起動（OS のログイン項目）の現在状態。マウント時に実状態を反映する。
+  const [autostart, setAutostartState] = useState(false);
+
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    isAutostartEnabled().then(setAutostartState);
+  }, []);
+
+  const handleAutostartChange = async (next: boolean) => {
+    // 楽観更新 → 実行 → 再取得で確定。失敗時は元状態へロールバックする。
+    setAutostartState(next);
+    try {
+      await setAutostart(next);
+      setAutostartState(await isAutostartEnabled());
+    } catch {
+      setAutostartState(!next);
+    }
+  };
 
   const testing = connection.status === "testing";
   const canSave = token.length > 0 && secret.length > 0 && !testing;
@@ -70,6 +90,25 @@ export function SettingsView() {
           {tc("language.label")}
         </span>
         <LanguageSelect />
+      </section>
+
+      <section className="mb-6">
+        <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">
+          {t("launch.heading")}
+        </h2>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="autostart" className="text-xs font-medium">
+            {t("launch.launchAtLogin.label")}
+          </label>
+          <Switch
+            id="autostart"
+            checked={autostart}
+            onCheckedChange={handleAutostartChange}
+          />
+        </div>
+        <p className="mt-2 px-0.5 text-[11.5px] text-muted-foreground">
+          {t("launch.launchAtLogin.hint")}
+        </p>
       </section>
 
       <h2 className="mb-2.5 px-0.5 text-[11.5px] font-semibold tracking-wider text-muted-foreground uppercase">

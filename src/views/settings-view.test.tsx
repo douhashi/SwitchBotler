@@ -9,6 +9,25 @@ import { useLanguageStore } from "@/stores/language-store";
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
+// autostart プラグインも外部境界。ここでは登録状態をプロセス内フラグで模し、
+// enable/disable がフラグを反転する（実プラグインの enable→isEnabled=true に合わせる）。
+const autostart = vi.hoisted(() => ({ enabled: false }));
+const { enableSpy, disableSpy } = vi.hoisted(() => ({
+  enableSpy: vi.fn(),
+  disableSpy: vi.fn(),
+}));
+vi.mock("@tauri-apps/plugin-autostart", () => ({
+  isEnabled: async () => autostart.enabled,
+  enable: async () => {
+    enableSpy();
+    autostart.enabled = true;
+  },
+  disable: async () => {
+    disableSpy();
+    autostart.enabled = false;
+  },
+}));
+
 import { useConnectionStore } from "@/stores/connection-store";
 import { SettingsView } from "./settings-view";
 
@@ -17,6 +36,9 @@ let saved = false;
 
 beforeEach(() => {
   saved = false;
+  autostart.enabled = false;
+  enableSpy.mockReset();
+  disableSpy.mockReset();
   invoke.mockReset();
   invoke.mockImplementation(async (cmd: string) => {
     switch (cmd) {
@@ -119,6 +141,45 @@ describe("SettingsView", () => {
       expect(useConnectionStore.getState().connection.status).toBe("disconnected");
     });
     expect(useConnectionStore.getState().connection.saved).toBe(false);
+  });
+});
+
+describe("SettingsView ログイン時に起動（autostart）", () => {
+  it("初期表示時に実状態（登録済み）がトグルへ反映される", async () => {
+    autostart.enabled = true;
+
+    render(<SettingsView />);
+
+    const toggle = await screen.findByRole("switch", { name: "ログイン時に起動" });
+    await waitFor(() => expect(toggle).toBeChecked());
+  });
+
+  it("OFF→ON でトグルすると enable が呼ばれ ON になる", async () => {
+    render(<SettingsView />);
+
+    const toggle = await screen.findByRole("switch", { name: "ログイン時に起動" });
+    await waitFor(() => expect(toggle).not.toBeChecked());
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(toggle).toBeChecked());
+    expect(enableSpy).toHaveBeenCalledTimes(1);
+    expect(disableSpy).not.toHaveBeenCalled();
+  });
+
+  it("ON→OFF でトグルすると disable が呼ばれ OFF になる", async () => {
+    autostart.enabled = true;
+
+    render(<SettingsView />);
+
+    const toggle = await screen.findByRole("switch", { name: "ログイン時に起動" });
+    await waitFor(() => expect(toggle).toBeChecked());
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(toggle).not.toBeChecked());
+    expect(disableSpy).toHaveBeenCalledTimes(1);
+    expect(enableSpy).not.toHaveBeenCalled();
   });
 });
 

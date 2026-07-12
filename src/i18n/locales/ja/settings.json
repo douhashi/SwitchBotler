@@ -12,6 +12,13 @@
     "dark": "ダーク",
     "label": "テーマ"
   },
+  "launch": {
+    "heading": "起動",
+    "launchAtLogin": {
+      "label": "ログイン時に起動",
+      "hint": "サインイン時に、トレイに常駐した状態で起動します。"
+    }
+  },
   "api": {
     "heading": "SwitchBot API 認証",
     "storageNote": "OS のセキュアストレージ（Keychain / Credential Manager / Secret Service）に保管されます。",

@@ -77,16 +77,33 @@ fn toggle_tray_popup(app: &tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         // single-instance は最初に登録する（公式推奨）。2 重起動時は既存 main を前面化。
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main(app, None, None);
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_positioner::init())
+        .plugin(tauri_plugin_positioner::init());
+
+    // ログイン時に起動（autostart）はデスクトップ限定。起動引数 `--hidden` を登録し、
+    // autostart 経由の起動を setup() 側で検知してトレイ常駐に切り替える。
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_autostart::init(
+        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+        Some(vec!["--hidden"]),
+    ));
+
+    builder
         .setup(|app| {
             setup_tray(app)?;
+            // autostart（ログイン時に起動）で立ち上がったときは main window を出さず
+            // トレイ常駐させる。それ以外（ユーザーが手動起動）のときのみ main を表示する。
+            // 表示は既存の `show_main` に集約（ロジックを SSoT に寄せる）。main window は
+            // `tauri.conf.json` で `visible:false`（autostart 時のちらつき防止）。
+            if !std::env::args().any(|a| a == "--hidden") {
+                show_main(app.handle(), None, None);
+            }
             Ok(())
         })
         .on_window_event(|window, event| {
