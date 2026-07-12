@@ -5,17 +5,16 @@ import { loadFavorites, saveFavorites } from "@/data/preferences";
 /**
  * お気に入り（デバイス / シーンの id）ストア。
  *
- * 対象は **デバイスとシーン（id ベース）**（PO 決定2: アクション単位は不採用）。
- *
  * **順序が第一級**。配列の並びがそのまま表示順になり、一覧とトレイポップアップの
- * 両方がこの順で描画する（よく使う順に並べ替えられる）。
- * 永続化は `data/preferences.ts`（plugin-store 境界）に委譲する（`string[]` で順序を保持）。
- * 変更は即時反映し、その後バックグラウンドで保存する（保存失敗でも UI は進む）。
+ * 両方がこの順で描画する。永続化は `data/preferences.ts`（plugin-store 境界）に
+ * 委譲する（`string[]` で順序を保持）。変更は即時反映し、その後バックグラウンドで
+ * 保存する（保存失敗でも UI は進む）。
+ *
+ * 操作モデル: お気に入りは**セクション（ドロップ先）**であり、デバイスは**ドラッグで移す**。
+ * 「登録」と「並び替え」は同じ操作（落とした位置＝並び順）なので、両方を {@link place} が担う。
+ * ピンのようなボタンは持たない（非ドラッグ経路はコンテキストメニューが担当）。
  */
 export type ReorderDirection = "up" | "down";
-
-/** ドラッグ&ドロップの落とし先（対象行の前 / 後）。 */
-export type ReorderPlace = "before" | "after";
 
 type FavoritesState = {
   /** お気に入りデバイスの id（この並びが表示順）。 */
@@ -27,28 +26,36 @@ type FavoritesState = {
   load: () => Promise<void>;
   /** 明示的に再読込する（別ウィンドウでの変更を取り込む）。 */
   reload: () => Promise<void>;
-  /** 登録 / 解除。登録は**末尾**に足す（既存の並びを崩さない）。 */
+  /**
+   * `index` の位置へ置く。**未登録なら登録、登録済みなら移動**（＝ドロップ位置が並び順）。
+   * `index` は「その id を除いた並び」における挿入位置。
+   */
+  placeDeviceFavorite: (id: string, index: number) => Promise<void>;
+  placeSceneFavorite: (id: string, index: number) => Promise<void>;
+  /** お気に入りから外す（セクションの外へドロップ / コンテキストメニュー）。 */
+  removeDeviceFavorite: (id: string) => Promise<void>;
+  removeSceneFavorite: (id: string) => Promise<void>;
+  /** 登録 / 解除のトグル（コンテキストメニュー用。登録は末尾）。 */
   toggleDeviceFavorite: (id: string) => Promise<void>;
   toggleSceneFavorite: (id: string) => Promise<void>;
-  /** 1 つ上 / 下へ移動する（キーボードでも操作できる主手段）。端では変化しない。 */
+  /** 1 つ上 / 下へ移動（ドラッグのキーボード代替）。端では変化しない。 */
   moveDeviceFavorite: (id: string, direction: ReorderDirection) => Promise<void>;
   moveSceneFavorite: (id: string, direction: ReorderDirection) => Promise<void>;
-  /** ドラッグ&ドロップ用。`id` を `targetId` の前 / 後へ移す。 */
-  reorderDeviceFavorite: (
-    id: string,
-    targetId: string,
-    place: ReorderPlace,
-  ) => Promise<void>;
-  reorderSceneFavorite: (
-    id: string,
-    targetId: string,
-    place: ReorderPlace,
-  ) => Promise<void>;
   isDeviceFavorite: (id: string) => boolean;
   isSceneFavorite: (id: string) => boolean;
 };
 
-/** 登録 / 解除した新しい配列を返す。登録は末尾に足す（不変更新でセレクタを効かせる）。 */
+/**
+ * `id` を `index` に置いた新しい配列を返す。
+ * 一旦取り除いてから挿し込むので、**未登録なら追加・登録済みなら移動**の両方を兼ねる。
+ */
+function placed(ids: string[], id: string, index: number): string[] {
+  const without = ids.filter((x) => x !== id);
+  const at = Math.max(0, Math.min(index, without.length));
+  return [...without.slice(0, at), id, ...without.slice(at)];
+}
+
+/** 登録 / 解除した新しい配列を返す。登録は末尾に足す。 */
 function toggled(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
 }
@@ -63,21 +70,6 @@ function moved(ids: string[], id: string, direction: ReorderDirection): string[]
   next[from] = ids[to];
   next[to] = ids[from];
   return next;
-}
-
-/** `id` を `targetId` の前 / 後へ移した新しい配列を返す（ドラッグ&ドロップ）。 */
-function reordered(
-  ids: string[],
-  id: string,
-  targetId: string,
-  place: ReorderPlace,
-): string[] {
-  if (id === targetId || !ids.includes(id)) return ids;
-  const without = ids.filter((x) => x !== id);
-  const at = without.indexOf(targetId);
-  if (at < 0) return ids;
-  const insertAt = place === "before" ? at : at + 1;
-  return [...without.slice(0, insertAt), id, ...without.slice(insertAt)];
 }
 
 export const useFavoritesStore = create<FavoritesState>((set, get) => {
@@ -106,6 +98,22 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => {
         set({ loaded: true });
       }
     },
+    placeDeviceFavorite: async (id, index) => {
+      set((s) => ({ deviceIds: placed(s.deviceIds, id, index) }));
+      await persist();
+    },
+    placeSceneFavorite: async (id, index) => {
+      set((s) => ({ sceneIds: placed(s.sceneIds, id, index) }));
+      await persist();
+    },
+    removeDeviceFavorite: async (id) => {
+      set((s) => ({ deviceIds: s.deviceIds.filter((x) => x !== id) }));
+      await persist();
+    },
+    removeSceneFavorite: async (id) => {
+      set((s) => ({ sceneIds: s.sceneIds.filter((x) => x !== id) }));
+      await persist();
+    },
     toggleDeviceFavorite: async (id) => {
       set((s) => ({ deviceIds: toggled(s.deviceIds, id) }));
       await persist();
@@ -120,14 +128,6 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => {
     },
     moveSceneFavorite: async (id, direction) => {
       set((s) => ({ sceneIds: moved(s.sceneIds, id, direction) }));
-      await persist();
-    },
-    reorderDeviceFavorite: async (id, targetId, place) => {
-      set((s) => ({ deviceIds: reordered(s.deviceIds, id, targetId, place) }));
-      await persist();
-    },
-    reorderSceneFavorite: async (id, targetId, place) => {
-      set((s) => ({ sceneIds: reordered(s.sceneIds, id, targetId, place) }));
       await persist();
     },
     isDeviceFavorite: (id) => get().deviceIds.includes(id),

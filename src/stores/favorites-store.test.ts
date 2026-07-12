@@ -80,26 +80,41 @@ describe("favorites-store", () => {
     expect(state().deviceIds).toEqual(["a", "b"]);
   });
 
-  it("reorderDeviceFavorite で対象の前 / 後へ差し込む（ドラッグ&ドロップ）", async () => {
-    useFavoritesStore.setState({ deviceIds: ["a", "b", "c", "d"] });
+  it("place は未登録なら登録、登録済みなら移動（ドロップ位置＝並び順）", async () => {
+    useFavoritesStore.setState({ deviceIds: ["a", "b", "c"] });
 
-    // d を b の前へ。
-    await state().reorderDeviceFavorite("d", "b", "before");
-    expect(state().deviceIds).toEqual(["a", "d", "b", "c"]);
+    // 未登録の d を先頭へドロップ → 登録される。
+    await state().placeDeviceFavorite("d", 0);
+    expect(state().deviceIds).toEqual(["d", "a", "b", "c"]);
 
-    // a を c の後ろへ。
-    await state().reorderDeviceFavorite("a", "c", "after");
-    expect(state().deviceIds).toEqual(["d", "b", "c", "a"]);
-    expect(prefs.get("favoriteDevices")).toEqual(["d", "b", "c", "a"]);
+    // 登録済みの d を 2 番目へドロップ → 移動する（重複しない）。
+    await state().placeDeviceFavorite("d", 2);
+    expect(state().deviceIds).toEqual(["a", "b", "d", "c"]);
+
+    // 範囲外の index は端にクランプされる。
+    await state().placeDeviceFavorite("a", 99);
+    expect(state().deviceIds).toEqual(["b", "d", "c", "a"]);
+    expect(prefs.get("favoriteDevices")).toEqual(["b", "d", "c", "a"]);
   });
 
-  it("シーンも同じ並び替え API を持つ（#80 の UI から使う）", async () => {
+  it("removeDeviceFavorite で外す（セクションの外へドロップ相当）", async () => {
+    useFavoritesStore.setState({ deviceIds: ["a", "b", "c"] });
+
+    await state().removeDeviceFavorite("b");
+    expect(state().deviceIds).toEqual(["a", "c"]);
+    expect(prefs.get("favoriteDevices")).toEqual(["a", "c"]);
+  });
+
+  it("シーンも同じ API を持つ（#80 の UI から使う）", async () => {
     useFavoritesStore.setState({ sceneIds: ["x", "y", "z"] });
 
     await state().moveSceneFavorite("z", "up");
     expect(state().sceneIds).toEqual(["x", "z", "y"]);
 
-    await state().reorderSceneFavorite("x", "y", "after");
+    await state().placeSceneFavorite("x", 2);
     expect(state().sceneIds).toEqual(["z", "y", "x"]);
+
+    await state().removeSceneFavorite("y");
+    expect(state().sceneIds).toEqual(["z", "x"]);
   });
 });

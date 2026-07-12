@@ -32,9 +32,9 @@ describe("OtherDevicesSection", () => {
   it("既定は折りたたみで、見出しに件数を出し中身は隠す", () => {
     render(<OtherDevicesSection devices={[hub, tvRemote]} />);
 
-    // 見出し（トリガ）は「その他 (2)」。
-    const trigger = screen.getByRole("button", { name: /その他/ });
-    expect(trigger).toHaveTextContent("その他");
+    // 見出し（トリガ）は「未対応のデバイス (2)」。
+    const trigger = screen.getByRole("button", { name: /未対応/ });
+    expect(trigger).toHaveTextContent("未対応");
     expect(trigger).toHaveTextContent("(2)");
     expect(trigger).toHaveAttribute("data-state", "closed");
 
@@ -43,10 +43,10 @@ describe("OtherDevicesSection", () => {
     expect(screen.queryByText("テレビ")).toBeNull();
   });
 
-  it("見出しクリックで展開し「その他」デバイス行を表示する", async () => {
+  it("見出しクリックで展開し「未対応」デバイス行を表示する", async () => {
     render(<OtherDevicesSection devices={[hub, tvRemote]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: /その他/ }));
+    await userEvent.click(screen.getByRole("button", { name: /未対応/ }));
 
     // 展開後は各行（名前＋モデル）が表示される。
     expect(screen.getByText("リビングのハブ")).toBeInTheDocument();

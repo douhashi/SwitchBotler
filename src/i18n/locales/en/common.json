@@ -18,7 +18,10 @@
   "favorites": {
     "moveUp": "Move {{name}} up",
     "moveDown": "Move {{name}} down",
-    "positionAria": "{{name}}, {{position}} of {{total}}"
+    "positionAria": "{{name}}, {{position}} of {{total}}",
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "dropHint": "Drag the devices you use most here"
   },
   "states": {
     "loading": "Loading…",

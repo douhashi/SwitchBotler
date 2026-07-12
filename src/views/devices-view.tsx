@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 
-import { DeviceAction } from "@/components/device/device-action";
 import { DeviceCard } from "@/components/device/device-card";
 import { DeviceDetail } from "@/components/device/device-detail";
-import { DeviceIcon } from "@/components/device/device-icon";
 import { OtherDevicesSection } from "@/components/device/other-devices-section";
-import { FavoriteRow } from "@/components/favorites/favorite-row";
+import { FavoriteContextMenu } from "@/components/favorites/favorite-context-menu";
 import { FavoritesSection } from "@/components/favorites/favorites-section";
-import { useDragReorder } from "@/components/favorites/use-drag-reorder";
+import { ReorderControls } from "@/components/favorites/reorder-controls";
+import { useFavoritesDnd } from "@/components/favorites/use-favorites-dnd";
 import { Button } from "@/components/ui/button";
 import { ViewHeader } from "@/components/view-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/view-state";
-import { type Device, deviceStatusLabel, isOtherDevice } from "@/data";
+import { type Device, isOtherDevice } from "@/data";
 import { cn } from "@/lib/utils";
 import { useDeviceStore } from "@/stores/device-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -28,16 +27,27 @@ export function DevicesView() {
   const error = useDeviceStore((s) => s.error);
   const load = useDeviceStore((s) => s.load);
   const refresh = useDeviceStore((s) => s.refresh);
-  const offlineIds = useDeviceStore((s) => s.offlineIds);
   const selectedDeviceId = useNavigationStore((s) => s.selectedDeviceId);
   const favoriteIds = useFavoritesStore((s) => s.deviceIds);
   const loadFavorites = useFavoritesStore((s) => s.load);
-  const toggleFavorite = useFavoritesStore((s) => s.toggleDeviceFavorite);
-  const moveFavorite = useFavoritesStore((s) => s.moveDeviceFavorite);
-  const reorderFavorite = useFavoritesStore((s) => s.reorderDeviceFavorite);
+  const place = useFavoritesStore((s) => s.placeDeviceFavorite);
+  const remove = useFavoritesStore((s) => s.removeDeviceFavorite);
+  const toggle = useFavoritesStore((s) => s.toggleDeviceFavorite);
+  const move = useFavoritesStore((s) => s.moveDeviceFavorite);
 
   const [editing, setEditing] = useState(false);
-  const { draggingId, overId, rowProps } = useDragReorder(reorderFavorite);
+  const {
+    draggingId,
+    insertAt,
+    overRemove,
+    cardProps,
+    favoritesZoneProps,
+    removeZoneProps,
+  } = useFavoritesDnd({
+    favoriteIds,
+    onPlace: place,
+    onRemove: remove,
+  });
 
   useEffect(() => {
     load();
@@ -47,14 +57,49 @@ export function DevicesView() {
   const selected = devices.find((d) => d.id === selectedDeviceId);
   if (selected) return <DeviceDetail device={selected} />;
 
-  // 操作可デバイスは主一覧・お気に入りに、操作もセンサー読み取りもできない
-  // 「その他」は末尾の折りたたみセクションに振り分ける。
-  const others = devices.filter(isOtherDevice);
+  // 操作もセンサー読み取りもできない「未対応」は末尾の折りたたみへ。
+  const unsupported = devices.filter(isOtherDevice);
   const operable = devices.filter((d) => !isOtherDevice(d));
-  // お気に入りは **登録順（favoriteIds の並び）** で描く。この順がトレイの表示順にもなる。
+
+  // お気に入りは **登録順**（この順がトレイの表示順にもなる）。
   const favorites = favoriteIds
     .map((id) => operable.find((d) => d.id === id))
     .filter((d): d is Device => d !== undefined);
+  // 「その他」＝お気に入りに入っていないデバイス。登録は**移動**なのでここから消える
+  // （居場所そのものが状態になり、「登録済み」を示す印が要らない）。
+  const rest = operable.filter((d) => !favoriteIds.includes(d.id));
+
+  /** お気に入り行を描く。並び替えモードでは操作系を ↑↓ に差し替える。 */
+  const favoriteRow = (device: Device, index: number) => (
+    <FavoriteContextMenu
+      key={device.id}
+      favorite
+      onAdd={() => toggle(device.id)}
+      onRemove={() => remove(device.id)}
+    >
+      <DeviceCard
+        device={device}
+        label={tc("favorites.positionAria", {
+          name: device.name,
+          position: index + 1,
+          total: favorites.length,
+        })}
+        dragging={draggingId === device.id}
+        dragProps={cardProps(device.id)}
+        control={
+          editing ? (
+            <ReorderControls
+              name={device.name}
+              canMoveUp={index > 0}
+              canMoveDown={index < favorites.length - 1}
+              onMoveUp={() => move(device.id, "up")}
+              onMoveDown={() => move(device.id, "down")}
+            />
+          ) : undefined
+        }
+      />
+    </FavoriteContextMenu>
+  );
 
   return (
     <div>
@@ -76,56 +121,73 @@ export function DevicesView() {
         <EmptyState>{t("empty")}</EmptyState>
       )}
 
-      {favorites.length > 0 && (
+      {/* お気に入り = ドロップ先。空でも必ず出す（そうしないとドラッグできると気づけない）。 */}
+      {operable.length > 0 && (
         <FavoritesSection
           title={t("favorites")}
+          count={favorites.length}
           editing={editing}
           onToggleEditing={() => setEditing((v) => !v)}
-          reorderable={favorites.length > 1}
+          zoneProps={favoritesZoneProps}
+          active={draggingId !== null && insertAt !== null}
         >
+          {/* listitem は list の直下に置く（ラッパで挟まない）。 */}
           {favorites.map((device, index) => (
-            <FavoriteRow
-              key={device.id}
-              name={device.name}
-              status={deviceStatusLabel(device, t)}
-              icon={
-                <DeviceIcon category={device.category} size={20} strokeWidth={1.75} />
-              }
-              iconActive={device.controls.power}
-              offline={offlineIds.has(device.id)}
-              action={<DeviceAction device={device} />}
-              editing={editing}
-              position={index + 1}
-              total={favorites.length}
-              canMoveUp={index > 0}
-              canMoveDown={index < favorites.length - 1}
-              onMoveUp={() => moveFavorite(device.id, "up")}
-              onMoveDown={() => moveFavorite(device.id, "down")}
-              onUnfavorite={() => toggleFavorite(device.id)}
-              dragging={draggingId === device.id}
-              dragOver={overId === device.id}
-              dragProps={rowProps(device.id, editing)}
-            />
+            <Fragment key={device.id}>
+              {/* 落とし込み位置の目印（ここに入る、が見える）。 */}
+              {insertAt === index && <DropLine />}
+              {favoriteRow(device, index)}
+            </Fragment>
           ))}
+          {insertAt === favorites.length && <DropLine />}
         </FavoritesSection>
       )}
 
-      {operable.length > 0 && (
-        <section>
-          {favorites.length > 0 && (
-            <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
-              {t("all")}
-            </h2>
+      {/* その他 = お気に入りに入っていないデバイス。ここへ落とすとお気に入りから外れる。 */}
+      {rest.length > 0 && (
+        <section
+          {...removeZoneProps}
+          className={cn(
+            "rounded-2xl p-2.5 transition-colors",
+            // 解除は破壊寄りの操作なので赤系。お気に入りへ入れる側（インディゴ）と対にする。
+            // outline を使う理由は FavoritesSection と同じ（ring は box-shadow を奪い合う）。
+            overRemove &&
+              "bg-destructive/5 outline-2 -outline-offset-2 outline-destructive",
           )}
-          <div className="grid-cards">
-            {operable.map((device) => (
-              <DeviceCard key={device.id} device={device} />
+        >
+          <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
+            {t("all")}
+          </h2>
+          <div role="list" aria-label={t("all")} className="grid-cards">
+            {rest.map((device) => (
+              <FavoriteContextMenu
+                key={device.id}
+                favorite={false}
+                onAdd={() => toggle(device.id)}
+                onRemove={() => remove(device.id)}
+              >
+                <DeviceCard
+                  device={device}
+                  dragging={draggingId === device.id}
+                  dragProps={cardProps(device.id)}
+                />
+              </FavoriteContextMenu>
             ))}
           </div>
         </section>
       )}
 
-      <OtherDevicesSection devices={others} />
+      <OtherDevicesSection devices={unsupported} />
     </div>
+  );
+}
+
+/** ドロップ位置の目印。 */
+function DropLine() {
+  return (
+    <div
+      aria-hidden
+      className="mb-2.5 h-0.5 rounded-full bg-sd-accent shadow-[0_0_8px_var(--sd-accent)]"
+    />
   );
 }

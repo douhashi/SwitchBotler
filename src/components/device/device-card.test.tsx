@@ -205,18 +205,8 @@ describe("DeviceCard", () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  it("ピン留めボタンでお気に入りを追加・解除する", async () => {
-    useDeviceStore.setState({ devices: [plug] });
-    render(<DeviceCard device={plug} />);
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "サーキュレーター をお気に入り" }),
-    );
-    expect(useFavoritesStore.getState().deviceIds.includes("circulator")).toBe(true);
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "サーキュレーター のお気に入りを解除" }),
-    );
-    expect(useFavoritesStore.getState().deviceIds.includes("circulator")).toBe(false);
-  });
+  // お気に入りのピンは廃止した。カードのコントロール枠は「その機器の操作」だけを持つ
+  // （幅の違う操作系と管理ボタンが並ばないので、横位置がズレる問題が起きない）。
+  // 登録・解除はお気に入りセクションへの D&D とコンテキストメニューが担い、
+  // その検証は devices-view.test.tsx で行う。
 });
