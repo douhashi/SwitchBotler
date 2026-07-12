@@ -125,43 +125,52 @@
   .device.offline .sub { color: var(--warn); }
   .device.offline .tgl, .device.offline .chev { pointer-events: none; }
 
-  /* ── お気に入り: 1列表示 + 並び替えモード（05） ── */
-  /* 行は grid の固定トラック。可変幅のアクション（トグル46 / シェブロン30 / 実行84）を
-     列の中に閉じ込め、ピン・↑↓ が行をまたいでズレないようにする（flex だとズレる）。 */
-  .fav-list { display: grid; gap: 10px; }
-  .fav-list .device { display: grid; grid-template-columns: 40px 1fr 126px; gap: 12px; align-items: center; }
-  /* コントロール領域。幅 126px はモード間で不変 → 切替でも名前・アイコンが 1px も動かない。 */
-  .zone { display: grid; grid-template-columns: 30px 84px; gap: 12px; align-items: center; }
-  .zone .act { display: flex; justify-content: flex-end; align-items: center; }
+  /* ── お気に入り = ドロップ先（05） ── */
+  /* お気に入りは「ボタン（ピン）」ではなく「場所」。カードをここへドラッグして移すと登録され、
+     落とした位置がそのまま並び順になる。外へドラッグすれば解除。
+     ピンを持たないので、行のコントロール枠は常にひとつ（その機器の操作）だけ。
+     幅の違う操作系（トグル46 / シェブロン30 / 実行84）とピンが並ばないため、横位置がズレない。 */
+  .fav-list { display: flex; flex-direction: column; gap: 10px; min-height: 76px; padding: 10px; border-radius: 16px; box-shadow: var(--inset); transition: background-color .16s ease; }
+  .fav-list .device { display: flex; align-items: center; gap: 12px; cursor: grab; }
+  .fav-list .device:active { cursor: grabbing; }
+  /* 受け入れ可能を枠色で示す。インディゴ = お気に入りへ入れる。 */
+  .fav-list.over { outline: 2px solid var(--accent); outline-offset: -2px; background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  /* 「その他」= 解除のドロップ先。赤 = お気に入りから外す（破壊寄りの操作）。 */
+  .rest-zone { padding: 10px; border-radius: 16px; transition: background-color .16s ease; }
+  .rest-zone.over { outline: 2px solid var(--danger); outline-offset: -2px; background: color-mix(in srgb, var(--danger) 6%, transparent); }
+  /* 落とし込み位置の目印（「ここに入る」が見える）。 */
+  .dropline { height: 2px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  /* 空のときも必ず出す（そうしないと「ここへドラッグできる」ことが発見できない）。 */
+  .fav-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; flex: 1; padding: 14px 0; color: var(--muted); font-size: 12.5px; text-align: center; }
+  .fav-empty svg { width: 18px; height: 18px; }
+
+  /* 並び替えモード: 操作系を ↑↓ とドラッグハンドルへ差し替える。**並び替えだけ**を担い、
+     登録・解除は持ち込まない（非ドラッグ経路はコンテキストメニュー）。 */
+  .zone { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex: none; }
   .zone .mv, .zone .grip { display: none; }
-  /* 並び替えモード: 同じ領域の中身を ↑↓ とドラッグハンドルへ差し替え、操作系は隠す。 */
-  .fav-list.editing .zone { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
-  .fav-list.editing .zone .pin, .fav-list.editing .zone .act { display: none; }
+  .fav-list.editing .zone .act { display: none; }
   .fav-list.editing .zone .mv { display: flex; }
   .fav-list.editing .zone .grip { display: grid; }
-  /* ドラッグハンドル（並び替えモードのみ・右端。iOS の編集モードと同じ位置） */
   .grip { place-items: center; width: 24px; height: 32px; border-radius: 8px; color: var(--muted); cursor: grab; }
   .grip:active { cursor: grabbing; }
   .grip svg { width: 16px; height: 16px; }
-  /* 上下ボタン: 並び替えの主操作。キーボード可・aria-label 必須・端では disabled。 */
+  /* 上下ボタン: ドラッグのキーボード代替。aria-label 必須・端では disabled。 */
   .mv { gap: 6px; }
-  .mvb, .pin { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: var(--muted); background: transparent; border: 0; box-shadow: var(--raise-sm); cursor: pointer; }
-  .mvb svg, .pin svg { width: 15px; height: 15px; }
+  .mvb { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: var(--muted); background: transparent; border: 0; box-shadow: var(--raise-sm); cursor: pointer; }
+  .mvb svg { width: 15px; height: 15px; }
   .mvb:hover { color: var(--ink); }
   .mvb:active { box-shadow: var(--inset-sm); }
   .mvb:disabled { opacity: .35; cursor: not-allowed; box-shadow: var(--inset-sm); }
-  .pin { color: var(--accent); box-shadow: var(--inset-sm); }
-  .mvb:focus-visible, .pin:focus-visible, .editbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mvb:focus-visible, .editbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* セクション見出し + 並び替えトグル */
   .fav-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 11px; }
   .fav-head .sec-title { margin: 0; }
   .editbtn { font-size: 12px; font-weight: 600; color: var(--muted); background: transparent; border: 0; padding: 7px 13px; border-radius: 10px; box-shadow: var(--raise-sm); cursor: pointer; }
   .editbtn[aria-pressed="true"] { color: var(--accent); box-shadow: var(--inset-sm); }
-  /* 並び替え中の状態 */
-  .fav-list .device { transition: box-shadow .18s ease, opacity .18s ease; }
-  .fav-list .device.dragging { opacity: .5; box-shadow: var(--inset-sm); }
-  .fav-list .device.dragover { box-shadow: var(--raise), 0 0 0 2px var(--accent); }
-  @media (prefers-reduced-motion: reduce) { .fav-list .device { transition: none; } }
+  /* ドラッグ中の当人 */
+  .device { transition: box-shadow .18s ease, opacity .18s ease; }
+  .device.dragging { opacity: .45; box-shadow: var(--inset-sm); }
+  @media (prefers-reduced-motion: reduce) { .device, .fav-list, .rest-zone { transition: none; } }
   .device.offline .off-tag { font-size: 11px; font-weight: 600; color: var(--muted); flex: none; padding: 3px 9px; border-radius: 999px; box-shadow: var(--inset-sm); }
 
   .tgl { width: 46px; height: 27px; border-radius: 999px; flex: none; cursor: pointer; background: var(--bg); position: relative; box-shadow: var(--inset-sm); transition: background .22s ease; }
@@ -485,7 +494,7 @@
   </div></div>
 
   <!-- 05 お気に入りの1列表示と並び替え -->
-  <div class="cap"><span class="n">05</span><h2>お気に入りの1列表示と並び替え（デバイス／シーン）</h2><span class="d">お気に入りは 1 列固定。「並び替え」で<b>右のコントロールだけ</b>が ↑↓ とドラッグハンドルに切り替わる（左のアイコン・名前は動かない）。<b>この順番がトレイポップアップの表示順になる</b>。</span></div>
+  <div class="cap"><span class="n">05</span><h2>お気に入り＝ドロップ先（デバイス／シーン）</h2><span class="d">お気に入りは<b>ボタン（ピン）ではなく場所</b>。カードを<b>ドラッグして移す</b>と登録され、<b>落とした位置がそのまま並び順</b>になる（外へ出せば解除）。登録は「移動」なので、その他のセクションからは消える。<b>この順番がトレイポップアップの表示順になる</b>。</span></div>
 
   <!-- 05-a デバイス -->
   <div class="win-scroll"><div class="win">
@@ -505,15 +514,14 @@
       <main class="main">
         <div class="head"><div><h3>デバイス</h3><div class="sub">リビング・寝室ほか</div></div><button class="btn sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>更新</button></div>
 
-        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>「<b>並び替え</b>」を押すと、右のコントロールが ↑↓ とドラッグハンドルに切り替わります。<b>この並び順がトレイポップアップの表示順</b>になります。</span></div>
+        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>カードを<b>お気に入りへドラッグ</b>して登録（受け入れ側の枠は<b>インディゴ</b>）。<b>その他へ戻すと解除</b>（枠は<b>赤</b>）。ドラッグの代替として、<b>右クリック</b>で登録／解除、「<b>並び替え</b>」で ↑↓ 操作ができます。</span></div>
 
         <div class="fav-head"><span class="sec-title">お気に入り</span><button class="editbtn" data-edit="favDevices" aria-pressed="false">並び替え</button></div>
-        <div class="fav-list" id="favDevices" role="list" aria-label="お気に入りデバイス（並び替え可）">
+        <div class="fav-list" id="favDevices" data-rest="restDevices" role="list" aria-label="お気に入り">
           <div class="device" role="listitem" aria-label="リビングの照明、4 件中 1 番目">
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span>
             <div class="body"><div class="name">リビングの照明</div><div class="sub">Color Bulb · 点灯中</div></div>
             <div class="zone">
-              <button class="pin" aria-label="リビングの照明をお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="リビングの照明"><span class="knob"></span></div></span>
               <span class="mv">
               <button class="mvb up" aria-label="リビングの照明を上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -526,7 +534,6 @@
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="9" rx="2"/><path d="M6 17a2 2 0 0 0 2-2M18 17a2 2 0 0 1-2-2M12 17v3"/><path d="M7 8h.01M11 8h.01"/></svg></span>
             <div class="body"><div class="name">リビングのエアコン</div><div class="sub">Air Conditioner · 冷房 26°C</div></div>
             <div class="zone">
-              <button class="pin" aria-label="リビングのエアコンをお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span>
               <span class="mv">
               <button class="mvb up" aria-label="リビングのエアコンを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -539,7 +546,6 @@
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18M4 3v18M20 3v18M12 3c-3 4-3 14 0 18M12 3c3 4 3 14 0 18"/></svg></span>
             <div class="body"><div class="name">寝室のカーテン</div><div class="sub">Curtain 3 · 80% 開</div></div>
             <div class="zone">
-              <button class="pin" aria-label="寝室のカーテンをお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span>
               <span class="mv">
               <button class="mvb up" aria-label="寝室のカーテンを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -552,7 +558,6 @@
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13a3 3 0 1 0-3-3M2 12h17a3 3 0 1 1-3 3M2 16h9a3 3 0 1 1-3 3"/></svg></span>
             <div class="body"><div class="name">サーキュレーター</div><div class="sub">Plug Mini · オフ</div></div>
             <div class="zone">
-              <button class="pin" aria-label="サーキュレーターをお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="サーキュレーター"><span class="knob"></span></div></span>
               <span class="mv">
               <button class="mvb up" aria-label="サーキュレーターを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -563,11 +568,13 @@
           </div>
         </div>
 
-        <div class="sec-title" style="margin-top:20px">すべて</div>
+        <div class="rest-zone" id="restDevices" style="margin-top:14px">
+        <div class="sec-title">その他のデバイス</div>
         <div class="grid-cards">
-          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">玄関の照明</div><div class="sub">Bulb · 点灯中</div></div><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></div>
-          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">加湿器</div><div class="sub">Humidifier · オフ</div></div><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="加湿器"><span class="knob"></span></div></div>
-          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">玄関の鍵</div><div class="sub">Lock Pro · 施錠</div></div><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div>
+          <div class="device"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-4 10.5c.5.5 1 1.4 1 2.5h6c0-1.1.5-2 1-2.5A6 6 0 0 0 12 3Z"/><path d="M9.5 19h5"/><path d="M10.5 21.5h3"/></svg></span><div class="body"><div class="name">玄関の照明</div><div class="sub">Bulb · 点灯中</div></div><div class="zone"><span class="act"><div class="tgl on" role="switch" aria-checked="true" tabindex="0" aria-label="玄関の照明"><span class="knob"></span></div></span><span class="mv"><button class="mvb up" aria-label="玄関の照明を上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="mvb down" aria-label="玄関の照明を下へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button></span><span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span></div></div>
+          <div class="device off"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 5 5 9a5 5 0 0 1-10 0c0-4 5-9 5-9Z"/></svg></span><div class="body"><div class="name">加湿器</div><div class="sub">Humidifier · オフ</div></div><div class="zone"><span class="act"><div class="tgl" role="switch" aria-checked="false" tabindex="0" aria-label="加湿器"><span class="knob"></span></div></span><span class="mv"><button class="mvb up" aria-label="加湿器を上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="mvb down" aria-label="加湿器を下へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button></span><span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span></div></div>
+          <div class="device link"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M7 7V5a5 5 0 0 1 10 0v2"/></svg></span><div class="body"><div class="name">玄関の鍵</div><div class="sub">Lock Pro · 施錠</div></div><div class="zone"><span class="act"><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></span><span class="mv"><button class="mvb up" aria-label="玄関の鍵を上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button><button class="mvb down" aria-label="玄関の鍵を下へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button></span><span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span></div></div>
+        </div>
         </div>
       </main>
     </div>
@@ -591,15 +598,14 @@
       <main class="main">
         <div class="head"><div><h3>シーン</h3><div class="sub">SwitchBot アプリで作成</div></div></div>
 
-        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>デバイスと同じ操作感。<b>この並び順がトレイのお気に入りシーン表示順</b>になります。</span></div>
+        <div class="note-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>デバイスとまったく同じ操作モデル（ドラッグして移す／落とした位置が並び順）。<b>この並び順がトレイのお気に入りシーン表示順</b>になります。</span></div>
 
         <div class="fav-head"><span class="sec-title">お気に入り</span><button class="editbtn" data-edit="favScenes" aria-pressed="false">並び替え</button></div>
-        <div class="fav-list" id="favScenes" role="list" aria-label="お気に入りシーン（並び替え可）">
+        <div class="fav-list" id="favScenes" data-rest="restScenes" role="list" aria-label="お気に入り">
           <div class="device" role="listitem" aria-label="おやすみ、3 件中 1 番目">
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
             <div class="body"><div class="name">おやすみ</div><div class="sub">照明オフ・カーテン閉・加湿器オン</div></div>
             <div class="zone">
-              <button class="pin" aria-label="おやすみをお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></span>
               <span class="mv">
               <button class="mvb up" aria-label="おやすみを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -612,7 +618,6 @@
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></span>
             <div class="body"><div class="name">帰宅</div><div class="sub">玄関・リビング点灯・エアコンオン</div></div>
             <div class="zone">
-              <button class="pin" aria-label="帰宅をお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></span>
               <span class="mv">
               <button class="mvb up" aria-label="帰宅を上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -625,7 +630,6 @@
             <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg></span>
             <div class="body"><div class="name">おはよう</div><div class="sub">カーテン開・照明徐々に点灯</div></div>
             <div class="zone">
-              <button class="pin" aria-label="おはようをお気に入りから外す" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></button>
               <span class="act"><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></span>
               <span class="mv">
               <button class="mvb up" aria-label="おはようを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -636,12 +640,22 @@
           </div>
         </div>
 
-        <div class="sec-title" style="margin-top:20px">すべて</div>
+        <div class="rest-zone" id="restScenes" style="margin-top:14px">
+        <div class="sec-title">その他のシーン</div>
         <div class="grid-cards">
-          <div class="scene">
-            <div class="stop"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><div class="body"><div class="nm">映画モード</div><div class="ds">照明を暗く・カーテン閉</div></div></div>
-            <button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button>
+          <div class="device">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span>
+            <div class="body"><div class="name">映画モード</div><div class="sub">照明を暗く・カーテン閉</div></div>
+            <div class="zone">
+              <span class="act"><button class="btn primary sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4Z"/></svg>実行</button></span>
+              <span class="mv">
+                <button class="mvb up" aria-label="映画モードを上へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+                <button class="mvb down" aria-label="映画モードを下へ移動"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></button>
+              </span>
+              <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="19" r="1.4"/><circle cx="15" cy="5" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="19" r="1.4"/></svg></span>
+            </div>
           </div>
+        </div>
         </div>
       </main>
     </div>
@@ -712,9 +726,9 @@
     });
   });
 
-  // favorites — 1列 grid（固定トラック）+ 並び替えモード（右のコントロール領域だけを入れ替える）
-  // 「並び替え」を押すと右の [ピン][アクション] が [↑][↓][ドラッグハンドル] に差し替わる。
-  // 領域幅は 126px 固定なので、左のアイコン・名前は 1px も動かない。
+  // favorites — お気に入り＝ドロップ先。カードをドラッグして移すと登録され、落とした位置が並び順になる。
+  // 「その他」へ落とせば解除。登録は "移動" なので、その他からは消える（居場所そのものが状態）。
+  // ドラッグはポインタ専用の経路なので、キーボード代替（並び替え＝↑↓）を必ず併設する。
   document.querySelectorAll('.editbtn[data-edit]').forEach(function (btn) {
     var list = document.getElementById(btn.getAttribute('data-edit'));
     if (!list) return;
@@ -722,17 +736,36 @@
       var on = btn.getAttribute('aria-pressed') !== 'true';
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       btn.textContent = on ? '完了' : '並び替え';
+      // 並び替えモードは **並び替えだけ** を担う（登録・解除は持ち込まない）。
       list.classList.toggle('editing', on);
-      // ドラッグは並び替えモードのときだけ有効（普段の誤ドラッグを防ぐ）。
-      list.querySelectorAll('.device').forEach(function (r) { r.draggable = on; });
     });
   });
 
-  document.querySelectorAll('.fav-list').forEach(function (list) {
-    function rows() { return Array.prototype.slice.call(list.children); }
-    // 端の行では移動ボタンを disabled にする（押せそうで押せない状態を作らない）。
+  document.querySelectorAll('.fav-list[data-rest]').forEach(function (fav) {
+    var rest = document.getElementById(fav.getAttribute('data-rest'));
+    var grid = rest ? rest.querySelector('.grid-cards') : null;
+    if (!grid) return;
+
+    var dragEl = null;
+    var line = document.createElement('div');
+    line.className = 'dropline';
+    line.setAttribute('aria-hidden', 'true');
+
+    function favRows() {
+      return Array.prototype.filter.call(fav.children, function (c) { return c.classList.contains('device'); });
+    }
+    // 端の行では ↑↓ を disabled にし、位置を読み上げに載せる。
     function sync() {
-      var rs = rows();
+      var rs = favRows();
+      var empty = fav.querySelector('.fav-empty');
+      if (rs.length === 0 && !empty) {
+        fav.insertAdjacentHTML('beforeend', '<div class="fav-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg><span>よく使うものをここにドラッグして追加</span></div>');
+      } else if (rs.length > 0 && empty) {
+        empty.remove();
+      }
+      // 「並び替え」は 2 件以上でだけ意味を持つ。
+      var btn = document.querySelector('.editbtn[data-edit="' + fav.id + '"]');
+      if (btn) btn.style.visibility = rs.length > 1 ? 'visible' : 'hidden';
       rs.forEach(function (r, i) {
         var up = r.querySelector('.mvb.up');
         var down = r.querySelector('.mvb.down');
@@ -742,32 +775,76 @@
         if (nm) r.setAttribute('aria-label', nm.textContent + '、' + rs.length + ' 件中 ' + (i + 1) + ' 番目');
       });
     }
-    list.addEventListener('click', function (e) {
+    // ドラッグ中の自分を除いた並びでの挿入位置に、目印の線を差し込む。
+    function showLine(clientY) {
+      var next = favRows().filter(function (r) { return r !== dragEl; }).find(function (r) {
+        var rect = r.getBoundingClientRect();
+        return clientY < rect.top + rect.height / 2;
+      });
+      fav.insertBefore(line, next || null);
+    }
+    function clear() {
+      if (line.parentNode) line.remove();
+      fav.classList.remove('over');
+      rest.classList.remove('over');
+    }
+
+    function wire(card) {
+      card.draggable = true;
+      card.addEventListener('dragstart', function (e) {
+        // トグルや「実行」の上から掴んでしまう事故を防ぐ。
+        if (e.target.closest && e.target.closest('.zone, .tgl, .chev, .btn')) { e.preventDefault(); return; }
+        dragEl = card;
+        card.classList.add('dragging');
+        if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', ''); }
+      });
+      card.addEventListener('dragend', function () { card.classList.remove('dragging'); dragEl = null; clear(); sync(); });
+    }
+    favRows().forEach(wire);
+    grid.querySelectorAll('.device').forEach(wire);
+
+    fav.addEventListener('dragover', function (e) {
+      if (!dragEl) return;
+      e.preventDefault();
+      fav.classList.add('over');
+      rest.classList.remove('over');
+      showLine(e.clientY);
+    });
+    fav.addEventListener('dragleave', function (e) { if (!fav.contains(e.relatedTarget)) clear(); });
+    fav.addEventListener('drop', function (e) {
+      if (!dragEl) return;
+      e.preventDefault();
+      fav.insertBefore(dragEl, line.nextSibling); // 目印の位置がそのまま並び順になる
+      clear(); sync();
+    });
+
+    // 解除のドロップ先。お気に入りに入っているものだけが対象。
+    rest.addEventListener('dragover', function (e) {
+      if (!dragEl || dragEl.parentNode !== fav) return;
+      e.preventDefault();
+      rest.classList.add('over');
+      fav.classList.remove('over');
+      if (line.parentNode) line.remove();
+    });
+    rest.addEventListener('dragleave', function (e) { if (!rest.contains(e.relatedTarget)) rest.classList.remove('over'); });
+    rest.addEventListener('drop', function (e) {
+      if (!dragEl || dragEl.parentNode !== fav) return;
+      e.preventDefault();
+      grid.appendChild(dragEl);
+      dragEl.removeAttribute('aria-label');
+      clear(); sync();
+    });
+
+    fav.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('.mvb') : null;
       if (!b || b.disabled) return;
       var row = b.closest('.device');
-      if (b.classList.contains('up') && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
-      if (b.classList.contains('down') && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
+      if (b.classList.contains('up') && row.previousElementSibling) fav.insertBefore(row, row.previousElementSibling);
+      if (b.classList.contains('down') && row.nextElementSibling) fav.insertBefore(row.nextElementSibling, row);
       sync();
       b.focus(); // 連続操作できるようフォーカスを保つ
     });
-    var dragEl = null;
-    rows().forEach(function (row) {
-      row.addEventListener('dragstart', function (e) { dragEl = row; row.classList.add('dragging'); if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'; });
-      row.addEventListener('dragend', function () { row.classList.remove('dragging'); rows().forEach(function (r) { r.classList.remove('dragover'); }); dragEl = null; sync(); });
-      row.addEventListener('dragover', function (e) { e.preventDefault(); if (row !== dragEl) row.classList.add('dragover'); });
-      row.addEventListener('dragleave', function () { row.classList.remove('dragover'); });
-      row.addEventListener('drop', function (e) {
-        e.preventDefault();
-        row.classList.remove('dragover');
-        if (dragEl && row !== dragEl) {
-          var rect = row.getBoundingClientRect();
-          var after = e.clientY > rect.top + rect.height / 2;
-          list.insertBefore(dragEl, after ? row.nextSibling : row);
-        }
-        sync();
-      });
-    });
+
     sync();
   });
 
