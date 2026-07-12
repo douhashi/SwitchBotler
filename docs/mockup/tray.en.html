@@ -19,6 +19,7 @@
     --hair: rgba(120,130,150,.14);
     --page-bg: #EAECF1; --page-ink: #2C3444; --page-muted: #6C7486; --page-line: #D9DDE6;
     --scroll: rgba(120,130,150,.34);
+    --m-cool: #2E9BE6; --m-heat: #F0872E; --m-dry: #14A8A0; --m-fan: #7C8798; --m-auto: #6366F1;
   }
   @media (prefers-color-scheme: dark) { :root { --dm:1 } }
   :root[data-theme="dark"], :root[data-theme="dark2"] {
@@ -33,6 +34,7 @@
     --hair: rgba(200,210,230,.08);
     --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
     --scroll: rgba(200,210,230,.22);
+    --m-cool: #56B6F5; --m-heat: #F79B4E; --m-dry: #34C7BE; --m-fan: #9AA5B4; --m-auto: #818CF8;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme]) {
@@ -47,6 +49,7 @@
       --hair: rgba(200,210,230,.08);
       --page-bg: #15171D; --page-ink: #E7E9F0; --page-muted: #9096A4; --page-line: #2A2E38;
       --scroll: rgba(200,210,230,.22);
+      --m-cool: #56B6F5; --m-heat: #F79B4E; --m-dry: #34C7BE; --m-fan: #9AA5B4; --m-auto: #818CF8;
     }
   }
   :root[data-theme="light"] { color-scheme: light; }
@@ -135,6 +138,71 @@
   .card code { font-family: var(--mono); font-size: 11px; background: var(--bg); padding: 1px 5px; border-radius: 5px; box-shadow: var(--inset-sm); color: var(--ink); }
   .foot-note { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--page-line); font-size: 12px; color: var(--page-muted); line-height: 1.7; }
   .foot-note code { font-family: var(--mono); font-size: 11px; }
+
+  /* ── Drill-in detail (self-contained in the popup, compact) ── */
+  .dh { display: flex; align-items: center; gap: 10px; padding: 2px 2px 12px; }
+  .back { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: var(--muted); box-shadow: var(--raise-sm); background: transparent; border: 0; cursor: pointer; flex-shrink: 0; }
+  .back:hover { color: var(--ink); }
+  .back:active { box-shadow: var(--inset-sm); }
+  .dh .body { flex: 1; min-width: 0; }
+  .dh .nm { font-size: 13.5px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dh .st { margin-top: 1px; font-size: 11px; color: var(--muted); }
+
+  /* Detail panel: one surface card (compacted from the main single-panel layout) */
+  .dpanel { background: var(--surface); border-radius: 14px; padding: 13px 14px; box-shadow: var(--raise-sm); --m: var(--m-cool); }
+
+  /* Hero temperature (74→46px). Digits = mono/tabular, unit = sans to avoid a squished ℃. */
+  .dhero { text-align: center; padding: 6px 0 2px; }
+  .dval { line-height: 1; }
+  .dval .n { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; font-size: 46px; color: var(--m); }
+  .dval .u { font-size: 18px; font-weight: 600; color: var(--muted); margin-left: 3px; }
+
+  /* Temperature: −/＋ and slider on one centered row, scale on a separate row */
+  .dtemp { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .dstep { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; color: var(--m); box-shadow: var(--raise-sm); background: transparent; border: 0; cursor: pointer; flex-shrink: 0; }
+  .dstep:active { box-shadow: var(--inset-sm); }
+  .dstep svg { width: 18px; height: 18px; }
+  .dsldwrap { flex: 1; }
+  .dsld { position: relative; height: 10px; border-radius: 999px; box-shadow: var(--inset); }
+  .dsld .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--m); }
+  .dsld.accent .fill { background: var(--accent); }
+  .dsld i { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 18px; height: 18px; border-radius: 999px; background: var(--knob); box-shadow: var(--knob-shadow); }
+  .dscale { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 46px; font-size: 10.5px; color: var(--muted); }
+
+  /* Group label */
+  .dgl { margin: 13px 0 7px; padding: 0 1px; font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+
+  /* Mode (5 columns, icon + label, compact) */
+  .dmodes { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
+  .dmode { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 11px; color: var(--muted); box-shadow: var(--inset-sm); background: transparent; border: 0; cursor: pointer; }
+  .dmode svg { width: 17px; height: 17px; }
+  .dmode span { font-size: 10px; font-weight: 600; }
+  .dmode.on { box-shadow: var(--raise-sm); }
+  .dmode[data-m="auto"].on { color: var(--m-auto); } .dmode[data-m="cool"].on { color: var(--m-cool); }
+  .dmode[data-m="dry"].on { color: var(--m-dry); } .dmode[data-m="fan"].on { color: var(--m-fan); }
+  .dmode[data-m="heat"].on { color: var(--m-heat); }
+
+  /* Fan (4 segments, compact) */
+  .dfans { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; padding: 4px; border-radius: 12px; box-shadow: var(--inset); }
+  .dfan { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 2px; border-radius: 9px; font-size: 11.5px; font-weight: 600; color: var(--muted); background: transparent; border: 0; cursor: pointer; }
+  .dfan svg { width: 13px; height: 13px; }
+  .dfan.on { color: var(--m); background: var(--bg); box-shadow: var(--raise-sm); }
+
+  /* Generic control row (brightness / position) */
+  .dctl { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; font-size: 11.5px; color: var(--muted); }
+  .dctl b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
+
+  /* Color swatches */
+  .dsw { display: flex; gap: 9px; }
+  .dsw button { width: 28px; height: 28px; border-radius: 999px; box-shadow: var(--raise-sm); border: 0; cursor: pointer; }
+  .dsw button.on { box-shadow: var(--raise-sm), 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+  /* Relative brightness (IR light; stateless, send-only) */
+  .dnudge { display: flex; gap: 6px; }
+  .dnudge button { flex: 1; padding: 9px 0; border-radius: 10px; font-size: 12px; font-weight: 600; color: var(--muted); box-shadow: var(--inset-sm); background: transparent; border: 0; cursor: pointer; }
+  .dnudge button:hover { color: var(--ink); }
+
+  .mini-stack { display: grid; gap: 16px; }
 </style>
 </head>
 <body>
@@ -143,7 +211,7 @@
     <div>
       <p class="eyebrow">Design Mockup · Tray Operability Enhancement</p>
       <h1>Full control, wider width, and variable-height scrolling for the tray popup</h1>
-      <p class="lede">Make <b>every favorite device</b> controllable (ACs and the like open their detail via "&gt;"). This proposal widens the popup to roughly a single-column window card, and the height flexes with the content up to a maximum before scrolling.</p>
+      <p class="lede">Make <b>every favorite device</b> controllable (ACs and the like drill into their detail <b>inside the popup</b> via "&gt;"). This proposal widens the popup to roughly a single-column window card, and the height flexes with the content up to a maximum before scrolling.</p>
     </div>
     <div class="seg" role="group" aria-label="Theme switch">
       <button data-theme-btn="light" aria-pressed="false">Light</button>
@@ -281,10 +349,137 @@
     </div>
   </div>
 
+  <!-- 03 -->
+  <div class="cap">
+    <span class="n">03</span><h2>Device detail (drill-in, self-contained in the popup)</h2><span class="rec">Recommended</span>
+    <span class="d">"&gt;" opens the detail inside the popup instead of the main window; "‹" returns to the list. The capability panel is compacted for the popup.</span>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="lab">AC detail (temperature · mode · fan / drill-in)</p>
+      <div class="tray">
+        <div class="dh">
+          <button class="back" aria-label="Back to list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+          <span class="body"><div class="nm">Living Room AC</div><div class="st">Air Conditioner</div></span>
+          <span class="tgl on" title="Power"><i></i></span>
+        </div>
+        <div class="dpanel">
+          <div class="dhero">
+            <div class="dval"><span class="n">26</span><span class="u">℃</span></div>
+          </div>
+          <div class="dtemp">
+            <button class="dstep" aria-label="Lower temperature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+            <div class="dsldwrap"><div class="dsld"><div class="fill" style="width:71%"></div><i style="left:71%"></i></div></div>
+            <button class="dstep" aria-label="Raise temperature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+          <div class="dscale"><span>16℃</span><span>30℃</span></div>
+          <div class="dgl">Mode</div>
+          <div class="dmodes">
+            <button class="dmode" data-m="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 16 12 7l3.5 9M9.4 13.5h5.2"/></svg><span>Auto</span></button>
+            <button class="dmode on" data-m="cool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M4.9 5.6l14.2 12.8M19.1 5.6 4.9 18.4M2 12h20"/><path d="m6 4 6 3 6-3M6 20l6-3 6 3M2.7 8.5 5 12l-2.3 3.5M21.3 8.5 19 12l2.3 3.5"/></svg><span>Cool</span></button>
+            <button class="dmode" data-m="dry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s5.5 5.5 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 8.5 12 3 12 3Z"/></svg><span>Dry</span></button>
+            <button class="dmode" data-m="fan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h9a2.5 2.5 0 1 0-2.5-2.5M3 16h13a2.5 2.5 0 1 1-2.5 2.5M3 12h16a2.5 2.5 0 1 0-2.5-2.5"/></svg><span>Fan</span></button>
+            <button class="dmode" data-m="heat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg><span>Heat</span></button>
+          </div>
+          <div class="dgl">Fan speed</div>
+          <div class="dfans">
+            <button class="dfan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 15 12 7l3.5 8M9.6 12.6h4.8"/></svg> Auto</button>
+            <button class="dfan">Low</button>
+            <button class="dfan on">Mid</button>
+            <button class="dfan">High</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards" style="max-width:300px">
+      <div class="card">
+        <h4><span class="tag easy">Effort: Low</span> Reuse the widgets</h4>
+        <p>The detail reuses <code>deviceCapabilities()</code> + <code>DETAIL_WIDGETS</code> as-is; only sizes are compacted for the popup (hero 74→46px, −/＋ 44→36px).</p>
+      </div>
+      <div class="card">
+        <h4><span class="tag easy">Effort: Low</span> In-popup navigation</h4>
+        <p>Keep a <code>detailId</code> state in the tray to switch list⇄detail. <code>show_main_window</code> is never called, so the main window stays closed.</p>
+      </div>
+      <div class="card">
+        <h4><span class="tag easy">Effort: Low</span> Back = list</h4>
+        <p>"‹" sets <code>detailId=null</code>. Losing focus (closing) also resets to the list, so it always opens on the list.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="lab">Compact detail for other device types (same skeleton)</p>
+      <div class="mini-stack">
+        <!-- Curtain: position slider only (no power toggle) -->
+        <div class="tray">
+          <div class="dh">
+            <button class="back" aria-label="Back to list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+            <span class="body"><div class="nm">Bedroom Curtain</div><div class="st">Curtain 3</div></span>
+          </div>
+          <div class="dpanel">
+            <div class="dctl"><span>Position</span><b>80%</b></div>
+            <div class="dsld accent"><div class="fill" style="width:80%"></div><i style="left:80%"></i></div>
+          </div>
+        </div>
+
+        <!-- Color bulb: brightness + color (power in header) -->
+        <div class="tray">
+          <div class="dh">
+            <button class="back" aria-label="Back to list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+            <span class="body"><div class="nm">Living Room Light</div><div class="st">Color Bulb</div></span>
+            <span class="tgl on"><i></i></span>
+          </div>
+          <div class="dpanel">
+            <div class="dctl"><span>Brightness</span><b>70%</b></div>
+            <div class="dsld accent"><div class="fill" style="width:70%"></div><i style="left:70%"></i></div>
+            <div class="dgl">Color</div>
+            <div class="dsw">
+              <button class="on" style="background:#F6D98A" aria-label="Warm"></button>
+              <button style="background:#FFB27A" aria-label="Amber"></button>
+              <button style="background:#FF8FA0" aria-label="Rose"></button>
+              <button style="background:#8FB8FF" aria-label="Sky"></button>
+              <button style="background:#B79CFF" aria-label="Lavender"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- IR light: power (header) + relative brightness -->
+        <div class="tray">
+          <div class="dh">
+            <button class="back" aria-label="Back to list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+            <span class="body"><div class="nm">Accent Light</div><div class="st">IR Light</div></span>
+            <span class="tgl on"><i></i></span>
+          </div>
+          <div class="dpanel">
+            <div class="dgl">Brightness (relative)</div>
+            <div class="dnudge">
+              <button>Brighter</button>
+              <button>Dimmer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards" style="max-width:300px">
+      <div class="card">
+        <h4><span class="tag easy">Effort: Low</span> Per-type differences are data</h4>
+        <p>The skeleton (header + panel) is shared; the body is decided by the capability array from <code>deviceCapabilities()</code> (curtain=position, bulb=brightness+color, IR=relative brightness).</p>
+      </div>
+      <div class="card">
+        <h4><span class="tag easy">Effort: Low</span> Power lives in the header</h4>
+        <p>Types with a power capability show the header toggle. Curtain has <code>hasPowerToggle=false</code>, so none. Lock is just the lock toggle (no body).</p>
+      </div>
+    </div>
+  </div>
+
   <div class="foot-note">
     <b>Implementation notes (proposal)</b><br>
     · <b>Full control</b>: Remove the <code>hasPowerToggle</code> filter in <code>tray-popover.tsx</code> and branch via <code>deviceInteraction()</code> into toggle=switch / detail="&gt;" / press="Press" (sharing the exact logic of the device cards).<br>
-    · <b>Where "&gt;" leads</b>: Show the main window and jump to that device's detail. Today <code>show_main_window(view)</code> can only pass a view, so <b>extend the IPC to pass a device id</b> (attach the id to the <code>navigate</code> event). This is the only non-trivial point (Effort: Medium).<br>
+    · <b>"&gt;" = in-popup drill-in (03)</b>: Instead of opening the main window, switch list⇄detail inside the tray (a <code>detailId</code> state in <code>tray-popover</code>). The detail reuses <code>deviceCapabilities()</code> + <code>DETAIL_WIDGETS</code>, compacted for the popup. "‹" returns to the list, and losing focus (closing) also resets to the list. <code>show_main_window</code> is never called, so no IPC extension is needed.<br>
     · <b>Width</b>: Set the tray window width to about 288→360px. Update the width in <code>tray-app.tsx</code>'s <code>setSize</code> (switch the <code>window.innerWidth</code> dependency to a fixed width).<br>
     · <b>Variable height + cap</b>: Add <code>Math.min(h, MAX)</code> to the current behavior that follows the content height via <code>ResizeObserver</code>. Give each of the device/scene lists <code>max-height + overflow-y: auto</code> (devices ≈ 6 rows / scenes ≈ 3 rows).<br>
     · <b>UX note</b>: Nested scrolling inside a small popover needs care (use <code>overscroll-behavior: contain</code> to stop propagation to the parent). A "single-scroll" variant limited to just one region is also possible (pick per preference).
