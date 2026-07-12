@@ -1,5 +1,6 @@
 import { Fragment, type HTMLAttributes, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowUpFromLine } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { ReorderDirection } from "@/stores/favorites-store";
@@ -119,23 +120,44 @@ export function FavoritesBoard<T extends Identified>({
         {insertAt === favorites.length && <DropLine />}
       </FavoritesSection>
 
-      {/* その他 = お気に入りに入っていないもの。ここへ落とすとお気に入りから外れる。 */}
-      {rest.length > 0 && (
-        <section
-          {...removeZoneProps}
+      {/* その他 = お気に入りに入っていないもの。ここへ落とすとお気に入りから外れる。
+          **空でも必ず出す。** ここが解除の唯一のドロップ先なので、全件をお気に入りに入れた
+          瞬間にこのセクションが消えると、ドラッグでは二度と戻せなくなる。 */}
+      <section
+        {...removeZoneProps}
+        className={cn(
+          "rounded-2xl p-2.5 transition-colors",
+          // 解除は破壊寄りの操作なので赤系。お気に入りへ入れる側（インディゴ）と対にする。
+          // outline を使うのは、ring が box-shadow で描かれ shadow-inset と奪い合うため。
+          overRemove &&
+            "bg-destructive/5 outline-2 -outline-offset-2 outline-destructive",
+        )}
+      >
+        <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
+          {restTitle}
+        </h2>
+        <div
+          role="list"
+          aria-label={restTitle}
           className={cn(
-            "rounded-2xl p-2.5 transition-colors",
-            // 解除は破壊寄りの操作なので赤系。お気に入りへ入れる側（インディゴ）と対にする。
-            // outline を使うのは、ring が box-shadow で描かれ shadow-inset と奪い合うため。
-            overRemove &&
-              "bg-destructive/5 outline-2 -outline-offset-2 outline-destructive",
+            rest.length > 0
+              ? "grid-cards"
+              : "grid min-h-[76px] place-items-center rounded-2xl p-2.5 shadow-inset",
           )}
         >
-          <h2 className="mb-2 px-0.5 text-xs font-semibold text-muted-foreground">
-            {restTitle}
-          </h2>
-          <div role="list" aria-label={restTitle} className="grid-cards">
-            {rest.map((item) => (
+          {rest.length === 0 ? (
+            <div className="flex flex-col items-center gap-1.5 py-4 text-center">
+              <ArrowUpFromLine
+                size={18}
+                strokeWidth={1.9}
+                className="text-muted-foreground"
+              />
+              <span className="text-[12.5px] text-muted-foreground">
+                {t("favorites.removeHint")}
+              </span>
+            </div>
+          ) : (
+            rest.map((item) => (
               <FavoriteContextMenu
                 key={item.id}
                 favorite={false}
@@ -147,10 +169,10 @@ export function FavoritesBoard<T extends Identified>({
                   dragging: draggingId === item.id,
                 })}
               </FavoriteContextMenu>
-            ))}
-          </div>
-        </section>
-      )}
+            ))
+          )}
+        </div>
+      </section>
     </>
   );
 }

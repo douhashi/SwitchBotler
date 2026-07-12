@@ -21,7 +21,8 @@
     "positionAria": "{{name}}, {{position}} of {{total}}",
     "add": "Add to favorites",
     "remove": "Remove from favorites",
-    "dropHint": "Drag what you use often here"
+    "dropHint": "Drag what you use often here",
+    "removeHint": "Drag here to remove from favorites"
   },
   "states": {
     "loading": "Loading…",

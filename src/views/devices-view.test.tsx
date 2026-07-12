@@ -173,6 +173,28 @@ describe("DevicesView お気に入り（ドロップ先モデル）", () => {
     );
   });
 
+  it("全件をお気に入りにしても「その他」は残り、ドラッグで解除できる", async () => {
+    // ここが解除の唯一のドロップ先。空になった瞬間に消えると、ドラッグでは二度と戻せない。
+    useFavoritesStore.setState({
+      deviceIds: ["a", "b", "c"],
+      sceneIds: [],
+      loaded: true,
+    });
+    render(<DevicesView />);
+
+    const removeZone = screen.getByRole("list", { name: "その他のデバイス" });
+    expect(
+      within(removeZone).getByText("ここへドラッグするとお気に入りから外れます"),
+    ).toBeInTheDocument();
+
+    const favList = screen.getByRole("list", { name: "お気に入り" });
+    dragTo(within(favList).getByRole("listitem", { name: /プラグA/ }), removeZone, 10);
+
+    await waitFor(() =>
+      expect(useFavoritesStore.getState().deviceIds).toEqual(["b", "c"]),
+    );
+  });
+
   it("右クリック（コンテキストメニュー）でも登録できる＝ドラッグのキーボード代替", async () => {
     const user = userEvent.setup();
     render(<DevicesView />);
