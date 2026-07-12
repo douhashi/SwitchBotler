@@ -35,7 +35,11 @@ export function TrayApp() {
       if (h > 0) {
         void win
           .setSize(new LogicalSize(TRAY_WIDTH, clampHeight(h, MAX_TRAY_HEIGHT)))
-          .catch(() => {});
+          // 失敗を握り潰すと権限不足（capabilities の set-size 欠落）等が無症状化する。
+          // 実害のあるエラーは残す（テスト等の非 Tauri 環境では setSize 自体が呼ばれない）。
+          .catch((err) => {
+            console.error("tray setSize failed", err);
+          });
       }
     };
     const observer = new ResizeObserver(apply);
